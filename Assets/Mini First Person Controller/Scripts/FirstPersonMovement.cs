@@ -13,6 +13,9 @@ public class FirstPersonMovement : MonoBehaviour
     public KeyCode runningKey = KeyCode.LeftShift;
 
     Rigidbody rigidbody;
+    private GameObject lPaddle;
+    private GameObject rPaddle;
+
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
@@ -22,6 +25,8 @@ public class FirstPersonMovement : MonoBehaviour
     {
         // Get the rigidbody on this.
         rigidbody = GetComponent<Rigidbody>();
+        lPaddle = GameObject.Find("LPaddle");
+        rPaddle = GameObject.Find("RPaddle");
     }
 
     void FixedUpdate()
@@ -42,8 +47,16 @@ public class FirstPersonMovement : MonoBehaviour
         Vector2 targetVelocity =new Vector2( Input.GetAxis("Horizontal") * targetMovingSpeed, Input.GetAxis("Vertical") * targetMovingSpeed);
 
         // Apply movement.
-        rigidbody.AddTorque(0f, h* targetMovingSpeed*Time.deltaTime, 0f);
-        rigidbody.AddForce(transform.forward * v * targetMovingSpeed * Time.deltaTime);
+        rigidbody.AddTorque(0f, h* targetMovingSpeed, 0f);
+        rigidbody.AddForce(transform.forward * v * targetMovingSpeed);
         //rigidbody.velocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.velocity.y, targetVelocity.y);
+    }
+
+    void Update()
+    {
+        //lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position , new Vector3(0f, 0f, 1f), 30f*Time.deltaTime);
+
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, Vector3.right , 30f * Time.deltaTime);
+            lPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, Vector3.right, 30f * Time.deltaTime);
     }
 }
