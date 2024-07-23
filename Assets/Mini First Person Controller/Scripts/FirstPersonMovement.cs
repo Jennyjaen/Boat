@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class FirstPersonMovement : MonoBehaviour
 {
-    public float speed = 5;
+    public float speed =10f;
 
     [Header("Running")]
     public bool canRun = true;
@@ -15,7 +15,7 @@ public class FirstPersonMovement : MonoBehaviour
     Rigidbody rigidbody;
     private GameObject lPaddle;
     private GameObject rPaddle;
-
+    private GameObject boat;
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
@@ -27,6 +27,7 @@ public class FirstPersonMovement : MonoBehaviour
         rigidbody = GetComponent<Rigidbody>();
         lPaddle = GameObject.Find("LPaddle");
         rPaddle = GameObject.Find("RPaddle");
+        boat = GameObject.Find("Boat");
     }
 
     void FixedUpdate()
@@ -48,7 +49,7 @@ public class FirstPersonMovement : MonoBehaviour
 
         // Apply movement.
         rigidbody.AddTorque(0f, h* targetMovingSpeed, 0f);
-        rigidbody.AddForce(transform.forward * v * targetMovingSpeed);
+        rigidbody.AddForce(transform.forward * v * 200f);
         //rigidbody.velocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.velocity.y, targetVelocity.y);
     }
 
@@ -56,7 +57,7 @@ public class FirstPersonMovement : MonoBehaviour
     {
         //lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position , new Vector3(0f, 0f, 1f), 30f*Time.deltaTime);
 
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, Vector3.right , 30f * Time.deltaTime);
-            lPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, Vector3.right, 30f * Time.deltaTime);
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward , 30f * Time.deltaTime);
+            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, 30f * Time.deltaTime);
     }
 }
