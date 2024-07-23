@@ -48,8 +48,8 @@ public class FirstPersonMovement : MonoBehaviour
         Vector2 targetVelocity =new Vector2( Input.GetAxis("Horizontal") * targetMovingSpeed, Input.GetAxis("Vertical") * targetMovingSpeed);
 
         // Apply movement.
-        rigidbody.AddTorque(0f, h* targetMovingSpeed, 0f);
-        rigidbody.AddForce(transform.forward * v * 200f);
+        rigidbody.AddTorque(0f, h* 50f, 0f);
+        rigidbody.AddForce(-1 * transform.right * v * 20f);
         //rigidbody.velocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.velocity.y, targetVelocity.y);
     }
 
