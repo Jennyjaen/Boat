@@ -4,18 +4,19 @@ using UnityEngine;
 public class FirstPersonMovement : MonoBehaviour
 {
     public float speed =10f;
-
-    [Header("Running")]
-    public bool canRun = true;
-    public bool IsRunning { get; private set; }
-    public float runSpeed = 9;
     public float turnSpeed = 5f;
-    public KeyCode runningKey = KeyCode.LeftShift;
 
+    private bool leftKeydown = false;
+    private bool rightKeydown = false;
     Rigidbody rigidbody;
     private GameObject lPaddle;
     private GameObject rPaddle;
     private GameObject boat;
+
+    private Vector3 leftPos;
+    private Quaternion leftRot;
+    private Vector3 rightPos;
+    private Quaternion rightRot;
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
@@ -30,34 +31,61 @@ public class FirstPersonMovement : MonoBehaviour
         boat = GameObject.Find("Boat");
     }
 
-    void FixedUpdate()
-    {
-        // Update IsRunning from input.
-        IsRunning = canRun && Input.GetKey(runningKey);
-
-        // Get targetMovingSpeed.
-        float targetMovingSpeed = IsRunning ? runSpeed : speed;
-        if (speedOverrides.Count > 0)
-        {
-            targetMovingSpeed = speedOverrides[speedOverrides.Count - 1]();
-        }
-
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
-        // Get targetVelocity from input.
-        Vector2 targetVelocity =new Vector2( Input.GetAxis("Horizontal") * targetMovingSpeed, Input.GetAxis("Vertical") * targetMovingSpeed);
-
-        // Apply movement.
-        rigidbody.AddTorque(0f, h* 50f, 0f);
-        rigidbody.AddForce(-1 * transform.right * v * 20f);
-        //rigidbody.velocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.velocity.y, targetVelocity.y);
+    void Start()
+    {   
+        leftPos = lPaddle.transform.localPosition;
+        leftRot = lPaddle.transform.localRotation;
+        rightPos = rPaddle.transform.localPosition;
+        rightRot = rPaddle.transform.localRotation;
     }
+
+
 
     void Update()
     {
-        //lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position , new Vector3(0f, 0f, 1f), 30f*Time.deltaTime);
+        // 키보드로 보트 조작 및 노 회전
+        if (Input.GetKeyDown(KeyCode.LeftArrow)) { 
+            leftKeydown = true;
+        }
+        if (leftKeydown) {
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, 100f * Time.deltaTime);
+        }
+        if (Input.GetKeyUp(KeyCode.LeftArrow) && leftKeydown) { 
+            leftKeydown=false;
+            rigidbody.AddTorque(0f, - 10f, 0f);
+            rigidbody.AddForce(-1 * transform.right * 10f);
+            rPaddle.transform.localPosition = rightPos;
+            rPaddle.transform.localRotation = rightRot;
+        }
 
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward , 30f * Time.deltaTime);
-            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, 30f * Time.deltaTime);
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            rightKeydown = true;
+        }
+        if (rightKeydown)
+        {
+            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, 100f * Time.deltaTime);
+        }
+            if (Input.GetKeyUp(KeyCode.RightArrow) && rightKeydown)
+        {
+            rightKeydown = false;
+            rigidbody.AddTorque(0f, 10f, 0f);
+            rigidbody.AddForce(-1 * transform.right * 10f);
+            lPaddle.transform.localPosition = leftPos;
+            lPaddle.transform.localRotation = leftRot;
+        }
+
+
+        //최고속도 조절
+        if(rigidbody.velocity.magnitude > 10.0f)
+        {
+            rigidbody.velocity = rigidbody.velocity.normalized * 10.0f;
+        }
+        if(rigidbody.angularVelocity.magnitude > 1.0f)
+        {
+            rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
+        }
+        Debug.Log("Velocity: " + rigidbody.velocity.magnitude);
+        Debug.Log("Angular Velocity: " + rigidbody.angularVelocity.magnitude);
     }
 }
