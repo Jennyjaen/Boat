@@ -85,7 +85,7 @@ public class FirstPersonMovement : MonoBehaviour
         {
             rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
         }
-        Debug.Log("Velocity: " + rigidbody.velocity.magnitude);
-        Debug.Log("Angular Velocity: " + rigidbody.angularVelocity.magnitude);
+        //Debug.Log("Velocity: " + rigidbody.velocity.magnitude);
+        //Debug.Log("Angular Velocity: " + rigidbody.angularVelocity.magnitude);
     }
 }
