@@ -23,6 +23,7 @@ public class FirstPersonMovement : MonoBehaviour
     private float sum_x;
     private float sum_y;
 
+    private float max_ang;
 
     void Awake()
     {
@@ -34,7 +35,8 @@ public class FirstPersonMovement : MonoBehaviour
     }
 
     void Start()
-    {   
+    {
+        max_ang = 0f;
         leftPos = lPaddle.transform.localPosition;
         leftRot = lPaddle.transform.localRotation;
         rightPos = rPaddle.transform.localPosition;
@@ -53,13 +55,12 @@ public class FirstPersonMovement : MonoBehaviour
         if(serial.x != 0 || serial.y != 0)
         {
 
-            Debug.Log(sum_x + " " + sum_y);
             if(serial.x < 0) { rigidbody.AddTorque(0, 10f * (serial.y/ 2200), 0);}
             else { rigidbody.AddTorque(0, -10f * (serial.y / 2200), 0); }
             if(serial.y > 0) {
                 rigidbody.AddForce(-1 * transform.right * 15f * (serial.y / 500)); 
-                if(serial.x >0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward,  (serial.y/6 )); }
-                else { lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (serial.y/6)); }
+                if(serial.x >0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward,  (serial.y/8 )); }
+                else { lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (serial.y/8)); }
                 if(sum_y < 0)
                 {
                     sum_x = 0;
@@ -72,8 +73,8 @@ public class FirstPersonMovement : MonoBehaviour
             }
             else
             {
-                if (serial.x <0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (-serial.y /6 )); }
-                else { lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (-serial.y /6)); }
+                if (serial.x <0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (-serial.y /8 )); }
+                else { lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (-serial.y /8)); }
                 if(sum_y > 0)
                 {
                     sum_x = 0;
@@ -128,5 +129,49 @@ public class FirstPersonMovement : MonoBehaviour
         }
         //Debug.Log("Velocity: " + rigidbody.velocity.magnitude);
         //Debug.Log("Angular Velocity: " + rigidbody.angularVelocity.magnitude);
+        Vector3 up_vector = transform.up;
+        Vector3 forward_vector = - transform.forward;
+        float ang = Vector3.Angle(up_vector, Vector3.up);
+        Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
+        Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
+        float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
+        Debug.Log("angle "+direct_ang);
+        
+        if(max_ang > transform.position.y)
+        {
+            max_ang = transform.position.y;
+        }
+        Debug.Log("max height: "+max_ang); 
     }
+
+    void OnCollisionEnter(Collision c)
+    {
+        Debug.Log("collide");
+        Vector3 colPoint = c.contacts[0].point;
+        Vector3 playerPoint = transform.position;
+        Vector3 direction = colPoint - playerPoint;
+        Vector3 localDirection =  transform.InverseTransformDirection(direction).normalized;
+        float angle = Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
+        Debug.Log(angle);
+        if(angle < 45.0f && angle > -45.0f)
+        {
+            Debug.Log("Right");
+        }
+        else if(angle > -135.0f && angle < - 45.0f)
+        {
+            Debug.Log("Front");
+        }
+        else if(angle < 135.0f && angle > 45.0f)
+        {
+            Debug.Log("Back");
+        }
+        else
+        {
+            Debug.Log("Left");
+        }
+    }
+
+
+
+
 }
