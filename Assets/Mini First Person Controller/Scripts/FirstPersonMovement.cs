@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class FirstPersonMovement : MonoBehaviour
 {
@@ -23,7 +24,12 @@ public class FirstPersonMovement : MonoBehaviour
     private float sum_x;
     private float sum_y;
 
+    private Material lPanelM;
+    private Material rPanelM;
+
     private float max_ang;
+    private float min_ang;
+    private float max_incline;
 
     void Awake()
     {
@@ -36,7 +42,10 @@ public class FirstPersonMovement : MonoBehaviour
 
     void Start()
     {
-        max_ang = 0f;
+        max_ang = -0.1f;
+        min_ang = -0.1f;
+        max_incline = 0f;
+
         leftPos = lPaddle.transform.localPosition;
         leftRot = lPaddle.transform.localRotation;
         rightPos = rPaddle.transform.localPosition;
@@ -45,6 +54,36 @@ public class FirstPersonMovement : MonoBehaviour
         serial = FindObjectOfType<SerialController>();
         sum_x = 0;
         sum_y = 0;
+
+        Transform lPanelTransform = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/LPanel");
+        Transform rPanelTransform = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/RPanel");
+        if (lPanelTransform != null)
+        {
+            Image lPanelImage = lPanelTransform.GetComponent<Image>();
+            if (lPanelImage != null)
+            {
+                lPanelM = lPanelImage.material;
+            }
+            else
+            {
+                Debug.Log("No renderer left");
+            }
+        }
+        else { Debug.Log("No Left"); }
+        if (rPanelTransform != null) {
+            Image rPanelImage = rPanelTransform.GetComponent<Image>();
+            if (rPanelImage != null)
+            {
+                rPanelM = rPanelImage.material;
+            }
+            else
+            {
+                Debug.Log("No renderer left");
+            }
+
+        }
+        else { Debug.Log("No Right"); }
+
     }
 
 
@@ -127,21 +166,54 @@ public class FirstPersonMovement : MonoBehaviour
         {
             rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
         }
-        //Debug.Log("Velocity: " + rigidbody.velocity.magnitude);
-        //Debug.Log("Angular Velocity: " + rigidbody.angularVelocity.magnitude);
+
         Vector3 up_vector = transform.up;
         Vector3 forward_vector = - transform.forward;
         float ang = Vector3.Angle(up_vector, Vector3.up);
         Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
         Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
         float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
-        Debug.Log("angle "+direct_ang);
+        if(direct_ang< 0) { direct_ang += 360; }
+        //Debug.Log("angle "+direct_ang);
+        if (lPanelM != null && rPanelM != null) {
+            lPanelM.SetFloat("_Angle", direct_ang);
+            rPanelM.SetFloat("_Angle", direct_ang);
+            float clamp = Mathf.Clamp(ang, 0, 5);
+            lPanelM.SetFloat("_Intensity", clamp / 5.0f);
+            rPanelM.SetFloat("_Intensity", clamp / 5.0f);
+
+            float max_height = -0.05f;
+            float min_height = -0.15f;
+            Debug.Log("height: " + transform.position.y);
+            float height_clamp = Mathf.Clamp01((transform.position.y - min_height) / (max_height - min_height));
+            height_clamp = 1.0f -height_clamp * 0.5f;
+            lPanelM.SetFloat("_Scale", height_clamp);
+            rPanelM.SetFloat("_Scale", height_clamp);
+        }
+       
+        /*
+        else
+        {
+            Debug.Log("Can not find renderer");
+        }*/
         
-        if(max_ang > transform.position.y)
+        if(max_ang < transform.position.y)
         {
             max_ang = transform.position.y;
         }
+        if (max_incline < ang)
+        {
+            max_incline = ang;
+        }
+        if (min_ang > transform.position.y)
+        {
+            min_ang = transform.position.y;
+        }
+        /*
         Debug.Log("max height: "+max_ang); 
+        Debug.Log("min height: " + min_ang);
+        Debug.Log("height diff: " + (max_ang - min_ang));
+        Debug.Log("max incline: " + max_incline);*/
     }
 
     void OnCollisionEnter(Collision c)

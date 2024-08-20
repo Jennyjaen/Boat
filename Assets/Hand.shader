@@ -68,16 +68,11 @@ Shader "Custom/Compare"
                     adjust_y = clamp(adjust_y, 0.0, 1.0);
                 }
                 else{
-                    adjust_x = (i.uv.x)* 0.5 / _Scale + 0.5;
+                    adjust_x = (i.uv.x)* 0.5 / _Scale +0.5;
                     adjust_x = clamp(adjust_x, 0.0, 1.0);
-                    adjust_y = (i.uv.y + (1- _Scale)* 0.5) / _Scale;
+                    adjust_y = (i.uv.y - (1- _Scale)* 0.5) / _Scale;
                     adjust_y = clamp(adjust_y, 0.0, 1.0);
                 }
-                /*
-                float adjust_x = (i.uv.x - ((1 - _Scale) * 0.5))/ _Scale;
-                adjust_x = clamp(adjust_x, 0.0, 1.0);
-                float adjust_y = (i.uv.y - ((1 - _Scale)* 0.5)) / _Scale;
-                adjust_y = clamp(adjust_y, 0.0, 1.0);*/
 
                 
                 if(_Angle >= 337.5 || _Angle < 22.5){
