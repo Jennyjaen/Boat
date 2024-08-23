@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,9 +24,13 @@ public class FirstPersonMovement : MonoBehaviour
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
     private float sum_x;
     private float sum_y;
+    private float collide;
+    private float collide_ang;
+    private float collide_speed;
 
     private Material lPanelM;
     private Material rPanelM;
+    
 
     private float max_ang;
     private float min_ang;
@@ -45,6 +50,9 @@ public class FirstPersonMovement : MonoBehaviour
         max_ang = -0.1f;
         min_ang = -0.1f;
         max_incline = 0f;
+        collide = 0f;
+        collide_ang = 0f;
+        collide_speed = 0f;
 
         leftPos = lPaddle.transform.localPosition;
         leftRot = lPaddle.transform.localRotation;
@@ -176,19 +184,36 @@ public class FirstPersonMovement : MonoBehaviour
         if(direct_ang< 0) { direct_ang += 360; }
         //Debug.Log("angle "+direct_ang);
         if (lPanelM != null && rPanelM != null) {
-            lPanelM.SetFloat("_Angle", direct_ang);
-            rPanelM.SetFloat("_Angle", direct_ang);
-            float clamp = Mathf.Clamp(ang, 0, 5);
-            lPanelM.SetFloat("_Intensity", clamp / 5.0f);
-            rPanelM.SetFloat("_Intensity", clamp / 5.0f);
 
-            float max_height = -0.05f;
-            float min_height = -0.15f;
+            lPanelM.SetFloat("_Collision", collide);
+            rPanelM.SetFloat("_Collision", collide);
 
-            float height_clamp = Mathf.Clamp01((transform.position.y - min_height) / (max_height - min_height));
-            height_clamp = 1.0f -height_clamp * 0.5f;
-            lPanelM.SetFloat("_Scale", height_clamp);
-            rPanelM.SetFloat("_Scale", height_clamp);
+            if(collide < 0.5f)
+            {
+                lPanelM.SetFloat("_Angle", direct_ang);
+                rPanelM.SetFloat("_Angle", direct_ang);
+                float clamp = Mathf.Clamp(ang, 0, 5);
+                lPanelM.SetFloat("_Intensity", clamp / 5.0f);
+                rPanelM.SetFloat("_Intensity", clamp / 5.0f);
+
+                float max_height = -0.05f;
+                float min_height = -0.15f;
+
+                float height_clamp = Mathf.Clamp01((transform.position.y - min_height) / (max_height - min_height));
+                height_clamp = 1.0f -height_clamp * 0.5f;
+                lPanelM.SetFloat("_Scale", height_clamp);
+                rPanelM.SetFloat("_Scale", height_clamp);
+            }
+            else
+            {
+                lPanelM.SetFloat("_Angle", collide_ang);
+                rPanelM.SetFloat("_Angle", collide_ang);
+
+                float clamp = Mathf.Clamp(collide_speed, 0, 3);
+                lPanelM.SetFloat("_Scale", collide_speed / 3);
+                rPanelM.SetFloat("_Scale", collide_speed / 3);
+            }
+            
         }
        
         /*
@@ -219,6 +244,7 @@ public class FirstPersonMovement : MonoBehaviour
     void OnCollisionEnter(Collision c)
     {
         Debug.Log("collide");
+        StartCoroutine(CollisionControl());
         Vector3 colPoint = c.contacts[0].point;
         Vector3 playerPoint = transform.position;
         Vector3 direction = colPoint - playerPoint;
@@ -226,7 +252,15 @@ public class FirstPersonMovement : MonoBehaviour
 
         Vector3 colVelocity = c.relativeVelocity;
         float colForce = colVelocity.magnitude;
+        collide_speed = colVelocity.magnitude;
+
         float angle = Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
+        angle *= -1;
+        if(angle < 0)
+        {
+            angle += 360;
+        }
+        collide_ang = angle;
 
         Debug.Log(colForce);
         if(angle < 45.0f && angle > -45.0f)
@@ -245,6 +279,17 @@ public class FirstPersonMovement : MonoBehaviour
         {
             Debug.Log("Left");
         }
+    }
+
+    private IEnumerator CollisionControl()
+    {
+        collide = 1.0f;
+        yield return new WaitForSeconds(2.0f);
+
+        collide = 0.5f;
+        yield return new WaitForSeconds(1.0f);
+
+        collide = 0.0f;
     }
 
 
