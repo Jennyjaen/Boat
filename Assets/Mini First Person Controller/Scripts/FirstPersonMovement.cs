@@ -184,7 +184,7 @@ public class FirstPersonMovement : MonoBehaviour
 
             float max_height = -0.05f;
             float min_height = -0.15f;
-            Debug.Log("height: " + transform.position.y);
+
             float height_clamp = Mathf.Clamp01((transform.position.y - min_height) / (max_height - min_height));
             height_clamp = 1.0f -height_clamp * 0.5f;
             lPanelM.SetFloat("_Scale", height_clamp);
@@ -223,8 +223,12 @@ public class FirstPersonMovement : MonoBehaviour
         Vector3 playerPoint = transform.position;
         Vector3 direction = colPoint - playerPoint;
         Vector3 localDirection =  transform.InverseTransformDirection(direction).normalized;
+
+        Vector3 colVelocity = c.relativeVelocity;
+        float colForce = colVelocity.magnitude;
         float angle = Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
-        Debug.Log(angle);
+
+        Debug.Log(colForce);
         if(angle < 45.0f && angle > -45.0f)
         {
             Debug.Log("Right");
