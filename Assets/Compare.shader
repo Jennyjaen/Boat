@@ -51,6 +51,14 @@ Shader "Custom/Compare"
                 return o;
             }
 
+            float2 CellCenter(float2 uv){
+                float2 gridSize = float2(12, 18);
+                float2 cellSize = 1.0 / gridSize;
+                float2 cellIndex = floor(uv * gridSize);
+                float2 cell = (cellIndex + 0.5) * cellSize;
+                return cell;
+            }
+
             fixed4 frag (v2f i) : SV_Target
             {
 
