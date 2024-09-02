@@ -73,7 +73,9 @@ Shader "Custom/Hand"
                 float2 center;
                 if(_Collision < 0.5){
                     float4 startColor = lerp(float4(0.5, 0.5, 0.5, 1), float4(1, 1, 1, 1), _Intensity);
+                    float start = lerp(0.5, 1.0, _Intensity);
                     float4 endColor = lerp(float4(0.5, 0.5, 0.5, 1), float4(0, 0, 0, 1), _Intensity);
+                    float end = lerp(0.5, 0, _Intensity);
                     float garo = round(12 * _Scale);
                     float sero = round(18 * _Scale);
 
@@ -99,21 +101,16 @@ Shader "Custom/Hand"
                     else{
                         float2 center = CellCenter(i.uv.x, i.uv.y, float2(12, 18));
                         if(_IsLeft <0.5){
-                            adjust_x = (center.x - (1 - _Scale)* 0.5)/ _Scale * 0.5;
-                            adjust_x = clamp(adjust_x, 0.0, 1.0);
-                            adjust_y = (center.y - (1- _Scale)* 0.5) / _Scale;
-                            adjust_y = clamp(adjust_y, 0.0, 1.0);
-
-                            //center = CellCenter(adjust_x, adjust_y, float2(garo, sero));
+                            adjust_x = center.x * 0.5;
                         }
                         else{
-                            adjust_x = (center.x)* 0.5 / _Scale +0.5;
-                            adjust_x = clamp(adjust_x, 0.0, 1.0);
-                            adjust_y = (center.y - (1- _Scale)* 0.5) / _Scale;
-                            adjust_y = clamp(adjust_y, 0.0, 1.0);
-                            //center = CellCenter(adjust_x, adjust_y, float2(garo, sero)); 
+                            adjust_x = (center.x)* 0.5  +0.5;
                         }
 
+                        adjust_x = (adjust_x - (1 - _Scale)* 0.5) / _Scale;
+                        adjust_x = clamp(adjust_x, 0.0, 1.0);
+                        adjust_y = (center.y - (1 - _Scale)* 0.5) / _Scale;
+                        adjust_y = clamp(adjust_y, 0.0, 1.0);
                         
                         if(_Angle >= 337.5 || _Angle < 22.5){
                             direction = adjust_x;
@@ -139,12 +136,14 @@ Shader "Custom/Hand"
                         else if(_Angle >=292.5 && _Angle < 337.5){
                             direction = (1.0 + adjust_x - adjust_y ) * 0.5;
                         }
-                        direction = direction * 6;
+
+                        float color = lerp(end, start, direction);
+                        direction = color * 6;
                         direction = floor(direction);
                         if(direction==6){direction = 5;}
                         direction /= 5;
 
-                        return lerp(endColor, startColor, direction) ;
+                        return float4( direction, direction, direction , 1) ;
 
                     }
 

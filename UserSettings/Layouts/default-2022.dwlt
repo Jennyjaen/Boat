@@ -48,7 +48,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 64
+  controlID: 131
   draggingID: 0
 --- !u!114 &3
 MonoBehaviour:
@@ -655,24 +655,24 @@ MonoBehaviour:
     m_OverlaysVisible: 1
   m_SceneHierarchy:
     m_TreeViewState:
-      scrollPos: {x: 0, y: 0}
-      m_SelectedIDs: d0770000
-      m_LastClickedID: 30672
-      m_ExpandedIDs: 28fbffff32770000587700007877000096770000c4770000
+      scrollPos: {x: 0, y: 110}
+      m_SelectedIDs: d2770000
+      m_LastClickedID: 30674
+      m_ExpandedIDs: 28fbffff30770000567700007877000096770000c6770000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
-        m_Name: XR Rig
-        m_OriginalName: XR Rig
+        m_Name: 
+        m_OriginalName: 
         m_EditFieldRect:
           serializedVersion: 2
           x: 0
           y: 0
           width: 0
           height: 0
-        m_UserData: 30552
+        m_UserData: 0
         m_IsWaitingForDelay: 0
         m_IsRenaming: 0
-        m_OriginalEventType: 0
+        m_OriginalEventType: 11
         m_IsRenamingFilename: 0
         m_ClientGUIView: {fileID: 4}
       m_SearchString: 
@@ -1075,11 +1075,11 @@ MonoBehaviour:
   m_Rotation:
     m_Target: {x: -0.0118381195, y: 0.6653947, z: -0.01061093, w: -0.7463735}
     speed: 2
-    m_Value: {x: -0.0118381195, y: 0.6653947, z: -0.010610929, w: -0.7463734}
+    m_Value: {x: -0.01183767, y: 0.6653694, z: -0.010610526, w: -0.7463451}
   m_Size:
-    m_Target: 0.058414232
+    m_Target: 0.04231967
     speed: 2
-    m_Value: 0.055898786
+    m_Value: 0.04231967
   m_Ortho:
     m_Target: 1
     speed: 2
