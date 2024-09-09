@@ -42,7 +42,12 @@ public class SerialController : MonoBehaviour
     [Tooltip("Maximum number of unread data messages in the queue. " +
              "New messages will be discarded.")]
     public int maxUnreadMessages = 1;
+    public enum Options {Left, Right};
+    public Options options;
+
+    [HideInInspector]
     public float x;
+    [HideInInspector]
     public float y;
     // Constants used to mark the start and end of a connection. There is no
     // way you can generate clashing messages from your serial device, as I
@@ -55,6 +60,8 @@ public class SerialController : MonoBehaviour
     // Internal reference to the Thread and the object that runs in it.
     protected Thread thread;
     protected SerialThreadLines serialThread;
+
+    private byte[] data = new byte[108];
 
 
     // ------------------------------------------------------------------------
@@ -70,6 +77,16 @@ public class SerialController : MonoBehaviour
                                              maxUnreadMessages);
         thread = new Thread(new ThreadStart(serialThread.RunForever));
         thread.Start();
+
+        for(int i=0; i< 108; i++)
+        {
+            data[i] = (byte)0;
+        }
+        data[0] = 1;
+        data[10 ] = 1;
+        data[107] = 1;
+        data[50] = 1;
+
     }
 
     // ------------------------------------------------------------------------
@@ -125,9 +142,12 @@ public class SerialController : MonoBehaviour
         else if (ReferenceEquals(message, SERIAL_DEVICE_DISCONNECTED))
             //messageListener.SendMessage("OnConnectionEvent", false);
             Debug.Log("Disconnected");
-        else
+        else {
             ProcessMessage(message);
-            //messageListener.SendMessage("OnMessageArrived", message);
+            Debug.Log("get message");
+            serialThread.SendMessage(data);
+        }
+
     }
 
     void ProcessMessage(string message)
@@ -164,6 +184,8 @@ public class SerialController : MonoBehaviour
     {
         serialThread.SendMessage(message);
     }
+
+
 
     // ------------------------------------------------------------------------
     // Executes a user-defined function before Unity closes the COM port, so

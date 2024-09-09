@@ -439,6 +439,7 @@
 "Assets/Ardity/Scripts/Threads/SerialThreadCustomDelimiter.cs"
 "Assets/Ardity/Scripts/Threads/SerialThreadLines.cs"
 "Assets/GoalPass.cs"
+"Assets/LSerial.cs"
 "Assets/Mini First Person Controller/Scripts/Components/Crouch.cs"
 "Assets/Mini First Person Controller/Scripts/Components/FirstPersonAudio.cs"
 "Assets/Mini First Person Controller/Scripts/Components/GroundCheck.cs"
