@@ -16,12 +16,15 @@ using System.Text;
 public class SampleCustomDelimiter : MonoBehaviour
 {
     public SerialControllerCustomDelimiter serialController;
+    public bool isLeft;
 
+    private byte[] sendArray;
+    private FirstPersonMovement person;
     // Initialization
     void Start()
     {
         serialController = GameObject.Find("SerialController").GetComponent<SerialControllerCustomDelimiter>();
-
+        person = GetComponent<FirstPersonMovement>();
         Debug.Log("Press the SPACEBAR to execute some action");
     }
 
@@ -52,6 +55,12 @@ public class SampleCustomDelimiter : MonoBehaviour
         if (message == null)
             return;
 
+        if(person != null) {
+            if (isLeft) {
+                sendArray = person.larray;
+            }
+            else { sendArray = person.rarray; }
+        }
         StringBuilder sb = new StringBuilder();
         foreach (byte b in message)
             sb.AppendFormat("(#{0}={1})    ", b, (char)b);
