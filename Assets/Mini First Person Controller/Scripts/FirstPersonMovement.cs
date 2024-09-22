@@ -6,8 +6,8 @@ using UnityEngine.UI;
 public class FirstPersonMovement : MonoBehaviour {
     public float speed = 10f;
     public float turnSpeed = 5f;
-    public SerialController lserial;
-    public SerialController rserial;
+    //public SerialController lserial;
+   //public SerialController rserial;
 
     private bool leftKeydown = false;
     private bool rightKeydown = false;
@@ -61,8 +61,8 @@ public class FirstPersonMovement : MonoBehaviour {
         rightPos = rPaddle.transform.localPosition;
         rightRot = rPaddle.transform.localRotation;
 
-        lserial = transform.Find("LSerial").GetComponent<SerialController>();
-        rserial = transform.Find("RSerial").GetComponent<SerialController>();
+        //lserial = transform.Find("LSerial").GetComponent<SerialController>();
+        //rserial = transform.Find("RSerial").GetComponent<SerialController>();
         sum_x = 0;
         sum_y = 0;
 
@@ -176,16 +176,15 @@ public class FirstPersonMovement : MonoBehaviour {
             float garo = Mathf.Floor(Mathf.Round(24 * clamp_h) / 2);
             float sero = Mathf.Floor(Mathf.Round(18 * clamp_h) / 2);
 
-            float res = 0;
+            float res;
             int x_1 = 0;
             int x_2 = 0;
-
-            for (int x = 0; x < 24; x++) {
-                for (int y = 0; y < 18; y++) {
-                    if (x < garo || x > 24 - garo || y < sero || y > 18 - sero) { res = 0; }
+            for(int y = 0; y < 18; y++) {
+                for (int x = 0; x < 24; x++) {
+                    if (x < 12 - garo || x >= 12 + garo || y >= 9+ sero || y <9 - sero) { res = 0;}
                     else {
-                        float cent_x = x / 24;
-                        float cent_y = y / 18;
+                        float cent_x = (float)x / 24f;
+                        float cent_y = (float)y / 18f;
                         float direction = 0f;
                         if (angle >= 337.5 || angle < 22.5) { direction = cent_x; }
                         else if (angle >= 22.5 && angle < 67.5) { direction = (cent_x + cent_y) * 0.5f; }
@@ -199,8 +198,13 @@ public class FirstPersonMovement : MonoBehaviour {
                         res *= 6;
                         res = Mathf.Floor(res);
                         if (res == 6) { res = 5; }
+                        //if (x % 2 == 0 && res ==0) { Debug.Log("x: " + x + "y: " + y + " centx: " + cent_x + " direction: "+ direction+ "check: "+ check); }
+                        //if (x % 2 == 0) { Debug.Log("res: " + res); }
                     }
-                    if (x % 2 == 0) { x_1 = (int)res; }
+                    if (x % 2 == 0) { 
+                        x_1 = (int)res; 
+                        //if(x_1 == 0) { Debug.Log("x: " + x + "y: " + y + " mode: " + mode + " garo: " + garo + "sero: " + sero); }
+                    }
                     else {
                         x_2 = (int)res;
                         if (x >= 12) {
@@ -210,17 +214,35 @@ public class FirstPersonMovement : MonoBehaviour {
                         else {
                             int index = y * 6 + (x / 2);
                             larray[index] = (byte)(x_1 * 6 + x_2);
-                        }
+                            }
                     }
 
                 }
             }
         }
-
+        printArray(larray);
+        //Debug.Log(string.Join(",", larray));
     }
 
-    void Update() {
+    void printArray(byte[] array) {
+        string output = "";  // 출력할 문자열을 저장할 변수
 
+        for (int i = 0; i < array.Length; i++) {
+            output += (int)(array[i] / 6) + " "+ (int)(array[i] % 6)+" ";  // 배열의 값을 출력 문자열에 추가
+
+            // groupSize 개씩 출력할 때마다 줄바꿈
+            if ((i + 1) % 6 == 0) {
+                output += "\n";  // groupSize마다 줄바꿈 추가
+            }
+        }
+
+        // 최종 출력
+        Debug.Log(output);
+    }
+
+
+    void Update() {
+       /*
         if (lserial.x != 0 || lserial.y != 0) {
             Debug.Log("Left " + lserial.x + ", " + lserial.y);
             //보트의 회전
@@ -231,7 +253,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 //노 회전 애니메이션
                 lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 8));
 
-                /*if(sum_y < 0)
+                if(sum_y < 0)
                 {
                     sum_x = 0;
                     sum_y = 0;
@@ -239,16 +261,16 @@ public class FirstPersonMovement : MonoBehaviour {
                     rPaddle.transform.localRotation = rightRot;
                     lPaddle.transform.localPosition = leftPos;
                     lPaddle.transform.localRotation = leftRot;
-                }*/
+                }
             }
             else {
                 lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (-lserial.y / 8));
-                /*
+                
                 if(sum_y > 0)
                 {
                     sum_x = 0;
                     sum_y = 0;
-                }*/
+                }
             }
             //sum_x += lserial.x;
             //sum_y += rserial.y;
@@ -263,7 +285,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 rigidbody.AddForce(-1 * transform.right * 15f * rserial.y);
                 if (rserial.x > 0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 8)); }
 
-                /*if (sum_y < 0)
+                if (sum_y < 0)
                 {
                     sum_x = 0;
                     sum_y = 0;
@@ -271,20 +293,20 @@ public class FirstPersonMovement : MonoBehaviour {
                     rPaddle.transform.localRotation = rightRot;
                     lPaddle.transform.localPosition = leftPos;
                     lPaddle.transform.localRotation = leftRot;
-                }*/
+                }
             }
             else {
                 if (rserial.x < 0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (-rserial.y / 8)); }
-                /*if (sum_y > 0)
+                if (sum_y > 0)
                 {
                     sum_x = 0;
                     sum_y = 0;
-                }*/
+                }
             }
             //sum_x += rserial.x;
             //sum_y += rserial.y;
 
-        }
+        }*/
         // 키보드로 보트 조작 및 노 회전
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
             leftKeydown = true;
@@ -363,7 +385,8 @@ public class FirstPersonMovement : MonoBehaviour {
             }
 
         }
-        updateArray(collide, direct_ang, clamp, height_clamp, collide_ang, collide_speed);
+        updateArray(collide, 45, clamp, height_clamp, collide_ang, collide_speed);
+
 
 
         /*
