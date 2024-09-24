@@ -35,6 +35,23 @@ public class SampleCustomDelimiter : MonoBehaviour
         Debug.Log("Press the SPACEBAR to execute some action");
     }
 
+
+    void printArray(byte[] array) {
+        string output = "";  // 출력할 문자열을 저장할 변수
+
+        for (int i = 0; i < array.Length; i++) {
+            output += (int)(array[i] / 6) + " " + (int)(array[i] % 6) + " ";  // 배열의 값을 출력 문자열에 추가
+
+            // groupSize 개씩 출력할 때마다 줄바꿈
+            if ((i + 1) % 6 == 0) {
+                output += "\n";  // groupSize마다 줄바꿈 추가
+            }
+        }
+
+        // 최종 출력
+        Debug.Log(output);
+    }
+
     // Executed each frame
     void Update()
     {
@@ -63,7 +80,7 @@ public class SampleCustomDelimiter : MonoBehaviour
         byte[] message = serialController.ReadSerialMessage();
         //Debug.Log(message);
         if (message == null) {
-            Debug.Log("no message");
+            //Debug.Log("no message");
             return;
         }
 
@@ -72,6 +89,7 @@ public class SampleCustomDelimiter : MonoBehaviour
                 sendArray = person.larray;
             }
             else { sendArray = person.rarray; }
+            printArray(sendArray);
         }
         //Debug.Log(string.Join(",", sendArray));
         serialController.SendSerialMessage(sendArray);

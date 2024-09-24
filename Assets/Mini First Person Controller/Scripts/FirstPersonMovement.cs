@@ -109,18 +109,21 @@ public class FirstPersonMovement : MonoBehaviour {
             int x_1 = 0;
             int x_2 = 0;
 
+            //Debug.Log("collide speed: " + col_s);
+            
             float intensity = Mathf.Ceil(col_s * 5) / 5;
             intensity *= 6;
-            intensity = Mathf.Floor(intensity);
+            intensity = Mathf.Round(intensity);
 
             if (intensity == 6) {
                 intensity = 5;
             }
 
-            for (int x = 0; x < 24; x++) {
-                for (int y = 0; y < 12; y++) {
-                    float cent_x = x / 24;
-                    float cent_y = y / 12;
+            //Debug.Log("intensity: " + intensity);
+             for (int y = 0; y < 18; y++) {
+                for (int x = 0; x < 24; x++){
+                    float cent_x = ((float)x +0.5f) / 24;
+                    float cent_y = ((float)y + 0.5f) / 12;
                     float res;
                     if (col_ang >= 22.5 && col_ang < 67.5) {
                         if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
@@ -183,21 +186,34 @@ public class FirstPersonMovement : MonoBehaviour {
                 for (int x = 0; x < 24; x++) {
                     if (x < 12 - garo || x >= 12 + garo || y >= 9+ sero || y <9 - sero) { res = 0;}
                     else {
-                        float cent_x = (float)x / 24f;
-                        float cent_y = (float)y / 18f;
+                        float cent_x = ((float)x + 0.5f) / 24f;
+                        float cent_y = ((float)y + 0.5f) / 18f;
                         float direction = 0f;
+                        
                         if (angle >= 337.5 || angle < 22.5) { direction = cent_x; }
-                        else if (angle >= 22.5 && angle < 67.5) { direction = (cent_x + cent_y) * 0.5f; }
-                        else if (angle >= 67.5 && angle < 112.5) { direction = cent_y; }
-                        else if (angle >= 112.5 && angle < 157.5) { direction = (1.0f - cent_x + cent_y) * 0.5f; }
+                        else if (angle >= 22.5 && angle < 67.5) { direction = (1.0f + cent_x - cent_y) * 0.5f; }
+                        else if (angle >= 67.5 && angle < 112.5) {direction = 1.0f - cent_y; }
+                        else if (angle >= 112.5 && angle < 157.5) {  direction = (2.0f - cent_x - cent_y) * 0.5f; }
                         else if (angle >= 157.5 && angle < 202.5) { direction = 1.0f - cent_x; }
-                        else if (angle >= 202.5 && angle < 247.5) { direction = (2.0f - cent_x - cent_y) * 0.5f; }
-                        else if (angle >= 247.5 && angle < 292.5) { direction = 1.0f - cent_y; }
-                        else if (angle >= 292.5 && angle < 337.5) { direction = (1.0f + cent_x - cent_y) * 0.5f; }
+                        else if (angle >= 202.5 && angle < 247.5) { direction = (1.0f - cent_x + cent_y) * 0.5f; }
+                        else if (angle >= 247.5 && angle < 292.5) {  direction = cent_y; }
+                        else if (angle >= 292.5 && angle < 337.5) { direction = (cent_x + cent_y) * 0.5f;}
+                        /*
+                        if(angle >= 45 && angle < 135) { direction = 1.0f - cent_y; }
+                        else if (angle >= 135 && angle < 225) { direction = 1.0f - cent_x; }
+                        else if(angle >= 225 && angle < 315) { direction = cent_y; }
+                        else { direction = cent_x; }*/
                         res = Mathf.Lerp(end, start, direction);
+                        
                         res *= 6;
                         res = Mathf.Floor(res);
                         if (res == 6) { res = 5; }
+                        /*
+                        res *= 3;
+                        res = Mathf.Floor(res);
+                        if (res == 3) { res =2; }
+                        res *= 2;
+                        res += 1;*/
                         //if (x % 2 == 0 && res ==0) { Debug.Log("x: " + x + "y: " + y + " centx: " + cent_x + " direction: "+ direction+ "check: "+ check); }
                         //if (x % 2 == 0) { Debug.Log("res: " + res); }
                     }
@@ -353,8 +369,10 @@ public class FirstPersonMovement : MonoBehaviour {
         Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
         Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
         float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
+        float c_speed = Mathf.Clamp(collide_speed, 0, 3);
         if (direct_ang < 0) { direct_ang += 360; }
         //Debug.Log("angle "+direct_ang);
+        //collide = 1.0f;
         if (lPanelM != null && rPanelM != null) {
 
             lPanelM.SetFloat("_Collision", collide);
@@ -363,7 +381,7 @@ public class FirstPersonMovement : MonoBehaviour {
             if (collide < 0.5f) {
                 lPanelM.SetFloat("_Angle", direct_ang);
                 rPanelM.SetFloat("_Angle", direct_ang);
-                clamp = Mathf.Clamp(ang, 0, 5);
+                clamp = Mathf.Clamp(ang* 3f , 0, 5);
                 lPanelM.SetFloat("_Intensity", clamp / 5.0f);
                 rPanelM.SetFloat("_Intensity", clamp / 5.0f);
 
@@ -379,13 +397,12 @@ public class FirstPersonMovement : MonoBehaviour {
                 lPanelM.SetFloat("_Angle", collide_ang);
                 rPanelM.SetFloat("_Angle", collide_ang);
 
-                clamp = Mathf.Clamp(collide_speed, 0, 3);
-                lPanelM.SetFloat("_Scale", collide_speed / 3);
-                rPanelM.SetFloat("_Scale", collide_speed / 3);
+                lPanelM.SetFloat("_Scale", c_speed / 3);
+                rPanelM.SetFloat("_Scale", c_speed / 3);
             }
 
         }
-        updateArray(collide, 45, clamp, height_clamp, collide_ang, collide_speed);
+        updateArray(collide, direct_ang,  clamp, height_clamp, collide_ang, (c_speed / 3));
 
 
 
@@ -412,7 +429,6 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void OnCollisionEnter(Collision c) {
-        Debug.Log("collide");
         StartCoroutine(CollisionControl());
         Vector3 colPoint = c.contacts[0].point;
         Vector3 playerPoint = transform.position;
