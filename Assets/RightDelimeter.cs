@@ -13,26 +13,27 @@ using System.Text;
 /**
  * Sample for reading using polling by yourself, and writing too.
  */
-public class SampleCustomDelimiter : MonoBehaviour
-{
+public class RightDelimiter : MonoBehaviour {
     public SerialControllerCustomDelimiter serialController;
-    public bool isLeft;
 
     private byte[] sendArray;
     private FirstPersonMovement person;
+
+    [HideInInspector]
+    public int x;
+
+    [HideInInspector]
+    public int y;
     // Initialization
-    void Start()
-    {
-        if (isLeft) { serialController = GameObject.Find("LSerial").GetComponent<SerialControllerCustomDelimiter>(); }
-        else { serialController = GameObject.Find("RSerial").GetComponent<SerialControllerCustomDelimiter>(); }
-    
-        //Debug.Log("is Left: " + isLeft);
-        //Debug.Log(serialController == null);
+    void Start() {
+        serialController = GameObject.Find("RSerial").GetComponent<SerialControllerCustomDelimiter>(); 
+
         person = GetComponentInParent<FirstPersonMovement>();
-        if(person == null) {
+        if (person == null) {
             Debug.Log("Can not find person");
         }
-        Debug.Log("Press the SPACEBAR to execute some action");
+        x = 0;
+        y = 0;
     }
 
 
@@ -53,33 +54,36 @@ public class SampleCustomDelimiter : MonoBehaviour
     }
 
     // Executed each frame
-    void Update()
-    {
-        if(serialController == null) {
+    void Update() {
+        if (serialController == null) {
             Debug.Log("find serial controller");
         }
 
         byte[] message = serialController.ReadSerialMessage();
-        //Debug.Log(message);
+        Debug.Log(message);
         if (message == null) {
-            Debug.Log("no message");
+            x = 0;
+            y = 0;
             return;
         }
 
-        if(person != null) {
-            if (isLeft) {
-                sendArray = person.larray;
-            }
-            else { sendArray = person.rarray; }
+        if (person != null) {
+            sendArray = person.rarray; 
             //printArray(sendArray);
         }
         //Debug.Log(string.Join(",", sendArray));
         serialController.SendSerialMessage(sendArray);
-        //Debug.Log("Sending information");
-        
-        StringBuilder sb = new StringBuilder();
-        foreach (byte b in message)
-            sb.AppendFormat("(#{0}={1})    ", b, (char)b);
-        Debug.Log("Received some bytes, printing their ascii codes: " + sb);
+
+        if (message.Length == 2) {
+            y = (int)message[0];
+            x = (int)message[1];
+            if (y > 127) { y = 127 - y; }
+            if (x > 127) { x = 127 - x; }
+        }
+        else {
+            x = 0;
+            y = 0;
+        }
+
     }
 }

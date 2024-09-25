@@ -6,8 +6,8 @@ using UnityEngine.UI;
 public class FirstPersonMovement : MonoBehaviour {
     public float speed = 10f;
     public float turnSpeed = 5f;
-    //public SerialController lserial;
-   //public SerialController rserial;
+    public LeftDelimiter lserial;
+   public RightDelimiter rserial;
 
     private bool leftKeydown = false;
     private bool rightKeydown = false;
@@ -38,6 +38,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
     [HideInInspector]
     public byte[] larray = new byte[108];
+    [HideInInspector]
     public byte[] rarray = new byte[108];
 
     void Awake() {
@@ -61,8 +62,8 @@ public class FirstPersonMovement : MonoBehaviour {
         rightPos = rPaddle.transform.localPosition;
         rightRot = rPaddle.transform.localRotation;
 
-        //lserial = transform.Find("LSerial").GetComponent<SerialController>();
-        //rserial = transform.Find("RSerial").GetComponent<SerialController>();
+        lserial = transform.Find("LDelim").GetComponent<LeftDelimiter>();
+        rserial = transform.Find("RDelim").GetComponent<RightDelimiter>();
         sum_x = 0;
         sum_y = 0;
 
@@ -236,7 +237,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
         }
-        printArray(larray);
+        //printArray(larray);
         //Debug.Log(string.Join(",", larray));
     }
 
@@ -258,48 +259,27 @@ public class FirstPersonMovement : MonoBehaviour {
 
 
     void Update() {
-       /*
+
         if (lserial.x != 0 || lserial.y != 0) {
             Debug.Log("Left " + lserial.x + ", " + lserial.y);
             //보트의 회전
             //보트의 이동
             if (lserial.y > 0) {
-                rigidbody.AddForce(-1 * transform.right * 20f * lserial.y);
-                rigidbody.AddTorque(0, -10f * lserial.y, 0);
+                rigidbody.AddForce(-1 * transform.right * 0.08f * lserial.y);
+                rigidbody.AddTorque(0, -0.01f * lserial.y, 0);
+            }
                 //노 회전 애니메이션
-                lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 8));
-
-                if(sum_y < 0)
-                {
-                    sum_x = 0;
-                    sum_y = 0;
-                    rPaddle.transform.localPosition = rightPos;
-                    rPaddle.transform.localRotation = rightRot;
-                    lPaddle.transform.localPosition = leftPos;
-                    lPaddle.transform.localRotation = leftRot;
-                }
-            }
-            else {
-                lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (-lserial.y / 8));
-                
-                if(sum_y > 0)
-                {
-                    sum_x = 0;
-                    sum_y = 0;
-                }
-            }
-            //sum_x += lserial.x;
-            //sum_y += rserial.y;
-
+            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 10));
+            
         }
-
+        /*
         if (rserial.x != 0 || rserial.y != 0) {
             Debug.Log("Right");
 
             if (rserial.y > 0) {
-                rigidbody.AddTorque(0, 10f * rserial.y, 0);
-                rigidbody.AddForce(-1 * transform.right * 15f * rserial.y);
-                if (rserial.x > 0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 8)); }
+                rigidbody.AddTorque(0, 0.08f * rserial.y, 0);
+                rigidbody.AddForce(-1 * transform.right * 0.01f * rserial.y);
+                if (rserial.x > 0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 10)); }
 
                 if (sum_y < 0)
                 {
