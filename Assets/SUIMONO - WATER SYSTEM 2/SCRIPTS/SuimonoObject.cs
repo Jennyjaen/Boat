@@ -19,9 +19,9 @@ namespace Suimono.Core
 		public float systemTime = 0.0f;
 		public float systemLocalTime = 0.0f;
 		public float flowSpeed = 0.1f;
-		public float flowDirection = 30.0f;
+		public float flowDirection = 180.0f;
 		public bool useBeaufortScale = false;
-		public float beaufortScale = 7.0f;
+		public float beaufortScale = 1.0f;
 		public float turbulenceFactor = 1.0f;
 		public float waveScale = 0.5f;
 		public float lgWaveHeight = 0.0f;

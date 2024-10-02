@@ -7,7 +7,7 @@ public class FirstPersonMovement : MonoBehaviour {
     public float speed = 10f;
     public float turnSpeed = 5f;
     public LeftDelimiter lserial;
-   public RightDelimiter rserial;
+    public RightDelimiter rserial;
 
     private bool leftKeydown = false;
     private bool rightKeydown = false;
@@ -259,6 +259,11 @@ public class FirstPersonMovement : MonoBehaviour {
 
 
     void Update() {
+        Vector3 rotation = transform.eulerAngles;
+        if (rotation.x > 180){rotation.x -= 360;}
+
+        rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
+        transform.eulerAngles = rotation;
 
         if (lserial.x != 0 || lserial.y != 0) {
             Debug.Log("Left " + lserial.x + ", " + lserial.y);
@@ -266,43 +271,26 @@ public class FirstPersonMovement : MonoBehaviour {
             //보트의 이동
             if (lserial.y > 0) {
                 rigidbody.AddForce(-1 * transform.right * 0.08f * lserial.y);
-                rigidbody.AddTorque(0, -0.01f * lserial.y, 0);
+                rigidbody.AddTorque(0, 0.01f * lserial.y, 0);
             }
                 //노 회전 애니메이션
             lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 10));
             
         }
-        /*
+
         if (rserial.x != 0 || rserial.y != 0) {
-            Debug.Log("Right");
-
+            Debug.Log("Right " + rserial.x + ", " + rserial.y);
+            //보트의 회전
+            //보트의 이동
             if (rserial.y > 0) {
-                rigidbody.AddTorque(0, 0.08f * rserial.y, 0);
-                rigidbody.AddForce(-1 * transform.right * 0.01f * rserial.y);
-                if (rserial.x > 0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 10)); }
-
-                if (sum_y < 0)
-                {
-                    sum_x = 0;
-                    sum_y = 0;
-                    rPaddle.transform.localPosition = rightPos;
-                    rPaddle.transform.localRotation = rightRot;
-                    lPaddle.transform.localPosition = leftPos;
-                    lPaddle.transform.localRotation = leftRot;
-                }
+                rigidbody.AddForce(-1 * transform.right * 0.08f * rserial.y);
+                rigidbody.AddTorque(0, -0.01f * rserial.y, 0);
             }
-            else {
-                if (rserial.x < 0) { rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (-rserial.y / 8)); }
-                if (sum_y > 0)
-                {
-                    sum_x = 0;
-                    sum_y = 0;
-                }
-            }
-            //sum_x += rserial.x;
-            //sum_y += rserial.y;
+            //노 회전 애니메이션
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 10));
 
-        }*/
+        }
+
         // 키보드로 보트 조작 및 노 회전
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
             leftKeydown = true;
@@ -353,6 +341,8 @@ public class FirstPersonMovement : MonoBehaviour {
         if (direct_ang < 0) { direct_ang += 360; }
         //Debug.Log("angle "+direct_ang);
         //collide = 1.0f;
+
+        //visualize
         if (lPanelM != null && rPanelM != null) {
 
             lPanelM.SetFloat("_Collision", collide);

@@ -33,7 +33,7 @@ public class SerialControllerCustomDelimiter : MonoBehaviour
 
     [Tooltip("Maximum number of unread data messages in the queue. " +
              "New messages will be discarded.")]
-    public int maxUnreadMessages = 1;
+    public int maxUnreadMessages = 10;
 
     [Tooltip("Maximum number of unread data messages in the queue. " +
              "New messages will be discarded.")]
@@ -107,7 +107,7 @@ public class SerialControllerCustomDelimiter : MonoBehaviour
             return;
 
         // Check if the message is plain data or a connect/disconnect event.
-        messageListener.SendMessage("OnMessageArrived", message);
+        //messageListener.SendMessage("OnMessageArrived", message);
     }
 
     // ------------------------------------------------------------------------

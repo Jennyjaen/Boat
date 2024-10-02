@@ -56,11 +56,11 @@ public class RightDelimiter : MonoBehaviour {
     // Executed each frame
     void Update() {
         if (serialController == null) {
-            Debug.Log("find serial controller");
+            Debug.Log("there is no right serial controller");
         }
 
         byte[] message = serialController.ReadSerialMessage();
-        Debug.Log(message);
+
         if (message == null) {
             x = 0;
             y = 0;
