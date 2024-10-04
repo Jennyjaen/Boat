@@ -261,7 +261,6 @@ public class FirstPersonMovement : MonoBehaviour {
     void Update() {
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
-
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         transform.eulerAngles = rotation;
 
@@ -301,7 +300,8 @@ public class FirstPersonMovement : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.LeftArrow) && leftKeydown) {
             leftKeydown = false;
             rigidbody.AddTorque(0f, -10f, 0f);
-            rigidbody.AddForce(-1 * transform.right * 10f);
+            rigidbody.AddTorque(-5f, 0f, 0f);
+            rigidbody.AddForce(-1 * transform.right * 15f);
             rPaddle.transform.localPosition = rightPos;
             rPaddle.transform.localRotation = rightRot;
         }
@@ -315,7 +315,8 @@ public class FirstPersonMovement : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.RightArrow) && rightKeydown) {
             rightKeydown = false;
             rigidbody.AddTorque(0f, 10f, 0f);
-            rigidbody.AddForce(-1 * transform.right * 10f);
+            rigidbody.AddTorque(5f, 0f, 0f);
+            rigidbody.AddForce(-1 * transform.right * 15f);
             lPaddle.transform.localPosition = leftPos;
             lPaddle.transform.localRotation = leftRot;
         }
@@ -421,10 +422,10 @@ public class FirstPersonMovement : MonoBehaviour {
             Debug.Log("Right");
         }
         else if (angle > -135.0f && angle < -45.0f) {
-            Debug.Log("Front");
+            Debug.Log("Back");
         }
         else if (angle < 135.0f && angle > 45.0f) {
-            Debug.Log("Back");
+            Debug.Log("Front");
         }
         else {
             Debug.Log("Left");
