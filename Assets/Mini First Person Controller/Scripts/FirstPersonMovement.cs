@@ -22,8 +22,10 @@ public class FirstPersonMovement : MonoBehaviour {
     private Quaternion rightRot;
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
-    private float sum_x;
-    private float sum_y;
+    private float sum_l;
+    private float sum_r;
+    private int stream_l;
+    private int stream_r;
     private float collide;
     private float collide_ang;
     private float collide_speed;
@@ -40,6 +42,8 @@ public class FirstPersonMovement : MonoBehaviour {
     public byte[] larray = new byte[108];
     [HideInInspector]
     public byte[] rarray = new byte[108];
+    [HideInInspector]
+    public bool toggle;
 
     void Awake() {
         // Get the rigidbody on this.
@@ -64,8 +68,11 @@ public class FirstPersonMovement : MonoBehaviour {
 
         lserial = transform.Find("LDelim").GetComponent<LeftDelimiter>();
         rserial = transform.Find("RDelim").GetComponent<RightDelimiter>();
-        sum_x = 0;
-        sum_y = 0;
+        sum_l = 0;
+        sum_r = 0;
+        stream_l = 0;
+        stream_r = 0;
+        toggle = false;
 
         Transform lPanelTransform = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/LPanel");
         Transform rPanelTransform = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/RPanel");
@@ -264,30 +271,52 @@ public class FirstPersonMovement : MonoBehaviour {
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         transform.eulerAngles = rotation;
 
-        if (lserial.x != 0 || lserial.y != 0) {
-            Debug.Log("Left " + lserial.x + ", " + lserial.y);
-            //보트의 회전
-            //보트의 이동
-            if (lserial.y > 0) {
+        if (lserial.y != 0) {
+            stream_l++;
+            sum_l += lserial.y;
+            //Debug.Log("Left " + lserial.x + ", " + lserial.y);
+
+            if (lserial.y > 0 && !toggle) {
                 rigidbody.AddForce(-1 * transform.right * 0.08f * lserial.y);
                 rigidbody.AddTorque(0, 0.01f * lserial.y, 0);
+                //rigidbody.AddTorque(0.005f * lserial.y, 0, 0);
+            }
+            else if(lserial.y <0 && toggle) {
+                rigidbody.AddForce(-1 * transform.right * 0.08f * lserial.y);
+                rigidbody.AddTorque(0, -0.01f * lserial.y, 0);
             }
                 //노 회전 애니메이션
             lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 10));
             
         }
+        else{
+            stream_l = 0;
+            sum_l = 0;
+        }
 
-        if (rserial.x != 0 || rserial.y != 0) {
-            Debug.Log("Right " + rserial.x + ", " + rserial.y);
-            //보트의 회전
-            //보트의 이동
-            if (rserial.y > 0) {
+        if (rserial.y != 0) {
+            //Debug.Log("Right " + rserial.x + ", " + rserial.y);
+            stream_r++;
+            sum_r += rserial.y;
+            if (rserial.y > 0 && !toggle) {
+                rigidbody.AddForce(-1 * transform.right * 0.08f * rserial.y);
+                rigidbody.AddTorque(0, -0.01f * rserial.y, 0);
+                //rigidbody.AddTorque(-0.005f * rserial.y, 0, 0);
+            }
+            else if (rserial.y < 0 && toggle) {
                 rigidbody.AddForce(-1 * transform.right * 0.08f * rserial.y);
                 rigidbody.AddTorque(0, -0.01f * rserial.y, 0);
             }
             //노 회전 애니메이션
             rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 10));
 
+        }
+        else{
+            //if(stream_r != 0) {Debug.Log(stream_r); }
+            //if(sum_r != 0) {Debug.Log(sum_r); }
+            
+            stream_r = 0;
+            sum_r = 0;
         }
 
         // 키보드로 보트 조작 및 노 회전
@@ -300,7 +329,7 @@ public class FirstPersonMovement : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.LeftArrow) && leftKeydown) {
             leftKeydown = false;
             rigidbody.AddTorque(0f, -10f, 0f);
-            rigidbody.AddTorque(-5f, 0f, 0f);
+            //rigidbody.AddTorque(-5f, 0f, 0f);
             rigidbody.AddForce(-1 * transform.right * 15f);
             rPaddle.transform.localPosition = rightPos;
             rPaddle.transform.localRotation = rightRot;
@@ -315,7 +344,7 @@ public class FirstPersonMovement : MonoBehaviour {
         if (Input.GetKeyUp(KeyCode.RightArrow) && rightKeydown) {
             rightKeydown = false;
             rigidbody.AddTorque(0f, 10f, 0f);
-            rigidbody.AddTorque(5f, 0f, 0f);
+            //rigidbody.AddTorque(5f, 0f, 0f);
             rigidbody.AddForce(-1 * transform.right * 15f);
             lPaddle.transform.localPosition = leftPos;
             lPaddle.transform.localRotation = leftRot;

@@ -25,6 +25,12 @@ public class RightDelimiter : MonoBehaviour {
     [HideInInspector]
     public int y;
     // Initialization
+    [HideInInspector]
+    public int stream;
+
+    [HideInInspector]
+    public int sum;
+
     void Start() {
         serialController = GameObject.Find("RSerial").GetComponent<SerialControllerCustomDelimiter>(); 
 
@@ -34,6 +40,8 @@ public class RightDelimiter : MonoBehaviour {
         }
         x = 0;
         y = 0;
+        sum = 0;
+        stream = 0;
     }
 
 
@@ -57,6 +65,7 @@ public class RightDelimiter : MonoBehaviour {
     void Update() {
         if (serialController == null) {
             Debug.Log("there is no right serial controller");
+            return;
         }
 
         byte[] message = serialController.ReadSerialMessage();
@@ -79,6 +88,17 @@ public class RightDelimiter : MonoBehaviour {
             x = (int)message[1];
             if (y > 127) { y = 127 - y; }
             if (x > 127) { x = 127 - x; }
+
+            if (y != 0) {
+                stream++;
+                sum += y;
+            }
+            else {
+                if(stream != 0) { Debug.Log(stream); }
+                if(sum != 0) { Debug.Log(sum); }
+                stream = 0;
+                sum = 0;
+            }
         }
         else {
             x = 0;
