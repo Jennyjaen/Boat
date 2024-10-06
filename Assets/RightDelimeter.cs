@@ -29,6 +29,9 @@ public class RightDelimiter : MonoBehaviour {
     public int stream;
 
     [HideInInspector]
+    public int zerostream;
+
+    [HideInInspector]
     public int sum;
 
     void Start() {
@@ -42,6 +45,7 @@ public class RightDelimiter : MonoBehaviour {
         y = 0;
         sum = 0;
         stream = 0;
+        zerostream = 0;
     }
 
 
@@ -82,7 +86,6 @@ public class RightDelimiter : MonoBehaviour {
         }
         //Debug.Log(string.Join(",", sendArray));
         serialController.SendSerialMessage(sendArray);
-
         if (message.Length == 2) {
             y = (int)message[0];
             x = (int)message[1];
@@ -90,14 +93,22 @@ public class RightDelimiter : MonoBehaviour {
             if (x > 127) { x = 127 - x; }
 
             if (y != 0) {
-                stream++;
-                sum += y;
+                if(sum * y < 0) {
+                    sum = y;
+                    stream = 1;
+                }
+                else {
+                    stream++;
+                    sum += y;
+                }
+                if(Mathf.Abs(sum) > 10) { zerostream = 0;}
+                else { zerostream++; }
+                
             }
             else {
-                if(stream != 0) { Debug.Log(stream); }
-                if(sum != 0) { Debug.Log(sum); }
                 stream = 0;
                 sum = 0;
+                zerostream++;
             }
         }
         else {

@@ -106,7 +106,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
     }
 
-    void updateArray(float collide, float angle, float clamp_ang, float clamp_h, float col_ang, float col_s) {
+    void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) {
         if (collide == 0.5f) {
             for (int i = 0; i < 108; i++) {
                 larray[i] = (byte)0;
@@ -184,47 +184,43 @@ public class FirstPersonMovement : MonoBehaviour {
         else {// normal case
             float start = Mathf.Lerp(0.5f, 0f, (clamp_ang / 5));
             float end = Mathf.Lerp(0.5f, 1f, (clamp_ang / 5));
-            float garo = Mathf.Floor(Mathf.Round(24 * clamp_h) / 2);
-            float sero = Mathf.Floor(Mathf.Round(18 * clamp_h) / 2);
 
             float res;
             int x_1 = 0;
             int x_2 = 0;
             for(int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
-                    if (x < 12 - garo || x >= 12 + garo || y >= 9+ sero || y <9 - sero) { res = 0;}
-                    else {
-                        float cent_x = ((float)x + 0.5f) / 24f;
-                        float cent_y = ((float)y + 0.5f) / 18f;
-                        float direction = 0f;
+                    float cent_x = ((float)x + 0.5f) / 24f;
+                    float cent_y = ((float)y + 0.5f) / 18f;
+                    float direction = 0f;
                         
-                        if (angle >= 337.5 || angle < 22.5) { direction = cent_x; }
-                        else if (angle >= 22.5 && angle < 67.5) { direction = (1.0f + cent_x - cent_y) * 0.5f; }
-                        else if (angle >= 67.5 && angle < 112.5) {direction = 1.0f - cent_y; }
-                        else if (angle >= 112.5 && angle < 157.5) {  direction = (2.0f - cent_x - cent_y) * 0.5f; }
-                        else if (angle >= 157.5 && angle < 202.5) { direction = 1.0f - cent_x; }
-                        else if (angle >= 202.5 && angle < 247.5) { direction = (1.0f - cent_x + cent_y) * 0.5f; }
-                        else if (angle >= 247.5 && angle < 292.5) {  direction = cent_y; }
-                        else if (angle >= 292.5 && angle < 337.5) { direction = (cent_x + cent_y) * 0.5f;}
-                        /*
-                        if(angle >= 45 && angle < 135) { direction = 1.0f - cent_y; }
-                        else if (angle >= 135 && angle < 225) { direction = 1.0f - cent_x; }
-                        else if(angle >= 225 && angle < 315) { direction = cent_y; }
-                        else { direction = cent_x; }*/
-                        res = Mathf.Lerp(end, start, direction);
+                    if (angle >= 337.5 || angle < 22.5) { direction = cent_x; }
+                    else if (angle >= 22.5 && angle < 67.5) { direction = (1.0f + cent_x - cent_y) * 0.5f; }
+                    else if (angle >= 67.5 && angle < 112.5) {direction = 1.0f - cent_y; }
+                    else if (angle >= 112.5 && angle < 157.5) {  direction = (2.0f - cent_x - cent_y) * 0.5f; }
+                    else if (angle >= 157.5 && angle < 202.5) { direction = 1.0f - cent_x; }
+                    else if (angle >= 202.5 && angle < 247.5) { direction = (1.0f - cent_x + cent_y) * 0.5f; }
+                    else if (angle >= 247.5 && angle < 292.5) {  direction = cent_y; }
+                    else if (angle >= 292.5 && angle < 337.5) { direction = (cent_x + cent_y) * 0.5f;}
+                    /*
+                    if(angle >= 45 && angle < 135) { direction = 1.0f - cent_y; }
+                    else if (angle >= 135 && angle < 225) { direction = 1.0f - cent_x; }
+                    else if(angle >= 225 && angle < 315) { direction = cent_y; }
+                    else { direction = cent_x; }*/
+                    res = Mathf.Lerp(end, start, direction);
                         
-                        res *= 6;
-                        res = Mathf.Floor(res);
-                        if (res == 6) { res = 5; }
-                        /*
-                        res *= 3;
-                        res = Mathf.Floor(res);
-                        if (res == 3) { res =2; }
-                        res *= 2;
-                        res += 1;*/
-                        //if (x % 2 == 0 && res ==0) { Debug.Log("x: " + x + "y: " + y + " centx: " + cent_x + " direction: "+ direction+ "check: "+ check); }
-                        //if (x % 2 == 0) { Debug.Log("res: " + res); }
-                    }
+                    res *= 6;
+                    res = Mathf.Floor(res);
+                    if (res == 6) { res = 5; }
+                    /*
+                    res *= 3;
+                    res = Mathf.Floor(res);
+                    if (res == 3) { res =2; }
+                    res *= 2;
+                    res += 1;*/
+                    //if (x % 2 == 0 && res ==0) { Debug.Log("x: " + x + "y: " + y + " centx: " + cent_x + " direction: "+ direction+ "check: "+ check); }
+                    //if (x % 2 == 0) { Debug.Log("res: " + res); }
+
                     if (x % 2 == 0) { 
                         x_1 = (int)res; 
                         //if(x_1 == 0) { Debug.Log("x: " + x + "y: " + y + " mode: " + mode + " garo: " + garo + "sero: " + sero); }
@@ -264,6 +260,34 @@ public class FirstPersonMovement : MonoBehaviour {
         Debug.Log(output);
     }
 
+    void updateEachArray(bool isLeft, float vel, bool reverse, int sum) {
+
+        byte[] arr = new byte[108];
+        int max_vib = 0;
+        int width = 4;
+        if(Mathf.Abs(sum )> 10) {
+            if(vel <= 1) { max_vib = 5;}
+            else if(vel <= 3) { max_vib = 4;}
+            else if(vel <= 5) { max_vib = 3; }
+            else if(vel <= 7) { max_vib = 2; }
+            else { max_vib = 1; }
+
+        }
+        if (reverse && sum > 0) { max_vib = 0; }
+        if(!reverse && sum < 0) { max_vib = 0; }
+        int sero = sum / 120;
+        for(int y = 0; y< 18; y++) {
+            for(int n = 0; n<6; n++) {
+                if(y >= sero && y < sero + width) {
+                    arr[y * 6 + n] = (byte) (max_vib * 6 + max_vib);
+                }
+                else { arr[y * 6  +n] =(byte) 0; }
+            }
+        }
+        if (!reverse) { System.Array.Reverse(arr); }
+        if (isLeft) { larray = arr; }
+        else { rarray = arr; }
+}
 
     void Update() {
         Vector3 rotation = transform.eulerAngles;
@@ -272,8 +296,6 @@ public class FirstPersonMovement : MonoBehaviour {
         transform.eulerAngles = rotation;
 
         if (lserial.y != 0) {
-            stream_l++;
-            sum_l += lserial.y;
             //Debug.Log("Left " + lserial.x + ", " + lserial.y);
 
             if (lserial.y > 0 && !toggle) {
@@ -289,15 +311,10 @@ public class FirstPersonMovement : MonoBehaviour {
             lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 10));
             
         }
-        else{
-            stream_l = 0;
-            sum_l = 0;
-        }
+
 
         if (rserial.y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + rserial.y);
-            stream_r++;
-            sum_r += rserial.y;
             if (rserial.y > 0 && !toggle) {
                 rigidbody.AddForce(-1 * transform.right * 0.08f * rserial.y);
                 rigidbody.AddTorque(0, -0.01f * rserial.y, 0);
@@ -311,13 +328,7 @@ public class FirstPersonMovement : MonoBehaviour {
             rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 10));
 
         }
-        else{
-            //if(stream_r != 0) {Debug.Log(stream_r); }
-            //if(sum_r != 0) {Debug.Log(sum_r); }
-            
-            stream_r = 0;
-            sum_r = 0;
-        }
+
 
         // 키보드로 보트 조작 및 노 회전
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
@@ -359,52 +370,31 @@ public class FirstPersonMovement : MonoBehaviour {
             rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
         }
 
+
         Vector3 up_vector = transform.up;
         Vector3 forward_vector = -transform.forward;
         float ang = Vector3.Angle(up_vector, Vector3.up);
-        float clamp = 0;
-        float height_clamp = 0;
+        float clamp = Mathf.Clamp(ang * 3f, 0, 5);
         Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
         Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
         float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
         float c_speed = Mathf.Clamp(collide_speed, 0, 3);
+        c_speed /= 3;
         if (direct_ang < 0) { direct_ang += 360; }
         //Debug.Log("angle "+direct_ang);
         //collide = 1.0f;
 
-        //visualize
-        if (lPanelM != null && rPanelM != null) {
-
-            lPanelM.SetFloat("_Collision", collide);
-            rPanelM.SetFloat("_Collision", collide);
-
-            if (collide < 0.5f) {
-                lPanelM.SetFloat("_Angle", direct_ang);
-                rPanelM.SetFloat("_Angle", direct_ang);
-                clamp = Mathf.Clamp(ang* 3f , 0, 5);
-                lPanelM.SetFloat("_Intensity", clamp / 5.0f);
-                rPanelM.SetFloat("_Intensity", clamp / 5.0f);
-
-                float max_height = -0.05f;
-                float min_height = -0.15f;
-
-                height_clamp = Mathf.Clamp01((transform.position.y - min_height) / (max_height - min_height));
-                height_clamp = 1.0f - height_clamp * 0.5f;
-                lPanelM.SetFloat("_Scale", height_clamp);
-                rPanelM.SetFloat("_Scale", height_clamp);
-            }
-            else {
-                lPanelM.SetFloat("_Angle", collide_ang);
-                rPanelM.SetFloat("_Angle", collide_ang);
-
-                lPanelM.SetFloat("_Scale", c_speed / 3);
-                rPanelM.SetFloat("_Scale", c_speed / 3);
-            }
-
+        if(collide == 0f || collide ==2f) {
+            if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
+            else { collide = 2.0f; }
         }
-        updateArray(collide, direct_ang,  clamp, height_clamp, collide_ang, (c_speed / 3));
 
-
+        //Debug.Log(collide);
+        if(collide != 2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
+        else { 
+            updateEachArray(true, rigidbody.velocity.magnitude, toggle, lserial.sum); //left hand
+            updateEachArray(false, rigidbody.velocity.magnitude, toggle, rserial.sum); //right hand
+        }
 
         /*
         else
