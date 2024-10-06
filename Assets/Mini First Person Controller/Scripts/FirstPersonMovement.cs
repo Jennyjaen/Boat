@@ -12,6 +12,7 @@ public class FirstPersonMovement : MonoBehaviour {
     private bool leftKeydown = false;
     private bool rightKeydown = false;
     Rigidbody rigidbody;
+    Transform front;
     private GameObject lPaddle;
     private GameObject rPaddle;
     private GameObject boat;
@@ -51,6 +52,7 @@ public class FirstPersonMovement : MonoBehaviour {
         lPaddle = GameObject.Find("LPaddle");
         rPaddle = GameObject.Find("RPaddle");
         boat = GameObject.Find("Boat");
+        front = transform.Find("Front");
     }
 
     void Start() {
@@ -290,6 +292,7 @@ public class FirstPersonMovement : MonoBehaviour {
 }
 
     void Update() {
+        //Debug.Log("y: "+ front.position.y+ " Euler angle: "+ front.rotation.eulerAngles);
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
@@ -419,7 +422,10 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void OnCollisionEnter(Collision c) {
-        StartCoroutine(CollisionControl());
+        if (!c.collider.CompareTag("Water")) {
+            StartCoroutine(CollisionControl());
+        }
+        //Debug.Log("collision!");
         Vector3 colPoint = c.contacts[0].point;
         Vector3 playerPoint = transform.position;
         Vector3 direction = colPoint - playerPoint;
@@ -436,7 +442,6 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         collide_ang = angle;
 
-        Debug.Log(colForce);
         if (angle < 45.0f && angle > -45.0f) {
             Debug.Log("Right");
         }
