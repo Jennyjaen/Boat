@@ -108,6 +108,11 @@ public class FirstPersonMovement : MonoBehaviour {
 
     }
 
+    int Is_max(int maxim, int res) {
+        if(res == maxim) { return res; }
+        else { return 0; }      
+    }
+
     void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) {
         if (collide == 0.5f) {
             for (int i = 0; i < 108; i++) {
@@ -186,7 +191,9 @@ public class FirstPersonMovement : MonoBehaviour {
         else {// normal case
             float start = Mathf.Lerp(0.5f, 0f, (clamp_ang / 5));
             float end = Mathf.Lerp(0.5f, 1f, (clamp_ang / 5));
-
+            int maxim= (int) Mathf.Floor(end *6);
+            if(maxim == 6) { maxim = 5; }
+            Debug.Log(maxim);
             float res;
             int x_1 = 0;
             int x_2 = 0;
@@ -210,7 +217,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     else if(angle >= 225 && angle < 315) { direction = cent_y; }
                     else { direction = cent_x; }*/
                     res = Mathf.Lerp(end, start, direction);
-                        
+                    
                     res *= 6;
                     res = Mathf.Floor(res);
                     if (res == 6) { res = 5; }
@@ -224,11 +231,11 @@ public class FirstPersonMovement : MonoBehaviour {
                     //if (x % 2 == 0) { Debug.Log("res: " + res); }
 
                     if (x % 2 == 0) { 
-                        x_1 = (int)res; 
+                        x_1 = Is_max(maxim, (int)res); 
                         //if(x_1 == 0) { Debug.Log("x: " + x + "y: " + y + " mode: " + mode + " garo: " + garo + "sero: " + sero); }
                     }
                     else {
-                        x_2 = (int)res;
+                        x_2 = Is_max(maxim, (int)res);
                         if (x >= 12) {
                             int index = y * 6 + ((x - 12) / 2);
                             rarray[index] = (byte)(x_1 * 6 + x_2);
@@ -390,7 +397,7 @@ public class FirstPersonMovement : MonoBehaviour {
         Vector3 up_vector = transform.up;
         Vector3 forward_vector = -transform.forward;
         float ang = Vector3.Angle(up_vector, Vector3.up);
-        float clamp = Mathf.Clamp(ang * 3f, 0, 5);
+        float clamp = Mathf.Clamp(ang * 2.5f, 0, 5);
         Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
         Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
         float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
@@ -405,7 +412,7 @@ public class FirstPersonMovement : MonoBehaviour {
             if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
             else { collide = 2.0f; }
         }
-
+        //Debug.Log("Left: "+ lserial.zerostream + " Right: "+ rserial.zerostream + "Collision: "+ collide);
         //Debug.Log(collide);
 
         if(collide != 2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
