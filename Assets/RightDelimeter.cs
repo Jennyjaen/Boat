@@ -93,6 +93,7 @@ public class RightDelimiter : MonoBehaviour {
             if (x > 127) { x = 127 - x; }
 
             if (y != 0) {
+                
                 if(sum * y < 0) {
                     sum = y;
                     stream = 1;

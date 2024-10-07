@@ -95,6 +95,7 @@ public class LeftDelimiter : MonoBehaviour {
             if (y > 127) { y = 127 - y; }
             if (x > 127) { x = 127 - x; }
             if (y != 0) {
+                
                 if (sum * y < 0) {
                     sum = y;
                     stream = 1;

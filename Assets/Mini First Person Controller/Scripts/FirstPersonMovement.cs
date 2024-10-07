@@ -268,16 +268,16 @@ public class FirstPersonMovement : MonoBehaviour {
         int max_vib = 0;
         int width = 4;
         if(Mathf.Abs(sum )> 10) {
-            if(vel <= 1) { max_vib = 5;}
-            else if(vel <= 3) { max_vib = 4;}
-            else if(vel <= 5) { max_vib = 3; }
-            else if(vel <= 7) { max_vib = 2; }
+            if(vel <= 3) { max_vib = 5;}
+            else if(vel <= 5) { max_vib = 4;}
+            else if(vel <= 7) { max_vib = 3; }
+            else if(vel <= 9) { max_vib = 2; }
             else { max_vib = 1; }
 
         }
         if (reverse && sum > 0) { max_vib = 0; }
         if(!reverse && sum < 0) { max_vib = 0; }
-        int sero = sum / 120;
+        int sero = Mathf.Abs(sum) / 120;
         for(int y = 0; y< 18; y++) {
             for(int n = 0; n<6; n++) {
                 if(y >= sero && y < sero + width) {
@@ -298,16 +298,17 @@ public class FirstPersonMovement : MonoBehaviour {
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         transform.eulerAngles = rotation;
 
+        
         if (lserial.y != 0) {
             //Debug.Log("Left " + lserial.x + ", " + lserial.y);
 
             if (lserial.y > 0 && !toggle) {
-                rigidbody.AddForce(-1 * transform.right * 0.08f * lserial.y);
+                rigidbody.AddForce(-1 * transform.right * 0.04f * lserial.y);
                 rigidbody.AddTorque(0, 0.01f * lserial.y, 0);
                 //rigidbody.AddTorque(0.005f * lserial.y, 0, 0);
             }
             else if(lserial.y <0 && toggle) {
-                rigidbody.AddForce(-1 * transform.right * 0.08f * lserial.y);
+                rigidbody.AddForce(-1 * transform.right * 0.04f * lserial.y);
                 rigidbody.AddTorque(0, -0.01f * lserial.y, 0);
             }
                 //노 회전 애니메이션
@@ -315,7 +316,19 @@ public class FirstPersonMovement : MonoBehaviour {
             
         }
 
-
+        /*
+        if (Mathf.Abs(lserial.sum) > 0) {
+            rigidbody.AddForce(transform.right * 0.0008f * lserial.sum);
+            rigidbody.AddTorque(0, -1 * 0.0001f * lserial.sum, 0);
+        }
+        if (Mathf.Abs(rserial.sum) > 0) {
+            //Debug.Log("Left " + lserial.x + ", " + lserial.y);
+            rigidbody.AddForce(transform.right * 0.0008f * rserial.sum);
+            rigidbody.AddTorque(0, 0.0001f * rserial.sum, 0);
+        }
+        //Debug.Log("Left " + lserial.sum + ", Right: " + rserial.sum);
+        */
+        
         if (rserial.y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + rserial.y);
             if (rserial.y > 0 && !toggle) {
@@ -387,12 +400,14 @@ public class FirstPersonMovement : MonoBehaviour {
         //Debug.Log("angle "+direct_ang);
         //collide = 1.0f;
 
+        
         if(collide == 0f || collide ==2f) {
             if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
             else { collide = 2.0f; }
         }
 
         //Debug.Log(collide);
+
         if(collide != 2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
         else { 
             updateEachArray(true, rigidbody.velocity.magnitude, toggle, lserial.sum); //left hand
