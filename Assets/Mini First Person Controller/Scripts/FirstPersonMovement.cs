@@ -108,8 +108,9 @@ public class FirstPersonMovement : MonoBehaviour {
 
     }
 
-    int Is_max(int maxim, int res) {
+    int Is_max(int maxim,int minim, int res) {
         if(res == maxim) { return res; }
+        else if(res == minim) { return res + 1; }
         else { return 0; }      
     }
 
@@ -193,7 +194,8 @@ public class FirstPersonMovement : MonoBehaviour {
             float end = Mathf.Lerp(0.5f, 1f, (clamp_ang / 5));
             int maxim= (int) Mathf.Floor(end *6);
             if(maxim == 6) { maxim = 5; }
-            Debug.Log(maxim);
+            int minim = (int)Mathf.Floor(start * 6);
+            
             float res;
             int x_1 = 0;
             int x_2 = 0;
@@ -231,11 +233,11 @@ public class FirstPersonMovement : MonoBehaviour {
                     //if (x % 2 == 0) { Debug.Log("res: " + res); }
 
                     if (x % 2 == 0) { 
-                        x_1 = Is_max(maxim, (int)res); 
+                        x_1 = Is_max(maxim, minim, (int)res); 
                         //if(x_1 == 0) { Debug.Log("x: " + x + "y: " + y + " mode: " + mode + " garo: " + garo + "sero: " + sero); }
                     }
                     else {
-                        x_2 = Is_max(maxim, (int)res);
+                        x_2 = Is_max(maxim, minim,(int)res);
                         if (x >= 12) {
                             int index = y * 6 + ((x - 12) / 2);
                             rarray[index] = (byte)(x_1 * 6 + x_2);
@@ -444,10 +446,10 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void OnCollisionEnter(Collision c) {
-        if (!c.collider.CompareTag("Water")) {
+        if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass") && !c.collider.CompareTag("Land")) {
             StartCoroutine(CollisionControl());
         }
-        //Debug.Log("collision!");
+        
         Vector3 colPoint = c.contacts[0].point;
         Vector3 playerPoint = transform.position;
         Vector3 direction = colPoint - playerPoint;
@@ -464,18 +466,8 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         collide_ang = angle;
 
-        if (angle < 45.0f && angle > -45.0f) {
-            Debug.Log("Right");
-        }
-        else if (angle > -135.0f && angle < -45.0f) {
-            Debug.Log("Back");
-        }
-        else if (angle < 135.0f && angle > 45.0f) {
-            Debug.Log("Front");
-        }
-        else {
-            Debug.Log("Left");
-        }
+
+
     }
 
     private IEnumerator CollisionControl() {
