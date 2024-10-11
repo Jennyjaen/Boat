@@ -6,8 +6,15 @@ using UnityEngine.UI;
 public class FirstPersonMovement : MonoBehaviour {
     public float speed = 10f;
     public float turnSpeed = 5f;
+    [HideInInspector]
     public LeftDelimiter lserial;
+    [HideInInspector]
     public RightDelimiter rserial;
+    [HideInInspector]
+    public Underwater underwater;
+    private bool water;
+    private float water_status;
+    private int[] grass;
 
     private bool leftKeydown = false;
     private bool rightKeydown = false;
@@ -22,11 +29,9 @@ public class FirstPersonMovement : MonoBehaviour {
     private Vector3 rightPos;
     private Quaternion rightRot;
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
+    [HideInInspector]
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
-    private float sum_l;
-    private float sum_r;
-    private int stream_l;
-    private int stream_r;
+
     private float collide;
     private float collide_ang;
     private float collide_speed;
@@ -62,6 +67,7 @@ public class FirstPersonMovement : MonoBehaviour {
         collide = 0f;
         collide_ang = 0f;
         collide_speed = 0f;
+        water_status = 0;
 
         leftPos = lPaddle.transform.localPosition;
         leftRot = lPaddle.transform.localRotation;
@@ -70,10 +76,10 @@ public class FirstPersonMovement : MonoBehaviour {
 
         lserial = transform.Find("LDelim").GetComponent<LeftDelimiter>();
         rserial = transform.Find("RDelim").GetComponent<RightDelimiter>();
-        sum_l = 0;
-        sum_r = 0;
-        stream_l = 0;
-        stream_r = 0;
+        underwater = transform.Find("Front").GetComponent<Underwater>();
+        grass = new int[8];
+
+        //후진
         toggle = false;
 
         Transform lPanelTransform = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/LPanel");
@@ -271,11 +277,13 @@ public class FirstPersonMovement : MonoBehaviour {
         Debug.Log(output);
     }
 
-    void updateEachArray(bool isLeft, float vel, bool reverse, int sum) {
-
+    void updateEachArray(bool isLeft, float vel, bool reverse, int sum, float water) {
+        //water: 0 둘다 일반 노젓기 1: 왼쪽 땅, 2: 오른쪽 땅, 3: 풀 위
         byte[] arr = new byte[108];
         int max_vib = 0;
         int width = 4;
+        if(isLeft && water == 1) { width = 8; }
+        if(!isLeft && water == 2) { width = 8; }
         if(Mathf.Abs(sum )> 10) {
             if(vel <= 3) { max_vib = 5;}
             else if(vel <= 5) { max_vib = 4;}
@@ -284,10 +292,24 @@ public class FirstPersonMovement : MonoBehaviour {
             else { max_vib = 1; }
 
         }
+        if (isLeft && water == 1) { width = 8; max_vib = 5; }
+        if (!isLeft && water == 2) { width = 8; max_vib = 5; }
+
         if (reverse && sum > 0) { max_vib = 0; }
         if(!reverse && sum < 0) { max_vib = 0; }
         int sero = Mathf.Abs(sum) / 120;
-        for(int y = 0; y< 18; y++) {
+        if (isLeft && water == 1) { sero = Mathf.Abs(sum) / 210; }
+        if (!isLeft && water == 2) { sero = Mathf.Abs(sum) / 210; }
+        if(water == 3) {
+            int grass_idx = Mathf.Abs(sum) / 270;
+            if(grass_idx > 7) { grass_idx = 7; }
+            if(sero % 2 != 0) {
+                if(Mathf.Abs(sum) < 120 * sero + grass[grass_idx]) {
+                    sero -= 1;
+                }
+            }
+        }
+        for (int y = 0; y< 18; y++) {
             for(int n = 0; n<6; n++) {
                 if(y >= sero && y < sero + width) {
                     arr[y * 6 + n] = (byte) (max_vib * 6 + max_vib);
@@ -299,8 +321,13 @@ public class FirstPersonMovement : MonoBehaviour {
         if (isLeft) { larray = arr; }
         else { rarray = arr; }
 }
-
+    void GrassEffect() {
+        for(int i = 0; i< 8; i++) {
+            grass[i] = Random.Range(20, 61);
+        }
+    }
     void Update() {
+        //Debug.Log(transform.rotation.eulerAngles.z);
         //Debug.Log("y: "+ front.position.y+ " Euler angle: "+ front.rotation.eulerAngles);
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
@@ -417,17 +444,12 @@ public class FirstPersonMovement : MonoBehaviour {
         //Debug.Log("Left: "+ lserial.zerostream + " Right: "+ rserial.zerostream + "Collision: "+ collide);
         //Debug.Log(collide);
 
-        if(collide != 2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
+        if(collide<2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
         else { 
-            updateEachArray(true, rigidbody.velocity.magnitude, toggle, lserial.sum); //left hand
-            updateEachArray(false, rigidbody.velocity.magnitude, toggle, rserial.sum); //right hand
+            updateEachArray(true, rigidbody.velocity.magnitude, toggle, lserial.sum, water_status); //left hand
+            updateEachArray(false, rigidbody.velocity.magnitude, toggle, rserial.sum, water_status); //right hand
         }
 
-        /*
-        else
-        {
-            Debug.Log("Can not find renderer");
-        }*/
 
         if (max_ang < transform.position.y) {
             max_ang = transform.position.y;
@@ -438,16 +460,40 @@ public class FirstPersonMovement : MonoBehaviour {
         if (min_ang > transform.position.y) {
             min_ang = transform.position.y;
         }
-        /*
-        Debug.Log("max height: "+max_ang); 
-        Debug.Log("min height: " + min_ang);
-        Debug.Log("height diff: " + (max_ang - min_ang));
-        Debug.Log("max incline: " + max_incline);*/
+
+    }
+
+    public float AverageZ(ContactPoint[] contacts) {
+        if(contacts.Length == 0) { return 0f; }
+        float sumZ = 0f;
+        foreach(ContactPoint contact in contacts) {
+            Vector3 world_collide = contact.point;
+            Vector3 local_collide = transform.InverseTransformPoint(world_collide);
+            sumZ +=local_collide.z;
+        }
+        return sumZ / contacts.Length;
     }
 
     void OnCollisionEnter(Collision c) {
         if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass") && !c.collider.CompareTag("Land")) {
             StartCoroutine(CollisionControl());
+            water_status = 0f;
+        }
+        else {
+            if (c.collider.CompareTag("Land")) {
+                float col = AverageZ(c.contacts);
+                if(col > 0.1) { water_status = 2.0f; }
+                else if(col < -0.1){ water_status = 1.0f; }
+                else { water_status = 0f; }
+            }
+            if (c.collider.CompareTag("Grass")) {
+                water_status = 3.0f;
+                GrassEffect();
+            }
+            if (underwater.underwater) {
+                collide = 1.5f;
+            }
+        
         }
         
         Vector3 colPoint = c.contacts[0].point;
@@ -465,8 +511,6 @@ public class FirstPersonMovement : MonoBehaviour {
             angle += 360;
         }
         collide_ang = angle;
-
-
 
     }
 
