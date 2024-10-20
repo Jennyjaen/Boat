@@ -51,7 +51,7 @@ public class Underwater : MonoBehaviour
         }
 
         if (history == false && down == true && water == true) {
-            //Debug.Log("Water in");
+            Debug.Log("Water in");
             underwater = true;
         }
         /*
@@ -62,7 +62,7 @@ public class Underwater : MonoBehaviour
             }
         }*/
         if(history == true && down == false && water == false) {
-            //Debug.Log("Water out");
+            Debug.Log("Water out");
             underwater = false;
         }
         history = water;
