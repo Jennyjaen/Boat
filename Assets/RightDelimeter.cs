@@ -82,7 +82,7 @@ public class RightDelimiter : MonoBehaviour {
 
         if (person != null) {
             sendArray = person.rarray; 
-            printArray(sendArray);
+            //printArray(sendArray);
         }
         //Debug.Log(string.Join(",", sendArray));
         serialController.SendSerialMessage(sendArray);

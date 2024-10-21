@@ -12,7 +12,6 @@ public class FirstPersonMovement : MonoBehaviour {
     public RightDelimiter rserial;
     [HideInInspector]
     public Underwater underwater;
-    private bool water;
     private float water_status;
     private int[] grass;
 
@@ -77,7 +76,7 @@ public class FirstPersonMovement : MonoBehaviour {
         lserial = transform.Find("LDelim").GetComponent<LeftDelimiter>();
         rserial = transform.Find("RDelim").GetComponent<RightDelimiter>();
         underwater = transform.Find("Front").GetComponent<Underwater>();
-        grass = new int[8];
+        grass = new int[6];
 
         //후진
         toggle = false;
@@ -131,8 +130,6 @@ public class FirstPersonMovement : MonoBehaviour {
             int x_1 = 0;
             int x_2 = 0;
 
-            //Debug.Log("collide speed: " + col_s);
-            
             float intensity = Mathf.Ceil(col_s * 5) / 5;
             intensity *= 6;
             intensity = Mathf.Round(intensity);
@@ -141,7 +138,6 @@ public class FirstPersonMovement : MonoBehaviour {
                 intensity = 5;
             }
 
-            //Debug.Log("intensity: " + intensity);
              for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++){
                     float cent_x = ((float)x +0.5f) / 24;
@@ -278,36 +274,40 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void updateEachArray(bool isLeft, float vel, bool reverse, int sum, float water) {
-        //water: 0 둘다 일반 노젓기 1: 왼쪽 땅, 2: 오른쪽 땅, 3: 풀 위
+        //water: 0 둘다 일반 노젓기 1: 왼쪽 땅, 1.5: 양쪽 땅, 2: 오른쪽 땅, 3: 풀 위
         byte[] arr = new byte[108];
         int max_vib = 0;
         int width = 4;
-        if(isLeft && water == 1) { width = 8; }
-        if(!isLeft && water == 2) { width = 8; }
-        if(Mathf.Abs(sum )> 10) {
-            if(vel <= 3) { max_vib = 5;}
-            else if(vel <= 5) { max_vib = 4;}
-            else if(vel <= 7) { max_vib = 3; }
-            else if(vel <= 9) { max_vib = 2; }
-            else { max_vib = 1; }
 
+        if(Mathf.Abs(sum )> 10) {
+            if (isLeft && water == 1) { width = 8; max_vib = 5; }
+            else if (!isLeft && water == 2) { width = 8; max_vib = 5; }
+            else if (water == 1.5f) { width = 8; max_vib = 5; }
+            else { 
+                if (vel <= 3) { max_vib = 5;}
+                else if(vel <= 5) { max_vib = 4;}
+                else if(vel <= 7) { max_vib = 3; }
+                else if(vel <= 9) { max_vib = 2; }
+                else { max_vib = 1; }    
+            }  
         }
-        if (isLeft && water == 1) { width = 8; max_vib = 5; }
-        if (!isLeft && water == 2) { width = 8; max_vib = 5; }
 
         if (reverse && sum > 0) { max_vib = 0; }
         if(!reverse && sum < 0) { max_vib = 0; }
         int sero = Mathf.Abs(sum) / 120;
+        
         if (isLeft && water == 1) { sero = Mathf.Abs(sum) / 210; }
         if (!isLeft && water == 2) { sero = Mathf.Abs(sum) / 210; }
+        if(water == 1.5f) { sero = Mathf.Abs(sum) / 210; }
         if(water == 3) {
-            int grass_idx = Mathf.Abs(sum) / 270;
-            if(grass_idx > 7) { grass_idx = 7; }
-            if(sero % 2 != 0) {
-                if(Mathf.Abs(sum) < 120 * sero + grass[grass_idx]) {
-                    sero -= 1;
-                }
+            sero = Mathf.Abs(sum) / 120;
+            int grass_idx = sero / 3;
+            if(grass_idx >= 6) { grass_idx = 5; }
+            if(grass[grass_idx]!= sero) {
+                if(grass_idx > 0) { sero = grass[grass_idx - 1]; }
+                else { sero = 0; }
             }
+            
         }
         for (int y = 0; y< 18; y++) {
             for(int n = 0; n<6; n++) {
@@ -322,11 +322,13 @@ public class FirstPersonMovement : MonoBehaviour {
         else { rarray = arr; }
 }
     void GrassEffect() {
-        for(int i = 0; i< 8; i++) {
-            grass[i] = Random.Range(20, 61);
+        for(int i = 0; i< 6; i++) {
+            grass[i] = Random.Range(i * 3, i* 3 + 2);
         }
     }
     void Update() {
+        //Debug.Log(collide);
+        //Debug.Log(water_status);
         //Debug.Log(transform.rotation.eulerAngles.z);
         //Debug.Log("y: "+ front.position.y+ " Euler angle: "+ front.rotation.eulerAngles);
         Vector3 rotation = transform.eulerAngles;
@@ -336,8 +338,6 @@ public class FirstPersonMovement : MonoBehaviour {
 
         
         if (lserial.y != 0) {
-            //Debug.Log("Left " + lserial.x + ", " + lserial.y);
-
             if (lserial.y > 0 && !toggle) {
                 rigidbody.AddForce(-1 * transform.right * 0.04f * lserial.y);
                 rigidbody.AddTorque(0, 0.01f * lserial.y, 0);
@@ -347,23 +347,10 @@ public class FirstPersonMovement : MonoBehaviour {
                 rigidbody.AddForce(-1 * transform.right * 0.04f * lserial.y);
                 rigidbody.AddTorque(0, -0.01f * lserial.y, 0);
             }
-                //노 회전 애니메이션
             lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 10));
             
         }
 
-        /*
-        if (Mathf.Abs(lserial.sum) > 0) {
-            rigidbody.AddForce(transform.right * 0.0008f * lserial.sum);
-            rigidbody.AddTorque(0, -1 * 0.0001f * lserial.sum, 0);
-        }
-        if (Mathf.Abs(rserial.sum) > 0) {
-            //Debug.Log("Left " + lserial.x + ", " + lserial.y);
-            rigidbody.AddForce(transform.right * 0.0008f * rserial.sum);
-            rigidbody.AddTorque(0, 0.0001f * rserial.sum, 0);
-        }
-        //Debug.Log("Left " + lserial.sum + ", Right: " + rserial.sum);
-        */
         
         if (rserial.y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + rserial.y);
@@ -433,8 +420,6 @@ public class FirstPersonMovement : MonoBehaviour {
         float c_speed = Mathf.Clamp(collide_speed, 0, 3);
         c_speed /= 3;
         if (direct_ang < 0) { direct_ang += 360; }
-        //Debug.Log("angle "+direct_ang);
-        //collide = 1.0f;
 
         
         if(collide == 0f || collide ==2f) {
@@ -445,7 +430,7 @@ public class FirstPersonMovement : MonoBehaviour {
         //Debug.Log(collide);
 
         if(collide<2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
-        else { 
+        else {
             updateEachArray(true, rigidbody.velocity.magnitude, toggle, lserial.sum, water_status); //left hand
             updateEachArray(false, rigidbody.velocity.magnitude, toggle, rserial.sum, water_status); //right hand
         }
@@ -474,6 +459,24 @@ public class FirstPersonMovement : MonoBehaviour {
         return sumZ / contacts.Length;
     }
 
+    public int[] CountZ(ContactPoint[] contacts) {
+        int[] result = new int[2];
+
+        if (contacts.Length == 0) { return result; }
+        foreach (ContactPoint contact in contacts) {
+            Vector3 world_collide = contact.point;
+            Vector3 local_collide = transform.InverseTransformPoint(world_collide);
+
+            if (local_collide.z > 0.1f) {
+                result[1]++;
+            }
+            else if (local_collide.z < -0.1f) {
+                result[0]++;
+            }
+        }
+        return result;
+    }
+    
     void OnCollisionEnter(Collision c) {
         if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass") && !c.collider.CompareTag("Land")) {
             StartCoroutine(CollisionControl());
@@ -482,9 +485,10 @@ public class FirstPersonMovement : MonoBehaviour {
         else {
             if (c.collider.CompareTag("Land")) {
                 float col = AverageZ(c.contacts);
-                if(col > 0.1) { water_status = 2.0f; }
-                else if(col < -0.1){ water_status = 1.0f; }
-                else { water_status = 0f; }
+                if(col >= 0) { water_status = 2.0f; }
+                else if(col < 0){ water_status = 1.0f; }
+                else {
+                    water_status = 0f; }
             }
             if (c.collider.CompareTag("Grass")) {
                 water_status = 3.0f;
@@ -495,7 +499,7 @@ public class FirstPersonMovement : MonoBehaviour {
             }
         
         }
-        
+
         Vector3 colPoint = c.contacts[0].point;
         Vector3 playerPoint = transform.position;
         Vector3 direction = colPoint - playerPoint;
@@ -512,6 +516,28 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         collide_ang = angle;
 
+    }
+
+    private void OnCollisionStay(Collision c) {
+        if (c.collider.CompareTag("Land")){
+            int[] count = CountZ(c.contacts);
+            //Debug.Log(count[0] + " , " + count[1]);
+            if (count[0] >= 1 && count[1] >= 1) {
+                water_status = 1.5f;
+            }
+            else if (count[0] == 0 && count[1] > 0) {
+                water_status = 2f;
+            }
+            else if (count[1] == 0 && count[0] > 0) {
+                water_status = 1f;
+            }
+        }
+        
+    }
+
+    void OnCollisionExit(Collision c) {
+        collide = 0f;
+        water_status = 0f;
     }
 
     private IEnumerator CollisionControl() {
