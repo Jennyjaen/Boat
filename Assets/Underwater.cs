@@ -7,7 +7,8 @@ public class Underwater : MonoBehaviour
 
     [HideInInspector]
     public bool underwater = false;
-
+    [HideInInspector]
+    public float water_y;
     private bool water = false;
     private bool history = false;
     private bool down = false;
@@ -15,7 +16,7 @@ public class Underwater : MonoBehaviour
     private bool[] childArray = {false, false, false };
     void Start()
     {
-        
+        water_y = 0f;
     }
 
     // Update is called once per frame
@@ -53,6 +54,8 @@ public class Underwater : MonoBehaviour
         if (history == false && down == true && water == true) {
             Debug.Log("Water in");
             underwater = true;
+            water_y = transform.position.y;
+            Debug.Log(water_y);
         }
         /*
         else {
@@ -64,6 +67,7 @@ public class Underwater : MonoBehaviour
         if(history == true && down == false && water == false) {
             Debug.Log("Water out");
             underwater = false;
+            water_y = 0f;
         }
         history = water;
         

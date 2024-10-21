@@ -35,8 +35,7 @@ public class FirstPersonMovement : MonoBehaviour {
     private float collide_ang;
     private float collide_speed;
 
-    private Material lPanelM;
-    private Material rPanelM;
+    private float previouspos =0f;
 
 
     private float max_ang;
@@ -78,32 +77,7 @@ public class FirstPersonMovement : MonoBehaviour {
         underwater = transform.Find("Front").GetComponent<Underwater>();
         grass = new int[6];
 
-        //후진
         toggle = false;
-
-        Transform lPanelTransform = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/LPanel");
-        Transform rPanelTransform = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/RPanel");
-        if (lPanelTransform != null) {
-            Image lPanelImage = lPanelTransform.GetComponent<Image>();
-            if (lPanelImage != null) {
-                lPanelM = lPanelImage.material;
-            }
-            else {
-                Debug.Log("No renderer left");
-            }
-        }
-        else { Debug.Log("No Left"); }
-        if (rPanelTransform != null) {
-            Image rPanelImage = rPanelTransform.GetComponent<Image>();
-            if (rPanelImage != null) {
-                rPanelM = rPanelImage.material;
-            }
-            else {
-                Debug.Log("No renderer left");
-            }
-
-        }
-        else { Debug.Log("No Right"); }
 
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
@@ -126,7 +100,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 rarray[i] = (byte)0;
             }
         }
-        else if (collide > 0.5) {// collide
+        else if (collide == 1f) {// collide
             int x_1 = 0;
             int x_2 = 0;
 
@@ -191,6 +165,21 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
         }
+        else if(collide == 1.5f) {
+            byte[] arr = new byte[108];
+            int sero = (int) (clamp_ang / 0.03f);
+            //Debug.Log("origin: "+ clamp_ang + " sero: "+sero);
+            for (int y = 0; y < 18; y++) {
+                for (int n = 0; n < 6; n++) {
+                    if (y >= 0 && y <= sero ) {
+                        arr[y * 6 + n] = (byte)(5 * 6 + 5);
+                    }
+                    else { arr[y * 6 + n] = (byte)0; }
+                }
+            }
+            larray = arr;
+            rarray = arr;
+        }
         else {// normal case
             float start = Mathf.Lerp(0.5f, 0f, (clamp_ang / 5));
             float end = Mathf.Lerp(0.5f, 1f, (clamp_ang / 5));
@@ -236,7 +225,6 @@ public class FirstPersonMovement : MonoBehaviour {
 
                     if (x % 2 == 0) { 
                         x_1 = Is_max(maxim, minim, (int)res); 
-                        //if(x_1 == 0) { Debug.Log("x: " + x + "y: " + y + " mode: " + mode + " garo: " + garo + "sero: " + sero); }
                     }
                     else {
                         x_2 = Is_max(maxim, minim,(int)res);
@@ -327,16 +315,14 @@ public class FirstPersonMovement : MonoBehaviour {
         }
     }
     void Update() {
-        //Debug.Log(collide);
-        //Debug.Log(water_status);
-        //Debug.Log(transform.rotation.eulerAngles.z);
-        //Debug.Log("y: "+ front.position.y+ " Euler angle: "+ front.rotation.eulerAngles);
+        //Debug.Log("Water collision start: "+ previouspos +" Position Y Change: " + diff);
+
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         transform.eulerAngles = rotation;
 
-        
+        //아두이노로 보트 조작
         if (lserial.y != 0) {
             if (lserial.y > 0 && !toggle) {
                 rigidbody.AddForce(-1 * transform.right * 0.04f * lserial.y);
@@ -351,7 +337,6 @@ public class FirstPersonMovement : MonoBehaviour {
             
         }
 
-        
         if (rserial.y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + rserial.y);
             if (rserial.y > 0 && !toggle) {
@@ -384,7 +369,6 @@ public class FirstPersonMovement : MonoBehaviour {
             rPaddle.transform.localPosition = rightPos;
             rPaddle.transform.localRotation = rightRot;
         }
-
         if (Input.GetKeyDown(KeyCode.RightArrow)) {
             rightKeydown = true;
         }
@@ -399,7 +383,6 @@ public class FirstPersonMovement : MonoBehaviour {
             lPaddle.transform.localPosition = leftPos;
             lPaddle.transform.localRotation = leftRot;
         }
-
 
         //최고속도 조절
         if (rigidbody.velocity.magnitude > 15.0f) {
@@ -421,13 +404,23 @@ public class FirstPersonMovement : MonoBehaviour {
         c_speed /= 3;
         if (direct_ang < 0) { direct_ang += 360; }
 
-        
+
+        Debug.Log(collide);
         if(collide == 0f || collide ==2f) {
             if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
             else { collide = 2.0f; }
         }
-        //Debug.Log("Left: "+ lserial.zerostream + " Right: "+ rserial.zerostream + "Collision: "+ collide);
-        //Debug.Log(collide);
+        if (underwater.underwater) {
+            Debug.Log(underwater.underwater);
+            Debug.Log("underwater");
+            collide = 1.5f;
+            float currentPositionY = front.position.y;
+            float diff = underwater.water_y - currentPositionY;
+            clamp = diff;
+        }
+        else {
+            collide = 2f;
+        }
 
         if(collide<2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
         else {
@@ -494,10 +487,6 @@ public class FirstPersonMovement : MonoBehaviour {
                 water_status = 3.0f;
                 GrassEffect();
             }
-            if (underwater.underwater) {
-                collide = 1.5f;
-            }
-        
         }
 
         Vector3 colPoint = c.contacts[0].point;
