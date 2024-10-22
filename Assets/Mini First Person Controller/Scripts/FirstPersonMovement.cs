@@ -27,6 +27,7 @@ public class FirstPersonMovement : MonoBehaviour {
     private Quaternion leftRot;
     private Vector3 rightPos;
     private Quaternion rightRot;
+    private bool collide_land;
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
     [HideInInspector]
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
@@ -66,7 +67,7 @@ public class FirstPersonMovement : MonoBehaviour {
         collide_ang = 0f;
         collide_speed = 0f;
         water_status = 0;
-
+        collide_land = false;
         leftPos = lPaddle.transform.localPosition;
         leftRot = lPaddle.transform.localRotation;
         rightPos = rPaddle.transform.localPosition;
@@ -316,7 +317,7 @@ public class FirstPersonMovement : MonoBehaviour {
     }
     void Update() {
         //Debug.Log("Water collision start: "+ previouspos +" Position Y Change: " + diff);
-
+        Debug.Log(collide);
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
@@ -404,15 +405,7 @@ public class FirstPersonMovement : MonoBehaviour {
         c_speed /= 3;
         if (direct_ang < 0) { direct_ang += 360; }
 
-
-        Debug.Log(collide);
-        if(collide == 0f || collide ==2f) {
-            if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
-            else { collide = 2.0f; }
-        }
         if (underwater.underwater) {
-            Debug.Log(underwater.underwater);
-            Debug.Log("underwater");
             collide = 1.5f;
             float currentPositionY = front.position.y;
             float diff = underwater.water_y - currentPositionY;
@@ -421,6 +414,12 @@ public class FirstPersonMovement : MonoBehaviour {
         else {
             collide = 2f;
         }
+        //Debug.Log(collide);
+        if(collide == 0f || collide ==2f) {
+            if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
+            else { collide = 2.0f; }
+        }
+        
 
         if(collide<2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
         else {
@@ -471,12 +470,18 @@ public class FirstPersonMovement : MonoBehaviour {
     }
     
     void OnCollisionEnter(Collision c) {
-        if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass") && !c.collider.CompareTag("Land")) {
-            StartCoroutine(CollisionControl());
-            water_status = 0f;
+        if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
+            if (collide_land && c.collider.CompareTag("Land")) { }
+            else {
+                StartCoroutine(CollisionControl());
+                water_status = 0f;
+            }
+            
         }
         else {
             if (c.collider.CompareTag("Land")) {
+                Debug.Log("collide with land");
+                collide_land = true;
                 float col = AverageZ(c.contacts);
                 if(col >= 0) { water_status = 2.0f; }
                 else if(col < 0){ water_status = 1.0f; }
@@ -527,6 +532,9 @@ public class FirstPersonMovement : MonoBehaviour {
     void OnCollisionExit(Collision c) {
         collide = 0f;
         water_status = 0f;
+        if (c.collider.CompareTag("Land")) {
+            collide_land = false;
+        }
     }
 
     private IEnumerator CollisionControl() {
