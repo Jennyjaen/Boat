@@ -34,6 +34,13 @@ public class RightDelimiter : MonoBehaviour {
     [HideInInspector]
     public int sum;
 
+    [HideInInspector]
+    public int accum_x; //지금까지 총 누적된 거리
+    [HideInInspector]
+    public int accum_y; //지금까지 총 누적된 거리
+    [HideInInspector]
+    public bool vertical;
+
     void Start() {
         serialController = GameObject.Find("RSerial").GetComponent<SerialControllerCustomDelimiter>(); 
 
@@ -43,9 +50,12 @@ public class RightDelimiter : MonoBehaviour {
         }
         x = 0;
         y = 0;
-        sum = 0;
+        sum = 0; //y축에 대해서만 진행.
         stream = 0;
         zerostream = 0;
+        accum_x = 0;
+        accum_y = 0;
+        vertical = true;
     }
 
 
@@ -92,6 +102,8 @@ public class RightDelimiter : MonoBehaviour {
             if (y > 127) { y = 127 - y; }
             if (x > 127) { x = 127 - x; }
 
+            accum_x += x;
+            accum_y += y;
             if (y != 0) {
                 
                 if(sum * y < 0) {

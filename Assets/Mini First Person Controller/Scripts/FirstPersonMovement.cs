@@ -6,12 +6,11 @@ using UnityEngine.UI;
 public class FirstPersonMovement : MonoBehaviour {
     public float speed = 10f;
     public float turnSpeed = 5f;
-    [HideInInspector]
-    public LeftDelimiter lserial;
-    [HideInInspector]
-    public RightDelimiter rserial;
+    
     [HideInInspector]
     public Underwater underwater;
+    [HideInInspector]
+    public Input_Delim input_d;
     private float water_status;
     private int[] grass;
 
@@ -48,7 +47,6 @@ public class FirstPersonMovement : MonoBehaviour {
     [HideInInspector]
     public byte[] rarray = new byte[108];
     [HideInInspector]
-    public bool toggle;
 
     void Awake() {
         // Get the rigidbody on this.
@@ -73,12 +71,10 @@ public class FirstPersonMovement : MonoBehaviour {
         rightPos = rPaddle.transform.localPosition;
         rightRot = rPaddle.transform.localRotation;
 
-        lserial = transform.Find("LDelim").GetComponent<LeftDelimiter>();
-        rserial = transform.Find("RDelim").GetComponent<RightDelimiter>();
         underwater = transform.Find("Front").GetComponent<Underwater>();
+        input_d = transform.Find("Input").GetComponent<Input_Delim>();
         grass = new int[6];
 
-        toggle = false;
 
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
@@ -90,7 +86,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
     int Is_max(int maxim,int minim, int res) {
         if(res == maxim) { return res; }
-        else if(res == minim) { return res + 1; }
+        //else if(res == minim) { return res + 1; }
         else { return 0; }      
     }
 
@@ -316,41 +312,39 @@ public class FirstPersonMovement : MonoBehaviour {
         }
     }
     void Update() {
-        //Debug.Log("Water collision start: "+ previouspos +" Position Y Change: " + diff);
-        Debug.Log(collide);
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         transform.eulerAngles = rotation;
 
         //아두이노로 보트 조작
-        if (lserial.y != 0) {
-            if (lserial.y > 0 && !toggle) {
-                rigidbody.AddForce(-1 * transform.right * 0.04f * lserial.y);
-                rigidbody.AddTorque(0, 0.01f * lserial.y, 0);
-                //rigidbody.AddTorque(0.005f * lserial.y, 0, 0);
+        if (input_d.left_y != 0) {
+            if (input_d.left_y > 0 && !input_d.reverse) {
+                rigidbody.AddForce(-1 * transform.right * 0.04f * input_d.left_y);
+                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
+                //rigidbody.AddTorque(0.005f * input_d.left_y, 0, 0);
             }
-            else if(lserial.y <0 && toggle) {
-                rigidbody.AddForce(-1 * transform.right * 0.04f * lserial.y);
-                rigidbody.AddTorque(0, -0.01f * lserial.y, 0);
+            else if(input_d.left_y <0 && input_d.reverse) {
+                rigidbody.AddForce(-1 * transform.right * 0.04f * input_d.left_y);
+                rigidbody.AddTorque(0, -0.01f * input_d.left_y, 0);
             }
-            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (lserial.y / 10));
+            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.left_y / 10));
             
         }
 
-        if (rserial.y != 0) {
-            //Debug.Log("Right " + rserial.x + ", " + rserial.y);
-            if (rserial.y > 0 && !toggle) {
-                rigidbody.AddForce(-1 * transform.right * 0.08f * rserial.y);
-                rigidbody.AddTorque(0, -0.01f * rserial.y, 0);
-                //rigidbody.AddTorque(-0.005f * rserial.y, 0, 0);
+        if (input_d.right_y != 0) {
+            //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
+            if (input_d.right_y > 0 && !input_d.reverse) {
+                rigidbody.AddForce(-1 * transform.right * 0.08f * input_d.right_y);
+                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
+                //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
             }
-            else if (rserial.y < 0 && toggle) {
-                rigidbody.AddForce(-1 * transform.right * 0.08f * rserial.y);
-                rigidbody.AddTorque(0, -0.01f * rserial.y, 0);
+            else if (input_d.right_y < 0 && input_d.reverse) {
+                rigidbody.AddForce(-1 * transform.right * 0.08f * input_d.right_y);
+                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
             }
             //노 회전 애니메이션
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (rserial.y / 10));
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.right_y / 10));
 
         }
 
@@ -405,6 +399,7 @@ public class FirstPersonMovement : MonoBehaviour {
         c_speed /= 3;
         if (direct_ang < 0) { direct_ang += 360; }
 
+        float bef_coll = collide;
         if (underwater.underwater) {
             collide = 1.5f;
             float currentPositionY = front.position.y;
@@ -412,21 +407,24 @@ public class FirstPersonMovement : MonoBehaviour {
             clamp = diff;
         }
         else {
-            collide = 2f;
+            collide = bef_coll;
+            if(bef_coll == 1.5f) {
+                collide = 2.0f;
+            }
         }
-        //Debug.Log(collide);
+        /*
         if(collide == 0f || collide ==2f) {
             if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
             else { collide = 2.0f; }
         }
         
 
-        if(collide<2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); }
-        else {
-            updateEachArray(true, rigidbody.velocity.magnitude, toggle, lserial.sum, water_status); //left hand
-            updateEachArray(false, rigidbody.velocity.magnitude, toggle, rserial.sum, water_status); //right hand
+        if(collide<2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
+        else { // 노 젓기
+            updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, lserial.sum, water_status); //left hand
+            updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, rserial.sum, water_status); //right hand
         }
-
+        */
 
         if (max_ang < transform.position.y) {
             max_ang = transform.position.y;
