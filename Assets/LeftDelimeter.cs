@@ -43,10 +43,6 @@ public class LeftDelimiter : MonoBehaviour {
     public int accum_x; //지금까지 총 누적된 거리
     [HideInInspector]
     public int accum_y; //지금까지 총 누적된 거리
-    [HideInInspector]
-    public bool vertical;
-
-    public float movement_ratio;
 
     void Start() {
         serialController = GameObject.Find("LSerial").GetComponent<SerialControllerCustomDelimiter>();
@@ -66,8 +62,6 @@ public class LeftDelimiter : MonoBehaviour {
 
         accum_x = 0;
         accum_y = 0;
-        vertical = true;
-        movement_ratio = 0.3f;
     }
 
 
@@ -119,18 +113,10 @@ public class LeftDelimiter : MonoBehaviour {
             accum_x += x;
             accum_y += y;
            
-            /*만약에 vertical/ horizontal을 구분하려면: vertical로 움직이다가 horizontal움직이는 케이스를 처리해주어야 함.
-             * 대각선으로 움직이는 것은 invalid해야하고, 방향 바꾸는 건 전환이 되어야 함.
-            이 경우 x/ y와 sum_x/ sum_y를 전부 봐야함.
-            결정적으로 가로로 움직였을 때 햅틱 피드백을 어떻게 줄 것인가 -> 어떻게 줘도 부자연스러움 : 이라는 생각으로 제외함.
-             */
             if(x != 0 || y!= 0) {
                 if(y!= 0) {
                     if (sum_y * y < 0) {
                         sum_y = y;
-                        if (vertical) { //만약에 세로로 내려가다가 x가 +, - 왔다갔다 한거면 초기화 해주면 안됨. 따라서 이 조건에만 sum_x 교체해줌.
-                            sum_x = x;
-                        }
                     }
                     else {
                         sum_y += y;
@@ -145,9 +131,6 @@ public class LeftDelimiter : MonoBehaviour {
                 if (x != 0) {
                     if (sum_x * x < 0) {
                         sum_x = x;
-                        if (!vertical) {
-                            sum_y = y;
-                        }
                     }
                     else {
                         sum_x += x;
@@ -168,30 +151,6 @@ public class LeftDelimiter : MonoBehaviour {
             }
 
             zerostream = Mathf.Min(zerostream_x, zerostream_y);
-            
-            if(zerostream == 0) { // 유의미한 움직임이 있었음. 수직/ 수평 움직임 구분
-                if(zerostream_x == 0 && zerostream_y == 0) { // 둘 다 움직임이 10 이상 있는 상태 = 이미 어느정도 움직인 상태. threshold 체크해주면서 diagonal인지 체크.
-                    float ratio;
-                    if (vertical) {
-                        ratio = (float)sum_x / (float)sum_y;
-                    }
-                    else {
-                        ratio = (float)sum_y / (float)sum_x;
-                    }
-                    if (Mathf.Abs(ratio) < movement_ratio) { }//둘 다 움직임이 어느정도 있지만, 움직이는 방향이 바뀌지는 않음.
-                    else { //중간에 방향이 바뀌었을 가능성이 있음.
-
-                    }
-                }
-                else if(zerostream_x == 0) { // 초기에 확인단계
-                    vertical = false; //가로로 움직임.
-                }
-                else if(zerostream_y == 0) { // 초기에 확인 단계
-                    vertical = true; //세로로 움직임.
-                }
-            }
-
-
 
 
         }

@@ -23,7 +23,6 @@ public class Input_Delim : MonoBehaviour {
     public int far_threshold = 500;
 
     public enum Choice{
-        LeftRight,
         FarUpDown,
         FootInput
     }
@@ -45,20 +44,12 @@ public class Input_Delim : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        switch (selected) {
-            case Choice.LeftRight: //해야하는 것: y축으로 움직이는건지, x축으로 움직이는 건지 구분해야함.
-                if(lserial.vertical && rserial.vertical) {
-                    reverse = false;
-                }
-                else if(!(lserial.vertical || rserial.vertical)) {
-                    reverse = true;
-                }
-                else {
-                    Debug.Log("diagonal move");
-                    reverse = false;
-                }
+        left_y = lserial.y;
+        left_x = lserial.x;
+        right_x = rserial.x;
+        right_y = rserial.y;
 
-                break;
+        switch (selected) {
             case Choice.FarUpDown: //해야하는 것: x축에서 얼마나 떨어졌는지
                 if(lserial.accum_x < -1 * far_threshold && rserial.accum_x > far_threshold) {
                     reverse = true;
@@ -78,5 +69,6 @@ public class Input_Delim : MonoBehaviour {
                 }
                 break;
         }
+        Debug.Log(reverse);
     }
 }
