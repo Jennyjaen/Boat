@@ -19,6 +19,13 @@ public class Input_Delim : MonoBehaviour {
     public float right_y;
     [HideInInspector]
     public bool reverse;
+    [HideInInspector]
+    public int zerostream;
+
+    [HideInInspector]
+    public int sum_l;
+    [HideInInspector]
+    public int sum_r;
 
     public int far_threshold = 500;
 
@@ -38,6 +45,10 @@ public class Input_Delim : MonoBehaviour {
         right_x = 0;
         left_y = 0;
         right_y = 0;
+        zerostream = 0;
+
+        sum_l = 0;
+        sum_r = 0;
         reverse = false;
     }
 
@@ -48,6 +59,10 @@ public class Input_Delim : MonoBehaviour {
         left_x = lserial.x;
         right_x = rserial.x;
         right_y = rserial.y;
+        sum_r = rserial.sum_y;
+        sum_l = lserial.sum_y;
+
+        zerostream = Mathf.Min(lserial.zerostream, rserial.zerostream);
 
         switch (selected) {
             case Choice.FarUpDown: //해야하는 것: x축에서 얼마나 떨어졌는지
@@ -69,6 +84,5 @@ public class Input_Delim : MonoBehaviour {
                 }
                 break;
         }
-        Debug.Log(reverse);
     }
 }

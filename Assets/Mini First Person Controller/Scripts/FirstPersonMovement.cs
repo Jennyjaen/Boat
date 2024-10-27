@@ -38,6 +38,7 @@ public class FirstPersonMovement : MonoBehaviour {
     private float previouspos =0f;
 
 
+    public float inclinde_deadzone = 1.5f;
     private float max_ang;
     private float min_ang;
     private float max_incline;
@@ -178,6 +179,14 @@ public class FirstPersonMovement : MonoBehaviour {
             rarray = arr;
         }
         else {// normal case
+            //Debug.Log(clamp_ang);
+            if(clamp_ang < inclinde_deadzone) {
+                for(int i= 0; i<108; i++) {
+                    larray[i] = (byte)0;
+                    rarray[i] = (byte)0;
+                    return;
+                }
+            }
             float start = Mathf.Lerp(0.5f, 0f, (clamp_ang / 5));
             float end = Mathf.Lerp(0.5f, 1f, (clamp_ang / 5));
             int maxim= (int) Mathf.Floor(end *6);
@@ -211,14 +220,6 @@ public class FirstPersonMovement : MonoBehaviour {
                     res *= 6;
                     res = Mathf.Floor(res);
                     if (res == 6) { res = 5; }
-                    /*
-                    res *= 3;
-                    res = Mathf.Floor(res);
-                    if (res == 3) { res =2; }
-                    res *= 2;
-                    res += 1;*/
-                    //if (x % 2 == 0 && res ==0) { Debug.Log("x: " + x + "y: " + y + " centx: " + cent_x + " direction: "+ direction+ "check: "+ check); }
-                    //if (x % 2 == 0) { Debug.Log("res: " + res); }
 
                     if (x % 2 == 0) { 
                         x_1 = Is_max(maxim, minim, (int)res); 
@@ -243,18 +244,16 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void printArray(byte[] array) {
-        string output = "";  // 출력할 문자열을 저장할 변수
+        string output = "";
 
         for (int i = 0; i < array.Length; i++) {
-            output += (int)(array[i] / 6) + " "+ (int)(array[i] % 6)+" ";  // 배열의 값을 출력 문자열에 추가
+            output += (int)(array[i] / 6) + " "+ (int)(array[i] % 6)+" "; 
 
-            // groupSize 개씩 출력할 때마다 줄바꿈
             if ((i + 1) % 6 == 0) {
-                output += "\n";  // groupSize마다 줄바꿈 추가
+                output += "\n"; 
             }
         }
 
-        // 최종 출력
         Debug.Log(output);
     }
 
@@ -391,6 +390,7 @@ public class FirstPersonMovement : MonoBehaviour {
         Vector3 up_vector = transform.up;
         Vector3 forward_vector = -transform.forward;
         float ang = Vector3.Angle(up_vector, Vector3.up);
+        Debug.Log(ang);
         float clamp = Mathf.Clamp(ang * 2.5f, 0, 5);
         Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
         Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
@@ -412,19 +412,19 @@ public class FirstPersonMovement : MonoBehaviour {
                 collide = 2.0f;
             }
         }
-        /*
+        
         if(collide == 0f || collide ==2f) {
-            if(lserial.zerostream > 50 && rserial.zerostream > 50) { collide = 0f; }
+            if(input_d.zerostream > 50) { collide = 0f; }
             else { collide = 2.0f; }
         }
         
 
         if(collide<2.0f) {updateArray(collide, direct_ang,  clamp, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
         else { // 노 젓기
-            updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, lserial.sum, water_status); //left hand
-            updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, rserial.sum, water_status); //right hand
+            updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
+            updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
         }
-        */
+        
 
         if (max_ang < transform.position.y) {
             max_ang = transform.position.y;
