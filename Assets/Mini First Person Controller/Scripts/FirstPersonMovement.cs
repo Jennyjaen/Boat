@@ -338,10 +338,10 @@ public class FirstPersonMovement : MonoBehaviour {
 
                 case Choice.InclineHeight:
                     //배의 높이에 따라 진동 시작/ 끝점이 달라짐. -> 어떻게? + 가로, 세로, 대각선을 다 할 것인가?
-                    float height = transform.position.y;
+                    float height = col_s;
                     if(height < 0) { height = 0; }
                     int start_point = (int)Mathf.Floor(height/ 0.1f);
-                    start_point = Mathf.FloorToInt(start_point * 2 / 3);
+                    start_point = Mathf.FloorToInt(start_point * 2f / 3f);
                     valid_ang = clamp_ang - incline_deadzone;
                     valid_level = max_v - min_v + 1;
                     vib_level = (int)Mathf.Floor((valid_ang * valid_level / (5 - incline_deadzone))) + min_v;
@@ -481,7 +481,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
 
                 case Choice.InclineHeight_Semi:
-                    height = transform.position.y * (2/3);
+                    height = col_s * (2f/3f);
                     if (height < 0) { height = 0; }
                     if(height > 0.6f) { height = 0.6f; }
                     start_point = (int)Mathf.Floor(height / 0.1f);
@@ -866,7 +866,10 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         
         if(collide == 0f || collide ==2f) {
-            if(input_d.zerostream > 50) { collide = 0f; }
+            if(input_d.zerostream > 50) { 
+                collide = 0f;
+                c_speed = transform.position.y;
+            }
             else { collide = 2.0f; }
         }
         
