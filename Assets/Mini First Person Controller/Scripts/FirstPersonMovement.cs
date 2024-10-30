@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
+//해당 script에서는 총괄과 haptic feedback을 담당함.
 public class FirstPersonMovement : MonoBehaviour {
     [HideInInspector]
     public Underwater underwater;
@@ -11,8 +12,6 @@ public class FirstPersonMovement : MonoBehaviour {
     private float water_status;
     private int[] grass;
 
-    private bool leftKeydown = false;
-    private bool rightKeydown = false;
     Rigidbody rigidbody;
     Transform front;
     private GameObject lPaddle;
@@ -32,15 +31,31 @@ public class FirstPersonMovement : MonoBehaviour {
     private float collide_ang;
     private float collide_speed;
 
-    private float previouspos =0f;
-
-    //기울기 피드백 개선: dead zone 만들기, 새로 체크
     public float incline_deadzone = 1.5f;
     public int max_v = 5;
     public int min_v = 1;
     public int max_width = 12;
     public int min_width = 3;
     public float collide_height = 0.12f;
+
+
+    //Input 방법을 여러개로 바꾸기 + 코드 쪼개서 로드 줄이기
+    public enum InputMethod {
+        GamePad,
+        HandStickThrottle,
+        HandStickGesture
+    }
+    public InputMethod inputMethod;
+    [HideInInspector]
+    public MonoBehaviour GamePadInput;
+    [HideInInspector]
+    public MonoBehaviour HandThrottle;
+    [HideInInspector]
+    public MonoBehaviour HandGesture;
+
+
+
+
     public enum Choice {
         InclineOnly,
         InclineHeight,
@@ -83,6 +98,9 @@ public class FirstPersonMovement : MonoBehaviour {
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
         grass = new int[6];
 
+        GamePadInput = GetComponent<GamePadInput>();
+        HandThrottle = GetComponent<HandThrottle>();
+        HandGesture = GetComponent<HandGesture>();
 
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
@@ -838,138 +856,32 @@ public class FirstPersonMovement : MonoBehaviour {
         }
     }
 
-    bool[] CheckHeight(int length, int diagonal) {
-        bool[] under_height = new bool[length];
-        Vector3 localPos = new Vector3(0, collide_height, 0);
-        Vector3 worldPos = transform.TransformPoint(localPos);
-
-        if(length == 18) {
-            //세로 체크
-            // -2 ~ 2: -2가 앞임.
-            for(int i = 0; i< 18; i++) {
-                float boat_x = -4 * (i + 0.5f) / 18 + 2;
-                Vector3 boatPos = new Vector3(boat_x, 0.18f, 0);
-                Vector3 boatWld = transform.TransformPoint(boatPos);
-                if(boatWld.y < worldPos.y) {
-                    under_height[i] = true;
-                }
-                else {
-                    under_height[i] = false;
-                }
-            }
-        
-        }
-        else if(length == 24) {
-            // 가로 체크 -> 근데 가로가 이렇게 많이 나눌 가치가 있나..? 너무 specific 할 것 같음. z가 -0.75 ~ 0.75
-            //0.75가 오른쪽
-            for(int i = 0; i< 24; i++) {
-                float boat_z = -1.5f * (i + 0.5f) / 24 + 0.75f;
-                Vector3 boatPos = new Vector3(0, 0.18f, boat_z);
-                Vector3 boatWld = transform.TransformPoint(boatPos);
-                if (boatWld.y < worldPos.y) {
-                    under_height[i] = true;
-                }
-                else {
-                    under_height[i] = false;
-                }
-            }
-            
-
-        }
-        else if(length == 21) {
-            Vector3 boatPos;
-            //대각선? 가로세로 0.7씩 하는 게 맞음.
-            for(int i= 0; i<21; i++) {
-                float boat_d = -1.4f * (i + 0.5f) / 21 + 0.7f;
-                if(diagonal == 0) {
-                    //우측 상단으로 
-                    boatPos = new Vector3(- boat_d, 0.18f, boat_d);
-                }
-                else {
-                    //좌측 상단으로 
-                    boatPos = new Vector3(boat_d, 0.18f, boat_d);
-                }
-                Vector3 boatWld = transform.TransformPoint(boatPos);
-                if (boatWld.y < worldPos.y) {
-                    under_height[i] = true;
-                }
-                else {
-                    under_height[i] = false;
-                }
-            }
-            
-        }
-        return under_height;
-    }
-
 
     void Update() {
+        switch (inputMethod) {
+            case InputMethod.GamePad:
+                GamePadInput.enabled = true;
+                HandThrottle.enabled = false;
+                HandGesture.enabled = false;
+                break;
+            case InputMethod.HandStickThrottle:
+                GamePadInput.enabled = false;
+                HandThrottle.enabled = true;
+                HandGesture.enabled = false;
+                break;
+            case InputMethod.HandStickGesture:
+                GamePadInput.enabled = false;
+                HandThrottle.enabled = false;
+                HandGesture.enabled = true;
+                break;
+        }
+
+
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         transform.eulerAngles = rotation;
 
-        //아두이노로 보트 조작
-        if (input_d.left_y != 0) {
-            if (input_d.left_y > 0 && !input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
-                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
-                //rigidbody.AddTorque(0.005f * input_d.left_y, 0, 0);
-            }
-            else if(input_d.left_y <0 && input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
-                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
-            }
-            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.left_y / 10));
-            
-        }
-
-        if (input_d.right_y != 0) {
-            //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
-            if (input_d.right_y > 0 && !input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
-                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
-                //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
-            }
-            else if (input_d.right_y < 0 && input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
-                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
-            }
-            //노 회전 애니메이션
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.right_y / 10));
-
-        }
-
-
-        // 키보드로 보트 조작 및 노 회전
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            leftKeydown = true;
-        }
-        if (leftKeydown) {
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, 100f * Time.deltaTime);
-        }
-        if (Input.GetKeyUp(KeyCode.LeftArrow) && leftKeydown) {
-            leftKeydown = false;
-            rigidbody.AddTorque(0f, -10f, 0f);
-            //rigidbody.AddTorque(-5f, 0f, 0f);
-            rigidbody.AddForce(-1 * transform.right * 15f);
-            rPaddle.transform.localPosition = rightPos;
-            rPaddle.transform.localRotation = rightRot;
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            rightKeydown = true;
-        }
-        if (rightKeydown) {
-            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, 100f * Time.deltaTime);
-        }
-        if (Input.GetKeyUp(KeyCode.RightArrow) && rightKeydown) {
-            rightKeydown = false;
-            rigidbody.AddTorque(0f, 10f, 0f);
-            //rigidbody.AddTorque(5f, 0f, 0f);
-            rigidbody.AddForce(-1 * transform.right * 15f);
-            lPaddle.transform.localPosition = leftPos;
-            lPaddle.transform.localRotation = leftRot;
-        }
 
         //최고속도 조절
         if (rigidbody.velocity.magnitude > 15.0f) {
