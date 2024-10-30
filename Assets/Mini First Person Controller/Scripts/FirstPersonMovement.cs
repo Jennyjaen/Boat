@@ -2,7 +2,9 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using XInputDotNetPure;
 
+//해당 script에서는 총괄과 haptic feedback을 담당함.
 public class FirstPersonMovement : MonoBehaviour {
     [HideInInspector]
     public Underwater underwater;
@@ -11,8 +13,6 @@ public class FirstPersonMovement : MonoBehaviour {
     private float water_status;
     private int[] grass;
 
-    private bool leftKeydown = false;
-    private bool rightKeydown = false;
     Rigidbody rigidbody;
     Transform front;
     private GameObject lPaddle;
@@ -32,15 +32,31 @@ public class FirstPersonMovement : MonoBehaviour {
     private float collide_ang;
     private float collide_speed;
 
-    private float previouspos =0f;
-
-    //기울기 피드백 개선: dead zone 만들기, 새로 체크
     public float incline_deadzone = 1.5f;
     public int max_v = 5;
     public int min_v = 1;
     public int max_width = 12;
     public int min_width = 3;
     public float collide_height = 0.12f;
+
+    private GamePadState state;
+    //Input 방법을 여러개로 바꾸기 + 코드 쪼개서 로드 줄이기
+    public enum InputMethod {
+        GamePad,
+        HandStickThrottle,
+        HandStickGesture
+    }
+    public InputMethod inputMethod;
+    [HideInInspector]
+    public MonoBehaviour GamePadInput;
+    [HideInInspector]
+    public MonoBehaviour HandThrottle;
+    [HideInInspector]
+    public MonoBehaviour HandGesture;
+
+
+
+
     public enum Choice {
         InclineOnly,
         InclineHeight,
@@ -83,6 +99,9 @@ public class FirstPersonMovement : MonoBehaviour {
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
         grass = new int[6];
 
+        GamePadInput = GetComponent<GamePadInput>();
+        HandThrottle = GetComponent<HandThrottle>();
+        HandGesture = GetComponent<HandGesture>();
 
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
@@ -838,138 +857,34 @@ public class FirstPersonMovement : MonoBehaviour {
         }
     }
 
-    bool[] CheckHeight(int length, int diagonal) {
-        bool[] under_height = new bool[length];
-        Vector3 localPos = new Vector3(0, collide_height, 0);
-        Vector3 worldPos = transform.TransformPoint(localPos);
-
-        if(length == 18) {
-            //세로 체크
-            // -2 ~ 2: -2가 앞임.
-            for(int i = 0; i< 18; i++) {
-                float boat_x = -4 * (i + 0.5f) / 18 + 2;
-                Vector3 boatPos = new Vector3(boat_x, 0.18f, 0);
-                Vector3 boatWld = transform.TransformPoint(boatPos);
-                if(boatWld.y < worldPos.y) {
-                    under_height[i] = true;
-                }
-                else {
-                    under_height[i] = false;
-                }
-            }
-        
-        }
-        else if(length == 24) {
-            // 가로 체크 -> 근데 가로가 이렇게 많이 나눌 가치가 있나..? 너무 specific 할 것 같음. z가 -0.75 ~ 0.75
-            //0.75가 오른쪽
-            for(int i = 0; i< 24; i++) {
-                float boat_z = -1.5f * (i + 0.5f) / 24 + 0.75f;
-                Vector3 boatPos = new Vector3(0, 0.18f, boat_z);
-                Vector3 boatWld = transform.TransformPoint(boatPos);
-                if (boatWld.y < worldPos.y) {
-                    under_height[i] = true;
-                }
-                else {
-                    under_height[i] = false;
-                }
-            }
-            
-
-        }
-        else if(length == 21) {
-            Vector3 boatPos;
-            //대각선? 가로세로 0.7씩 하는 게 맞음.
-            for(int i= 0; i<21; i++) {
-                float boat_d = -1.4f * (i + 0.5f) / 21 + 0.7f;
-                if(diagonal == 0) {
-                    //우측 상단으로 
-                    boatPos = new Vector3(- boat_d, 0.18f, boat_d);
-                }
-                else {
-                    //좌측 상단으로 
-                    boatPos = new Vector3(boat_d, 0.18f, boat_d);
-                }
-                Vector3 boatWld = transform.TransformPoint(boatPos);
-                if (boatWld.y < worldPos.y) {
-                    under_height[i] = true;
-                }
-                else {
-                    under_height[i] = false;
-                }
-            }
-            
-        }
-        return under_height;
-    }
-
 
     void Update() {
+        switch (inputMethod) {
+            case InputMethod.GamePad:
+                GamePadInput.enabled = true;
+                HandThrottle.enabled = false;
+                HandGesture.enabled = false;
+                break;
+            case InputMethod.HandStickThrottle:
+                GamePadInput.enabled = false;
+                HandThrottle.enabled = true;
+                HandGesture.enabled = false;
+                break;
+            case InputMethod.HandStickGesture:
+                GamePadInput.enabled = false;
+                HandThrottle.enabled = false;
+                HandGesture.enabled = true;
+                break;
+        }
+
+
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
+        if (rotation.z > 180) { rotation.z -= 360; }
+        rotation.z = Mathf.Clamp(rotation.z, -40f, 40f);
         transform.eulerAngles = rotation;
 
-        //아두이노로 보트 조작
-        if (input_d.left_y != 0) {
-            if (input_d.left_y > 0 && !input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
-                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
-                //rigidbody.AddTorque(0.005f * input_d.left_y, 0, 0);
-            }
-            else if(input_d.left_y <0 && input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
-                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
-            }
-            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.left_y / 10));
-            
-        }
-
-        if (input_d.right_y != 0) {
-            //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
-            if (input_d.right_y > 0 && !input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
-                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
-                //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
-            }
-            else if (input_d.right_y < 0 && input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
-                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
-            }
-            //노 회전 애니메이션
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.right_y / 10));
-
-        }
-
-
-        // 키보드로 보트 조작 및 노 회전
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            leftKeydown = true;
-        }
-        if (leftKeydown) {
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, 100f * Time.deltaTime);
-        }
-        if (Input.GetKeyUp(KeyCode.LeftArrow) && leftKeydown) {
-            leftKeydown = false;
-            rigidbody.AddTorque(0f, -10f, 0f);
-            //rigidbody.AddTorque(-5f, 0f, 0f);
-            rigidbody.AddForce(-1 * transform.right * 15f);
-            rPaddle.transform.localPosition = rightPos;
-            rPaddle.transform.localRotation = rightRot;
-        }
-        if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            rightKeydown = true;
-        }
-        if (rightKeydown) {
-            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, 100f * Time.deltaTime);
-        }
-        if (Input.GetKeyUp(KeyCode.RightArrow) && rightKeydown) {
-            rightKeydown = false;
-            rigidbody.AddTorque(0f, 10f, 0f);
-            //rigidbody.AddTorque(5f, 0f, 0f);
-            rigidbody.AddForce(-1 * transform.right * 15f);
-            lPaddle.transform.localPosition = leftPos;
-            lPaddle.transform.localRotation = leftRot;
-        }
 
         //최고속도 조절
         if (rigidbody.velocity.magnitude > 15.0f) {
@@ -979,50 +894,57 @@ public class FirstPersonMovement : MonoBehaviour {
             rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
         }
 
-
-        Vector3 up_vector = transform.up;
-        Vector3 forward_vector = -transform.forward;
-        float ang = Vector3.Angle(up_vector, Vector3.up);
-        Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
-        Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
-        float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
-        float c_ang = Mathf.Clamp(ang, 0, 5);
-        float c_speed = Mathf.Clamp(collide_speed, 0, 3);
-        c_speed /= 3;
-        if (direct_ang < 0) { direct_ang += 360; }
-        float bef_coll = collide;
-        if (underwater.underwater) {
-            collide = 1.5f;
-            float currentPositionY = front.position.y;
-            float diff = underwater.water_y - currentPositionY;
-            c_ang = diff;
-        }
-        else {
-            collide = bef_coll;
-            if(bef_coll == 1.5f) {
-                collide = 2.0f;
-            }
-        }
+        switch (inputMethod) {
+            case InputMethod.GamePad: //게임 패드에 햅틱 피드백을 주는 경우
+                if (underwater.underwater) {
+                    float currentPositionY = front.position.y;
+                    float diff = underwater.water_y - currentPositionY;
+                    float intensity = Mathf.Clamp(diff * 5, 0, 1);
+                    GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                }
+                break;
+            case InputMethod.HandStickThrottle: //장치에 햅틱 피드백을 주는 경우
+            case InputMethod.HandStickGesture:
+                Vector3 up_vector = transform.up;
+                Vector3 forward_vector = -transform.forward;
+                float ang = Vector3.Angle(up_vector, Vector3.up);
+                Vector3 up_projected = new Vector3(up_vector.x, 0, up_vector.z);
+                Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
+                float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
+                float c_ang = Mathf.Clamp(ang, 0, 5);
+                float c_speed = Mathf.Clamp(collide_speed, 0, 5);
+                c_speed /= 5;
+                if (direct_ang < 0) { direct_ang += 360; }
+                float bef_coll = collide;
+                if (underwater.underwater) {
+                    collide = 1.5f;
+                    float currentPositionY = front.position.y;
+                    float diff = underwater.water_y - currentPositionY;
+                    c_ang = diff;
+                }
+                else {
+                    collide = bef_coll;
+                    if(bef_coll == 1.5f) {
+                        collide = 2.0f;
+                    }
+                }
         
-        if(collide == 0f || collide ==2f) {
-            if(input_d.zerostream > 50) { 
-                collide = 0f;
-                c_speed = transform.position.y;
-            }
-            else { collide = 2.0f; }
-        }
+                if(collide == 0f || collide ==2f) {
+                    if(input_d.zerostream > 50) { 
+                        collide = 0f;
+                        c_speed = transform.position.y;
+                    }
+                    else { collide = 2.0f; }
+                }
         
         
-        if(collide<2.0f) {updateArray(collide, direct_ang,  c_ang, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
-        else { // 노 젓기
-            updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
-            updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
-        }
+                if(collide<2.0f) {updateArray(collide, direct_ang,  c_ang, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
+                else { // 노 젓기
+                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
+                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
+                }
         
-
-        
-        if (max_incline < ang) {
-            max_incline = ang;
+                break;
         }
         
 
@@ -1058,68 +980,113 @@ public class FirstPersonMovement : MonoBehaviour {
     }
     
     void OnCollisionEnter(Collision c) {
-        if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
-            if (collide_land && c.collider.CompareTag("Land")) { }
-            else {
-                StartCoroutine(CollisionControl());
-                water_status = 0f;
-            }
-            
-        }
-        else {
-            if (c.collider.CompareTag("Land")) {
-                Debug.Log("collide with land");
-                collide_land = true;
-                float col = AverageZ(c.contacts);
-                if(col >= 0) { water_status = 2.0f; }
-                else if(col < 0){ water_status = 1.0f; }
-                else {
-                    water_status = 0f; }
-            }
-            if (c.collider.CompareTag("Grass")) {
-                water_status = 3.0f;
-                GrassEffect();
-            }
-        }
-
-        Vector3 colPoint = c.contacts[0].point;
-        Vector3 playerPoint = transform.position;
-        Vector3 direction = colPoint - playerPoint;
-        Vector3 localDirection = transform.InverseTransformDirection(direction).normalized;
-
         Vector3 colVelocity = c.relativeVelocity;
-        float colForce = colVelocity.magnitude;
         collide_speed = colVelocity.magnitude;
 
-        float angle = Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
-        angle *= -1;
-        if (angle < 0) {
-            angle += 360;
-        }
-        collide_ang = angle;
+        switch (inputMethod) {
+            case InputMethod.GamePad:
+                if (!c.collider.CompareTag("Water")) {
+                    if (c.collider.CompareTag("Grass")) {
+                        StartCoroutine(ShortVibration(0.2f));
+                    }
+                    else {
+                        float c_speed = Mathf.Clamp(collide_speed * 7f, 0, 1);
+                        Debug.Log(c_speed);
+                        StartCoroutine(ShortVibration(c_speed));
+                    }
+                }
+                break;
+            case InputMethod.HandStickThrottle:
+            case InputMethod.HandStickGesture:
+                if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
+                    if (collide_land && c.collider.CompareTag("Land")) { }
+                    else {
+                        StartCoroutine(CollisionControl());
+                        water_status = 0f;
+                    }
+            
+                }
+                else {
+                    if (c.collider.CompareTag("Land")) {
+                        collide_land = true;
+                        float col = AverageZ(c.contacts);
+                        if(col >= 0) { water_status = 2.0f; }
+                        else if(col < 0){ water_status = 1.0f; }
+                        else {
+                            water_status = 0f; }
+                    }
+                    if (c.collider.CompareTag("Grass")) {
+                        water_status = 3.0f;
+                        GrassEffect();
+                    }
+                }
 
+                Vector3 colPoint = c.contacts[0].point;
+                Vector3 playerPoint = transform.position;
+                Vector3 direction = colPoint - playerPoint;
+                Vector3 localDirection = transform.InverseTransformDirection(direction).normalized;
+
+                float angle = Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
+                angle *= -1;
+                if (angle < 0) {
+                    angle += 360;
+                }
+                collide_ang = angle;
+
+                break;
+        }  
     }
 
     private void OnCollisionStay(Collision c) {
-        if (c.collider.CompareTag("Land")){
-            int[] count = CountZ(c.contacts);
-            if (count[0] >= 1 && count[1] >= 1) {
-                water_status = 1.5f;
-            }
-            else if (count[0] == 0 && count[1] > 0) {
-                water_status = 2f;
-            }
-            else if (count[1] == 0 && count[0] > 0) {
-                water_status = 1f;
+        if (c.collider.CompareTag("Land")) {
+            switch (inputMethod) {
+                case InputMethod.GamePad:
+                   state = GamePad.GetState(PlayerIndex.One);
+                    if (state.IsConnected) {
+                        float LX = state.ThumbSticks.Left.X;
+                        float LY = state.ThumbSticks.Left.Y;
+
+                        if (LX > 0 || LY > 0) {
+                            float magnitude = Mathf.Sqrt(LX * LX + LY * LY); // 벡터의 크기 계산
+                            float normalizedIntensity = Mathf.Clamp01(magnitude);
+                            float intensity = 0.3f * normalizedIntensity;
+                            GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                        }
+                        else {
+                            GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
+                        }
+                    }
+                    else {
+                        Debug.Log("GamePad disconnected.");
+                    }
+                    break;
+                case InputMethod.HandStickThrottle:
+                case InputMethod.HandStickGesture:
+
+                    int[] count = CountZ(c.contacts);
+                    if (count[0] >= 1 && count[1] >= 1) {
+                        water_status = 1.5f;
+                    }
+                    else if (count[0] == 0 && count[1] > 0) {
+                        water_status = 2f;
+                    }
+                    else if (count[1] == 0 && count[0] > 0) {
+                        water_status = 1f;
+                    }
+                    break;
             }
         }
-        
     }
 
     void OnCollisionExit(Collision c) {
         collide = 0f;
         water_status = 0f;
         if (c.collider.CompareTag("Land")) {
+            switch (inputMethod) {
+                case InputMethod.GamePad:
+                    GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
+                    break;
+            }
             collide_land = false;
         }
     }
@@ -1133,7 +1100,11 @@ public class FirstPersonMovement : MonoBehaviour {
 
         collide = 0.0f;
     }
-
+    IEnumerator ShortVibration(float intensity) {
+        GamePad.SetVibration(PlayerIndex.One, intensity, intensity);
+        yield return new WaitForSeconds(0.1f);
+        GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
+    }
 
 
 
