@@ -33,7 +33,7 @@ public class Input_Delim : MonoBehaviour {
         FarUpDown,
         FootInput
     }
-    public Choice selected;
+    public Choice selected; 
 
 
     // Start is called before the first frame update
@@ -66,6 +66,7 @@ public class Input_Delim : MonoBehaviour {
 
         switch (selected) {
             case Choice.FarUpDown: //해야하는 것: x축에서 얼마나 떨어졌는지
+                Debug.Log(lserial.accum_x + ", " + rserial.accum_x);
                 if(lserial.accum_x < -1 * far_threshold && rserial.accum_x > far_threshold) {
                     reverse = true;
                 }
@@ -84,5 +85,6 @@ public class Input_Delim : MonoBehaviour {
                 }
                 break;
         }
+        Debug.Log(reverse);
     }
 }

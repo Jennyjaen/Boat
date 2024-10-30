@@ -39,6 +39,7 @@ public class FirstPersonMovement : MonoBehaviour {
     public int max_v = 5;
     public int min_v = 1;
     public int max_width = 12;
+    public int min_width = 3;
     public float collide_height = 0.12f;
     public enum Choice {
         InclineOnly,
@@ -474,7 +475,145 @@ public class FirstPersonMovement : MonoBehaviour {
 
 
                 case Choice.InclineHeight_Custom:
-                    bool[] under;
+                    valid_ang = clamp_ang - incline_deadzone;
+                    valid_level = max_v - min_v + 1;
+                    vib_level = (int)Mathf.Floor((valid_ang * valid_level / (5 - incline_deadzone))) + min_v;
+                    if (vib_level > max_v) { vib_level = max_v; }
+
+                    height = col_s;
+                    if (height < 0) { height = 0; }
+                    vib_width = Mathf.FloorToInt((max_width - min_width) * height) + min_width;
+                    if(vib_width > max_width) { vib_width = max_width; }
+
+
+                    res = 0;
+                    x_1 = 0;
+
+                    if (angle >= 337.5 || angle < 22.5) {
+                        /*왼쪽*/
+                        Debug.Log("left");
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if (x >= vib_width) { res = 0; }
+                                else { res = vib_level; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                }
+                            }
+                        }
+                    }
+                    else if (angle >= 22.5 && angle < 67.5) {
+                        Debug.Log("left down");
+                        /*좌측 아래*/
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if (x + (17 - y) < vib_width) { res = vib_level; }
+                                else { res = 0; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                }
+                            }
+                        }
+                    }
+                    else if (angle >= 67.5 && angle < 112.5) {
+                        /*아래*/
+                        Debug.Log("down");
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if (y < 18 - vib_width) { res = 0; }
+                                else { res = vib_level; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                }
+                            }
+                        }
+
+                    }
+                    else if (angle >= 112.5 && angle < 157.5) {
+                        /*우측 아래*/
+                        Debug.Log("right down");
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if ((11 - x) + (17 - y) < vib_width) { res = vib_level; }
+                                else { res = 0; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                }
+                            }
+                        }
+
+                    }
+                    else if (angle >= 157.5 && angle < 202.5) {
+                        /*오른쪽*/
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if (x < 12 - vib_width) { res = 0; }
+                                else { res = vib_level; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                }
+                            }
+                        }
+                    }
+                    else if (angle >= 202.5 && angle < 247.5) {
+                        Debug.Log("right up");
+                        /*우측 위*/
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if ((11 - x) + y < vib_width) { res = vib_level; }
+                                else { res = 0; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                }
+                            }
+                        }
+
+                    }
+                    else if (angle >= 247.5 && angle < 292.5) {
+                        // 위
+                        Debug.Log("up");
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if (y >= vib_width) { res = 0; }
+                                else { res = vib_level; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                }
+                            }
+                        }
+
+
+                    }
+                    else if (angle >= 292.5 && angle < 337.5) {
+                        /*좌측 위*/
+                        Debug.Log("left up");
+                        for (int y = 0; y < 18; y++) {
+                            for (int x = 0; x < 12; x++) {
+                                if (x + y < vib_width) { res = vib_level; }
+                                else { res = 0; }
+                                if (x % 2 == 0) { x_1 = res; }
+                                else {
+                                    larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                }
+                            }
+                        }
+                    }
+                    break;
 
 
                     break;
@@ -773,13 +912,13 @@ public class FirstPersonMovement : MonoBehaviour {
         //아두이노로 보트 조작
         if (input_d.left_y != 0) {
             if (input_d.left_y > 0 && !input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.04f * input_d.left_y);
+                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
                 rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
                 //rigidbody.AddTorque(0.005f * input_d.left_y, 0, 0);
             }
             else if(input_d.left_y <0 && input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.04f * input_d.left_y);
-                rigidbody.AddTorque(0, -0.01f * input_d.left_y, 0);
+                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
+                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
             }
             lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.left_y / 10));
             
@@ -788,12 +927,12 @@ public class FirstPersonMovement : MonoBehaviour {
         if (input_d.right_y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
             if (input_d.right_y > 0 && !input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.08f * input_d.right_y);
+                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
                 rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
                 //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
             }
             else if (input_d.right_y < 0 && input_d.reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.08f * input_d.right_y);
+                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
                 rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
             }
             //노 회전 애니메이션
