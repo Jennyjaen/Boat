@@ -5,6 +5,7 @@ using XInputDotNetPure;
 
 public class GamePadInput : MonoBehaviour
 {
+
     private GamePadState state;
     private GamePadState prevState;
     Rigidbody rigidbody;
@@ -30,9 +31,17 @@ public class GamePadInput : MonoBehaviour
         if (state.IsConnected) {
             float LX = state.ThumbSticks.Left.X;
             float LY = state.ThumbSticks.Left.Y;
-            Vector3 movement = new Vector3(LX, 0, LY);
-            rigidbody.velocity = movement * speed;
+            float moveDirection = state.ThumbSticks.Left.Y; 
+            Vector3 forwardMovement = transform.right * moveDirection * -5f * Time.deltaTime;
 
+            // LX 값을 회전에 활용
+            float turnDirection = state.ThumbSticks.Left.X;
+            float turnAmount = turnDirection * 30f * Time.deltaTime;
+            Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
+
+            // 위치와 회전 적용
+            transform.position += forwardMovement;
+            transform.rotation *= rotation;
             //Debug.Log($"LX: {LX}, LY: {LY}");
         }
         else {
