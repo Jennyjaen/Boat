@@ -59,7 +59,7 @@ public class SampleCustomDelimiter : MonoBehaviour
             Debug.Log("find serial controller");
         }
 
-        byte[] message = serialController.ReadSerialMessage();
+        int[] message = serialController.ReadSerialMessage();
         //Debug.Log(message);
         if (message == null) {
             Debug.Log("no message");

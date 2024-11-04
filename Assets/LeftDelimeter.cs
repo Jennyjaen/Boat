@@ -39,10 +39,12 @@ public class LeftDelimiter : MonoBehaviour {
     [HideInInspector]
     public int sum_y;
 
+    private int accum_x; //지금까지 총 누적된 거리
+    private int accum_y;
     [HideInInspector]
-    public int accum_x; //지금까지 총 누적된 거리
+    public int save_x => accum_x; //지금까지 총 누적된 거리
     [HideInInspector]
-    public int accum_y; //지금까지 총 누적된 거리
+    public int save_y => accum_y;
 
     void Start() {
         serialController = GameObject.Find("LSerial").GetComponent<SerialControllerCustomDelimiter>();
@@ -88,7 +90,7 @@ public class LeftDelimiter : MonoBehaviour {
             return;
         }
 
-        byte[] message = serialController.ReadSerialMessage();
+        int[] message = serialController.ReadSerialMessage();
         
         if (message == null) {
             //Debug.Log("no message");
@@ -103,17 +105,23 @@ public class LeftDelimiter : MonoBehaviour {
         }
         
         serialController.SendSerialMessage(sendArray);
-
         
+ 
         if(message.Length == 2) {
+            /*
             y = (int)message[0];
             x = (int)message[1];
+
             if (y > 127) { y = 127 - y; }
-            if (x > 127) { x = 127 - x; }
+            if (x > 127) { x = 127 - x; }*/
+            y = message[0];
+            x = message[1];
             accum_x += x;
             accum_y += y;
-           
-            if(x != 0 || y!= 0) {
+
+            Debug.Log($"Origin LX: {accum_x}, Origin LY: {accum_y}");
+
+            if (x != 0 || y!= 0) {
                 if(y!= 0) {
                     if (sum_y * y < 0) {
                         sum_y = y;
@@ -155,6 +163,7 @@ public class LeftDelimiter : MonoBehaviour {
 
         }
         else {
+            Debug.Log("message length: " + message.Length);
             x = 0;
             y = 0;
         }

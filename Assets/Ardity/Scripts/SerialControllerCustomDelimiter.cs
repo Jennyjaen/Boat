@@ -8,6 +8,7 @@
 
 using UnityEngine;
 using System.Threading;
+using System.Collections.Generic;
 
 /**
  * While 'SerialController' only allows reading/sending text data that is
@@ -33,11 +34,11 @@ public class SerialControllerCustomDelimiter : MonoBehaviour
 
     [Tooltip("Maximum number of unread data messages in the queue. " +
              "New messages will be discarded.")]
-    public int maxUnreadMessages = 10;
+    public int maxUnreadMessages = 100;
 
     [Tooltip("Maximum number of unread data messages in the queue. " +
              "New messages will be discarded.")]
-    public byte separator = 90;
+    public byte separator = 255;
 
     // Internal reference to the Thread and the object that runs in it.
     protected Thread thread;
@@ -100,11 +101,11 @@ public class SerialControllerCustomDelimiter : MonoBehaviour
         // via SendMessage, then the message listener should be null.
         if (messageListener == null)
             return;
-
+        //Debug.Log("this works");
         // Read the next message from the queue
-        byte[] message = ReadSerialMessage();
-        if (message == null)
-            return;
+        //byte[] message = ReadSerialMessage();
+        //if (message == null)
+        //    return;
 
         // Check if the message is plain data or a connect/disconnect event.
         //messageListener.SendMessage("OnMessageArrived", message);
@@ -114,10 +115,43 @@ public class SerialControllerCustomDelimiter : MonoBehaviour
     // Returns a new unread message from the serial device. You only need to
     // call this if you don't provide a message listener.
     // ------------------------------------------------------------------------
-    public byte[] ReadSerialMessage()
+    public int[] ReadSerialMessage()
     {
-        // Read the next message from the queue
-        return (byte[]) serialThread.ReadMessage();
+        List<byte[]> messages = new List<byte[]>();
+
+        // serialThread에서 메시지를 null이 반환될 때까지 계속 읽어서 messages에 추가
+        object messageObject;
+        while ((messageObject = serialThread.ReadMessage()) != null) {
+            if (messageObject is byte[]) {
+                messages.Add((byte[])messageObject);
+            }
+            else {
+                Debug.LogWarning("Expected byte[], but got: " + messageObject.GetType());
+            }
+        }
+
+        if (messages.Count == 0) {
+            //Debug.Log("it is null");
+            return null;
+        }
+
+        int messageLength = messages[0].Length;
+        int[] summedMessage = new int[messageLength];
+
+        for (int i = 0; i < messageLength; i++) {
+            int sum = 0;
+            foreach (var message in messages) {
+                int value = message[i];
+                if (value > 127) {
+                    value = 127 - value;
+                }
+                sum += value;
+            }
+            summedMessage[i] = sum;
+        }
+
+        //Debug.Log( string.Join(", ", summedMessage));
+        return summedMessage; 
     }
 
     // ------------------------------------------------------------------------

@@ -206,7 +206,7 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         else {// normal case
             if(clamp_ang < incline_deadzone) {
-                Debug.Log("deadzone");
+                //Debug.Log("deadzone");
                 for(int i= 0; i<108; i++) {
                     larray[i] = (byte)0;
                     rarray[i] = (byte)0;

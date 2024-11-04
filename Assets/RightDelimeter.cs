@@ -39,10 +39,13 @@ public class RightDelimiter : MonoBehaviour {
     [HideInInspector]
     public int sum_y;
 
+    private int accum_x; //지금까지 총 누적된 거리
+    private int accum_y;
+
     [HideInInspector]
-    public int accum_x; //지금까지 총 누적된 거리
+    public int save_x => accum_x; //지금까지 총 누적된 거리
     [HideInInspector]
-    public int accum_y; //지금까지 총 누적된 거리
+    public int save_y => accum_y;
 
 
     void Start() {
@@ -88,7 +91,7 @@ public class RightDelimiter : MonoBehaviour {
             return;
         }
 
-        byte[] message = serialController.ReadSerialMessage();
+        int[] message = serialController.ReadSerialMessage();
 
         if (message == null) {
             x = 0;
@@ -104,10 +107,12 @@ public class RightDelimiter : MonoBehaviour {
         serialController.SendSerialMessage(sendArray);
 
         if (message.Length == 2) {
-            y = (int)message[0];
+            /*y = (int)message[0];
             x = (int)message[1];
             if (y > 127) { y = 127 - y; }
-            if (x > 127) { x = 127 - x; }
+            if (x > 127) { x = 127 - x; }*/
+            y = message[0];
+            x = message[1];
             accum_x += x;
             accum_y += y;
 

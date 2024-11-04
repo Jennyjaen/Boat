@@ -10,6 +10,12 @@ public class GamePadInput : MonoBehaviour
     private GamePadState prevState;
     Rigidbody rigidbody;
     private float speed = 4f;
+    private Transform xrRig;
+
+    public float rotationSpeed = 20f;
+    private float rotationX = 0f;
+    private float rotationY = 0f;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -21,6 +27,10 @@ public class GamePadInput : MonoBehaviour
             Debug.Log("GamePad not connected.");
         }
         rigidbody = GetComponent<Rigidbody>();
+        xrRig = GameObject.Find("XR Rig/Camera Offset")?.transform;
+        if(xrRig == null) {
+            Debug.Log("can not find camera");
+        }
     }
 
     // Update is called once per frame
@@ -31,18 +41,26 @@ public class GamePadInput : MonoBehaviour
         if (state.IsConnected) {
             float LX = state.ThumbSticks.Left.X;
             float LY = state.ThumbSticks.Left.Y;
-            float moveDirection = state.ThumbSticks.Left.Y; 
-            Vector3 forwardMovement = transform.right * moveDirection * -5f * Time.deltaTime;
-
-            // LX 값을 회전에 활용
-            float turnDirection = state.ThumbSticks.Left.X;
-            float turnAmount = turnDirection * 30f * Time.deltaTime;
+            Vector3 forwardMovement = transform.right * LY * -5f * Time.deltaTime;
+            float turnAmount = LX * 30f * Time.deltaTime;
             Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
 
-            // 위치와 회전 적용
             transform.position += forwardMovement;
             transform.rotation *= rotation;
             //Debug.Log($"LX: {LX}, LY: {LY}");
+
+            float rx = state.ThumbSticks.Right.X;
+            float ry = state.ThumbSticks.Right.Y;
+
+            rotationX += ry * rotationSpeed * Time.deltaTime;
+            rotationY += rx * rotationSpeed * Time.deltaTime;
+
+            rotationX = Mathf.Clamp(rotationX, -40f, 40f);
+            rotationY = Mathf.Clamp(rotationY, -40f, 40f);
+
+            if (xrRig != null) {
+                xrRig.localRotation = Quaternion.Euler(rotationX, rotationY, 0f);
+            }
         }
         else {
             Debug.Log("GamePad disconnected.");
