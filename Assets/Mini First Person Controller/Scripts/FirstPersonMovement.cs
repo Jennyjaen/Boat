@@ -47,6 +47,14 @@ public class FirstPersonMovement : MonoBehaviour {
         HandStickGesture
     }
     public InputMethod inputMethod;
+
+    public enum DefaultPresent {
+        Nothing,
+        Incline,
+        Speed
+    }
+    public DefaultPresent defaultP;
+
     [HideInInspector]
     public MonoBehaviour GamePadInput;
     [HideInInspector]
@@ -143,34 +151,47 @@ public class FirstPersonMovement : MonoBehaviour {
                     float cent_y = ((float)y + 0.5f) / 12;
                     float res;
                     if (col_ang >= 22.5 && col_ang < 67.5) {
+                        //
+                        //Debug.Log("ru");
                         if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
-                        if (cent_y >= 1 - col_s) { res = intensity; }
+                        //위
+                        //Debug.Log("up");
+                        if (cent_y < col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 112.5 && col_ang < 157.5) {
-                        if (-cent_x + cent_y >= 1 - 2 * col_s) { res = intensity; }
+                        //Debug.Log("lu");
+                        if (cent_x + cent_y <= 2 * col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 157.5 && col_ang < 202.5) {
+                        //왼쪽
+                        //Debug.Log("Left");
                         if (cent_x < col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 202.5 && col_ang < 247.5) {
-                        if (cent_x + cent_y <= 2 * col_s) { res = intensity; }
+                        //Debug.Log("ld");
+                        if (-cent_x + cent_y >= 1 - 2 * col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 247.5 && col_ang < 292.5) {
-                        if (cent_y < col_s) { res = intensity; }
+                        //아래
+                        //Debug.Log("down");
+                        if (cent_y >= 1 - col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
+                        //Debug.Log("rd");
                         if (cent_x - cent_y >= 1 - 2 * col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else {
+                        //오른쪽?
+                        //Debug.Log("right");
                         if (cent_x >= 1 - col_s) { res = intensity; }
                         else { res = 0; }
                     }
@@ -201,11 +222,11 @@ public class FirstPersonMovement : MonoBehaviour {
                     else { arr[y * 6 + n] = (byte)0; }
                 }
             }
-            larray = arr;
+            larray = (byte[])arr.Clone();
             System.Array.Reverse(arr); //오른쪽 뒤집었음.
             rarray = arr;
         }
-        else {// 기울기: 0f
+        else if(collide == 0f){// 기울기: 0f
             if(clamp_ang < incline_deadzone) {
                 //Debug.Log("deadzone");
                 for(int i= 0; i<108; i++) {
@@ -635,10 +656,6 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                     break;
 
-
-                    break;
-
-
                 case Choice.InclineHeight_Semi:
                     height = col_s * (2f/3f);
                     if (height < 0) { height = 0; }
@@ -786,7 +803,6 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             
         }
-        printArray(larray);
         //Debug.Log(string.Join(",", larray));
     }
 
@@ -875,10 +891,10 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                 }
                 if (!reverse) { System.Array.Reverse(arr); }
-                if (isLeft) { larray = arr; }
+                if (isLeft) { larray = (byte[])arr.Clone(); }
                 else { 
                     System.Array.Reverse(arr); //오른쪽 장치 뒤집어서 거꾸로 넣어줘야함.
-                    rarray = arr;
+                    rarray = (byte[])arr.Clone();
                 }
 
                 break;
@@ -944,8 +960,8 @@ public class FirstPersonMovement : MonoBehaviour {
                 Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
                 float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
                 float c_ang = Mathf.Clamp(ang, 0, 5);
-                float c_speed = Mathf.Clamp(collide_speed, 0, 5);
-                c_speed /= 5;
+                float c_speed = Mathf.Clamp(collide_speed * 5f, 0, 3);
+                c_speed /= 3;
                 if (direct_ang < 0) { direct_ang += 360; }
                 float bef_coll = collide;
                 if (underwater.underwater) {
@@ -957,23 +973,44 @@ public class FirstPersonMovement : MonoBehaviour {
                 else {
                     collide = bef_coll;
                     if (bef_coll == 1.5f) {
-                        collide = 2.0f;
+                        switch (defaultP) {
+                            case DefaultPresent.Nothing:
+                            case DefaultPresent.Speed:
+                                collide = 2.0f;
+                                break;
+                            case DefaultPresent.Incline:
+                                collide = 0f;
+                                break;
+                        }
                     }
                 }
-                if(water_status != 0f) { // 무언가와 부딪히는 중
+                if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
                     updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
                     updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
                 }
                 else {
-                    if(input_d.zerostream >= 100) {
-                        collide = 0f; //기울기 피드백은 여기서
+                    switch (defaultP) {
+                        case DefaultPresent.Nothing:
+                            if (collide == 2.0f || collide == 0f || collide == 0.5f) {
+                                if (input_d.zerostream >= 100) {
+                                    collide = 0f; //기울기 피드백은 여기서
+                                }
+                                else {
+                                    collide = 0.5f;
+                                }
+                            }
+                            break;
+                        case DefaultPresent.Incline:
+                            //if(collide == 2.0f || collide == 0f) {
+                            //   collide = 0f;
+                            //}/
+                            Debug.Log(collide);
+                            break;
                     }
+                    
                     updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); 
                 }
-                
-                
-
-                // 노젓기가 없기 때문에 update Each Array를 할 필요가 있나? -> 땅, 풀 처리할거면 필요하긴 함? water status만 보면 될 것 같은데.
+                //Debug.Log($"Collide: {collide}, Water status: {water_status}");
                 break;
             case InputMethod.HandStickGesture:
                 direct_ang = 0f; //기울기 표현 x이기 때문에 계산 필요 x.
@@ -994,7 +1031,9 @@ public class FirstPersonMovement : MonoBehaviour {
                         collide = 2.0f;
                     }
                 }
-        
+                if(collide == 0f) {
+                    collide = 2f;
+                }
                 if(collide<2.0f) {updateArray(collide, direct_ang,  c_ang, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
                 else { // 노 젓기
                     updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
@@ -1047,8 +1086,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         StartCoroutine(ShortVibration(0.2f));
                     }
                     else {
-                        float c_speed = Mathf.Clamp(collide_speed * 7f, 0, 1);
-                        Debug.Log(c_speed);
+                        float c_speed = Mathf.Clamp(collide_speed * 10f, 0, 1);
                         StartCoroutine(ShortVibration(c_speed));
                     }
                 }
@@ -1056,7 +1094,7 @@ public class FirstPersonMovement : MonoBehaviour {
             case InputMethod.HandStickThrottle:
             case InputMethod.HandStickGesture:
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
-                    if (collide_land && c.collider.CompareTag("Land")) { }
+                    if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
                         StartCoroutine(CollisionControl());
                         water_status = 0f;
@@ -1064,6 +1102,7 @@ public class FirstPersonMovement : MonoBehaviour {
             
                 }
                 else {
+                    collide = 2.0f;
                     if (c.collider.CompareTag("Land")) {
                         collide_land = true;
                         float col = AverageZ(c.contacts);

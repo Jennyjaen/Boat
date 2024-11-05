@@ -10,6 +10,8 @@ public class HandThrottle : MonoBehaviour
     public float rotationSpeed = 20f;
     private float rotationX = 0f;
     private float rotationY = 0f;
+    private Rigidbody rb;
+    private bool colliding = false;
     // Start is called before the first frame update
 
     public enum InputMethod {
@@ -26,6 +28,7 @@ public class HandThrottle : MonoBehaviour
         if (xrRig == null) {
             Debug.Log("can not find camera");
         }
+        rb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
@@ -37,19 +40,26 @@ public class HandThrottle : MonoBehaviour
         float LY = accum_y / 600f;
         LX = Mathf.Abs(LX) < 0.15f ? 0 : Mathf.Clamp(LX, -1f, 1f);
         LY = Mathf.Abs(LY) < 0.15f ? 0 : Mathf.Clamp(LY, -1f, 1f);
-        float rx = -input_d.accum_rx / 750f;
-        float ry = -input_d.accum_ry / 750f;
+        float rx = input_d.accum_rx / 750f;
+        float ry = input_d.accum_ry / 750f;
         rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
         ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
-        Debug.Log($"RX: {rx} , RY: {ry}");
+
         switch (inputMethod) {
             case InputMethod.GamePad:
                 Vector3 forwardMovement = transform.right * LY * 5f * Time.deltaTime;
                 float turnAmount = LX * 30f * Time.deltaTime;
                 Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
 
-                transform.position += forwardMovement;
+                Vector3 targetPosition = rb.position + forwardMovement;
+                Quaternion targetRotation = rb.rotation * rotation;
+
+                if (!colliding) {
+                    rb.MovePosition(targetPosition); //충돌 후에 움직이지 않도록 rigidbody move position 함수 사용.
+                    //rb.MoveRotation(targetRotation);
+                }
                 transform.rotation *= rotation;
+
                 rotationX += ry * rotationSpeed * Time.deltaTime;
                 rotationY += rx * rotationSpeed * Time.deltaTime;
 
@@ -61,12 +71,16 @@ public class HandThrottle : MonoBehaviour
                 }
 
                 break;
+                
             case InputMethod.Throttle:
                 if(LY != 0) {
                     forwardMovement = transform.right * LY * 2.5f * Time.deltaTime;
-                    turnAmount = -LY * 10f * Time.deltaTime;
+                    turnAmount = -LY * 15f * Time.deltaTime;
                     rotation = Quaternion.Euler(0, turnAmount, 0);
-                    transform.position += forwardMovement;
+                    targetPosition = rb.position + forwardMovement;
+                    if (!colliding) {
+                        rb.MovePosition(targetPosition);
+                    }
                     transform.rotation *= rotation;
                 }
                 else {
@@ -77,9 +91,12 @@ public class HandThrottle : MonoBehaviour
                 }
                 if (ry != 0) {
                     forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
-                    turnAmount = ry * 10f * Time.deltaTime;
+                    turnAmount = ry * 15f * Time.deltaTime;
                     rotation = Quaternion.Euler(0, turnAmount, 0);
-                    transform.position += forwardMovement;
+                    targetPosition = rb.position + forwardMovement;
+                    if (!colliding) {
+                        rb.MovePosition(targetPosition);
+                    }
                     transform.rotation *= rotation;
                 }
                 else {
@@ -94,12 +111,18 @@ public class HandThrottle : MonoBehaviour
                 break;
 
         }
-        //Debug.Log($"Origin LX: {LX}, Origin LY: {LY}");
-        
-        
-        //Debug.Log($"LX: {LX}, LY: {LY}");
 
+    }
 
-        
+    private void OnCollisionEnter(Collision collision) {
+        if (collision.gameObject.tag != "Land" &&
+        collision.gameObject.tag != "Grass" &&
+        collision.gameObject.tag != "Water") {
+            colliding = true;
+        }
+    }
+
+    private void OnCollisionExit(Collision collision) {
+        colliding = false;
     }
 }
