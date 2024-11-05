@@ -39,8 +39,11 @@ public class FirstPersonMovement : MonoBehaviour {
     public int min_width = 3;
     public float collide_height = 0.12f;
 
+    private bool grassboat;
+    private int enterCount = 0;
+    private bool grassin = false;
     private GamePadState state;
-    //Input 방법을 여러개로 바꾸기 + 코드 쪼개서 로드 줄이기
+    //Input 방법을 여러개로 바꾸기
     public enum InputMethod {
         GamePad,
         HandStickThrottle,
@@ -48,12 +51,6 @@ public class FirstPersonMovement : MonoBehaviour {
     }
     public InputMethod inputMethod;
 
-    public enum DefaultPresent {
-        Nothing,
-        Incline,
-        Speed
-    }
-    public DefaultPresent defaultP;
 
     [HideInInspector]
     public MonoBehaviour GamePadInput;
@@ -111,6 +108,7 @@ public class FirstPersonMovement : MonoBehaviour {
         HandThrottle = GetComponent<HandThrottle>();
         HandGesture = GetComponent<HandGesture>();
 
+        grassboat = false;
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
             rarray[i] = (byte)0;
@@ -909,6 +907,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
 
     void Update() {
+        Debug.Log("status: " + water_status + " all boat in: " + grassboat);
         switch (inputMethod) {
             case InputMethod.GamePad:
                 GamePadInput.enabled = true;
@@ -973,45 +972,20 @@ public class FirstPersonMovement : MonoBehaviour {
                 else {
                     collide = bef_coll;
                     if (bef_coll == 1.5f) {
-                        switch (defaultP) {
-                            case DefaultPresent.Nothing:
-                            case DefaultPresent.Speed:
-                                collide = 2.0f;
-                                break;
-                            case DefaultPresent.Incline:
-                                collide = 0f;
-                                break;
+                        collide = 0f;
                         }
                     }
-                }
+
                 if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
                     updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
                     updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
                 }
                 else {
-                    switch (defaultP) {
-                        case DefaultPresent.Nothing:
-                            if (collide == 2.0f || collide == 0f || collide == 0.5f) {
-                                if (input_d.zerostream >= 100) {
-                                    collide = 0f; //기울기 피드백은 여기서
-                                }
-                                else {
-                                    collide = 0.5f;
-                                }
-                            }
-                            break;
-                        case DefaultPresent.Incline:
-                            //if(collide == 2.0f || collide == 0f) {
-                            //   collide = 0f;
-                            //}/
-                            Debug.Log(collide);
-                            break;
-                    }
-                    
                     updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); 
                 }
                 //Debug.Log($"Collide: {collide}, Water status: {water_status}");
                 break;
+
             case InputMethod.HandStickGesture:
                 direct_ang = 0f; //기울기 표현 x이기 때문에 계산 필요 x.
                 c_ang = 0f;
@@ -1112,7 +1086,7 @@ public class FirstPersonMovement : MonoBehaviour {
                             water_status = 0f; }
                     }
                     if (c.collider.CompareTag("Grass")) {
-                        water_status = 3.0f;
+                        //water_status = 3.0f;
                         GrassEffect();
                     }
                 }
@@ -1176,7 +1150,10 @@ public class FirstPersonMovement : MonoBehaviour {
 
     void OnCollisionExit(Collision c) {
         collide = 0f;
-        water_status = 0f;
+        if (!c.collider.CompareTag("Grass")) {
+            water_status = 0f;
+        }
+        
         if (c.collider.CompareTag("Land")) {
             switch (inputMethod) {
                 case InputMethod.GamePad:
@@ -1187,6 +1164,31 @@ public class FirstPersonMovement : MonoBehaviour {
         }
     }
 
+    private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("GrassE")) {
+            if (water_status != 3f && enterCount== 0) {
+                water_status = 3f;
+            }
+            if (grassboat && enterCount ==0) {
+                grassboat = false;
+            }  
+            enterCount++;
+        }
+    }
+
+    private void OnTriggerExit(Collider other) {
+        if (other.CompareTag("GrassE")) {
+            if (water_status == 3f && enterCount == 4 && !grassin) {
+                grassboat = true;
+                grassin = true;
+            }
+            if (!grassboat && enterCount ==1) {
+                water_status = 0f;
+                grassin = false;
+            }
+            enterCount--;
+        }
+    }
     private IEnumerator CollisionControl() {
         collide = 1.0f;
         yield return new WaitForSeconds(2.0f);
