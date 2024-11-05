@@ -7,19 +7,12 @@ public class HandThrottle : MonoBehaviour
     [HideInInspector]
     public Input_Delim input_d;
     private Transform xrRig;
-    public float rotationSpeed = 20f;
     private float rotationX = 0f;
     private float rotationY = 0f;
     private Rigidbody rb;
     private bool colliding = false;
     // Start is called before the first frame update
 
-    public enum InputMethod {
-        GamePad,
-        Throttle
-    }
-
-    public InputMethod inputMethod;
 
     void Start()
     {
@@ -45,74 +38,45 @@ public class HandThrottle : MonoBehaviour
         rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
         ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
 
-        switch (inputMethod) {
-            case InputMethod.GamePad:
-                Vector3 forwardMovement = transform.right * LY * 5f * Time.deltaTime;
-                float turnAmount = LX * 30f * Time.deltaTime;
-                Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
 
-                Vector3 targetPosition = rb.position + forwardMovement;
-                Quaternion targetRotation = rb.rotation * rotation;
-
-                if (!colliding) {
-                    rb.MovePosition(targetPosition); //충돌 후에 움직이지 않도록 rigidbody move position 함수 사용.
-                    //rb.MoveRotation(targetRotation);
-                }
-                transform.rotation *= rotation;
-
-                rotationX += ry * rotationSpeed * Time.deltaTime;
-                rotationY += rx * rotationSpeed * Time.deltaTime;
-
-                rotationX = Mathf.Clamp(rotationX, -40f, 40f);
-                rotationY = Mathf.Clamp(rotationY, -40f, 40f);
-
-                if (xrRig != null) {
-                    xrRig.localRotation = Quaternion.Euler(rotationX, rotationY, 0f);
-                }
-
-                break;
-                
-            case InputMethod.Throttle:
-                if(LY != 0) {
-                    forwardMovement = transform.right * LY * 2.5f * Time.deltaTime;
-                    turnAmount = -LY * 15f * Time.deltaTime;
-                    rotation = Quaternion.Euler(0, turnAmount, 0);
-                    targetPosition = rb.position + forwardMovement;
-                    if (!colliding) {
-                        rb.MovePosition(targetPosition);
-                    }
-                    transform.rotation *= rotation;
-                }
-                else {
-                    if(LX < 0) {
-                        rotationY += LX * rotationSpeed * Time.deltaTime;
-                        rotationY = Mathf.Clamp(rotationY, -40f, 40f);
-                    }
-                }
-                if (ry != 0) {
-                    forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
-                    turnAmount = ry * 15f * Time.deltaTime;
-                    rotation = Quaternion.Euler(0, turnAmount, 0);
-                    targetPosition = rb.position + forwardMovement;
-                    if (!colliding) {
-                        rb.MovePosition(targetPosition);
-                    }
-                    transform.rotation *= rotation;
-                }
-                else {
-                    if(rx > 0) {
-                        rotationY += rx * rotationSpeed * Time.deltaTime;
-                        rotationY = Mathf.Clamp(rotationY, -40f, 40f);
-                    }
-                }
-                if (xrRig != null) {
-                    xrRig.localRotation = Quaternion.Euler(0f, rotationY, 0f);
-                }
-                break;
-
+        if(LY != 0) {
+            Vector3 forwardMovement = transform.right * LY * 2.5f * Time.deltaTime;
+            float turnAmount = -LY * 15f * Time.deltaTime;
+            Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
+            Vector3 targetPosition = rb.position + forwardMovement;
+            if (!colliding) {
+                rb.MovePosition(targetPosition);
+            }
+            transform.rotation *= rotation;
         }
-
+        else {
+            if(LX < 0) {
+                rotationY += LX * 20f * Time.deltaTime;
+                rotationY = Mathf.Clamp(rotationY, -40f, 40f);
+            }
+        }
+        if (ry != 0) {
+            Vector3 forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
+            float turnAmount = ry * 15f * Time.deltaTime;
+            Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
+            Vector3 targetPosition = rb.position + forwardMovement;
+            if (!colliding) {
+                rb.MovePosition(targetPosition);
+            }
+            transform.rotation *= rotation;
+        }
+        else {
+            if(rx > 0) {
+                rotationY += rx * 20f * Time.deltaTime;
+                rotationY = Mathf.Clamp(rotationY, -40f, 40f);
+            }
+        }
+        if (xrRig != null) {
+            xrRig.localRotation = Quaternion.Euler(0f, rotationY, 0f);
+        }
     }
+
+
 
     private void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.tag != "Land" &&

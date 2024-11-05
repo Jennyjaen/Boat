@@ -8,13 +8,11 @@ public class GamePadInput : MonoBehaviour
 
     private GamePadState state;
     private GamePadState prevState;
-    Rigidbody rigidbody;
-    private float speed = 4f;
+    Rigidbody rb;
     private Transform xrRig;
 
-    public float rotationSpeed = 20f;
-    private float rotationX = 0f;
     private float rotationY = 0f;
+    private bool colliding = false;
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +24,7 @@ public class GamePadInput : MonoBehaviour
         else {
             Debug.Log("GamePad not connected.");
         }
-        rigidbody = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
         xrRig = GameObject.Find("XR Rig/Camera Offset")?.transform;
         if(xrRig == null) {
             Debug.Log("can not find camera");
@@ -39,27 +37,45 @@ public class GamePadInput : MonoBehaviour
         state = GamePad.GetState(PlayerIndex.One);
 
         if (state.IsConnected) {
-            float LX = state.ThumbSticks.Left.X;
-            float LY = state.ThumbSticks.Left.Y;
-            Vector3 forwardMovement = transform.right * LY * -5f * Time.deltaTime;
-            float turnAmount = LX * 30f * Time.deltaTime;
-            Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
-
-            transform.position += forwardMovement;
-            transform.rotation *= rotation;
-            //Debug.Log($"LX: {LX}, LY: {LY}");
-
+            float lx = state.ThumbSticks.Left.X;
+            float ly = state.ThumbSticks.Left.Y;
             float rx = state.ThumbSticks.Right.X;
             float ry = state.ThumbSticks.Right.Y;
 
-            rotationX += ry * rotationSpeed * Time.deltaTime;
-            rotationY += rx * rotationSpeed * Time.deltaTime;
-
-            rotationX = Mathf.Clamp(rotationX, -40f, 40f);
-            rotationY = Mathf.Clamp(rotationY, -40f, 40f);
-
+            if (ly != 0) {
+                Vector3 forwardMovement = -transform.right * ly * 2.5f * Time.deltaTime;
+                float turnAmount = ly * 15f * Time.deltaTime;
+                Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
+                Vector3 targetPosition = rb.position + forwardMovement;
+                if (!colliding) {
+                    rb.MovePosition(targetPosition);
+                }
+                transform.rotation *= rotation;
+            }
+            else {
+                if (lx < 0) {
+                    rotationY += lx * 20f * Time.deltaTime;
+                    rotationY = Mathf.Clamp(rotationY, -40f, 40f);
+                }
+            }
+            if (ry != 0) {
+                Vector3 forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
+                float turnAmount = ry * 15f * Time.deltaTime;
+                Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
+                Vector3 targetPosition = rb.position + forwardMovement;
+                if (!colliding) {
+                    rb.MovePosition(targetPosition);
+                }
+                transform.rotation *= rotation;
+            }
+            else {
+                if (rx > 0) {
+                    rotationY += rx * 20f * Time.deltaTime;
+                    rotationY = Mathf.Clamp(rotationY, -40f, 40f);
+                }
+            }
             if (xrRig != null) {
-                xrRig.localRotation = Quaternion.Euler(rotationX, rotationY, 0f);
+                xrRig.localRotation = Quaternion.Euler(0f, rotationY, 0f);
             }
         }
         else {
@@ -67,6 +83,18 @@ public class GamePadInput : MonoBehaviour
         }
 
         prevState = state;
+    }
+
+    private void OnCollisionEnter(Collision collision) {
+        if (collision.gameObject.tag != "Land" &&
+        collision.gameObject.tag != "Grass" &&
+        collision.gameObject.tag != "Water") {
+            colliding = true;
+        }
+    }
+
+    private void OnCollisionExit(Collision collision) {
+        colliding = false;
     }
 }
 
