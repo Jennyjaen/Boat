@@ -116,45 +116,55 @@ public class RightDelimiter : MonoBehaviour {
             accum_x += x;
             accum_y += y;
 
-            if (x != 0 || y != 0) {
-                if (y != 0) {
-                    if (sum_y * y < 0) {
-                        sum_y = y;
+            if (person.inputMethod == FirstPersonMovement.InputMethod.HandStickGesture) {
+                if (x != 0 || y != 0) {
+                    if (y != 0) {
+                        if (sum_y * y < 0) {
+                            sum_y = y;
+                        }
+                        else {
+                            sum_y += y;
+                        }
+                        if (Mathf.Abs(sum_y) > 10) { zerostream_y = 0; }
+                        else { zerostream_y++; }
                     }
                     else {
-                        sum_y += y;
+                        sum_y = 0;
+                        zerostream_y++;
                     }
-                    if (Mathf.Abs(sum_y) > 10) { zerostream_y = 0; }
-                    else { zerostream_y++; }
-                }
-                else {
-                    sum_y = 0;
-                    zerostream_y++;
-                }
-                if (x != 0) {
-                    if (sum_x * x < 0) {
-                        sum_x = x;
+                    if (x != 0) {
+                        if (sum_x * x < 0) {
+                            sum_x = x;
+                        }
+                        else {
+                            sum_x += x;
+                        }
+                        if (Mathf.Abs(sum_x) > 10) { zerostream_x = 0; }
+                        else { zerostream_x++; }
                     }
                     else {
-                        sum_x += x;
+                        sum_x = 0;
+                        zerostream_x++;
                     }
-                    if (Mathf.Abs(sum_x) > 10) { zerostream_x = 0; }
-                    else { zerostream_x++; }
                 }
                 else {
                     sum_x = 0;
+                    sum_y = 0;
                     zerostream_x++;
+                    zerostream_y++;
                 }
-            }
-            else {
-                sum_x = 0;
-                sum_y = 0;
-                zerostream_x++;
-                zerostream_y++;
-            }
 
-            zerostream = Mathf.Min(zerostream_x, zerostream_y);
-
+                zerostream = Mathf.Min(zerostream_x, zerostream_y);
+            }
+            else if (person.inputMethod == FirstPersonMovement.InputMethod.HandStickThrottle) {
+                /*if (Mathf.Abs(accum_x) < 100 && Mathf.Abs(accum_y) < 100) {
+                    zerostream++;
+                }
+                else {
+                    zerostream = 0;
+                }*/
+                zerostream = 100; //오른쪽 쓰로틀은 시야 변경인데, 필요할까? 라는 생각.
+            }
 
         }
         else {

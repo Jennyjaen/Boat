@@ -118,8 +118,8 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
 
-    void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) {
-        if (collide == 0.5f) {
+    void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //충돌, 물에 빠짐, 배의 기울기
+        if (collide == 0.5f) { // collide 후 아무런 피드백 x
             for (int i = 0; i < 108; i++) {
                 larray[i] = (byte)0;
                 rarray[i] = (byte)0;
@@ -180,7 +180,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         x_2 = (int)res;
                         if (x >= 12) {
                             int index = y * 6 + ((x - 12) / 2);
-                            rarray[index] = (byte)(x_1 * 6 + x_2);
+                            rarray[107- index] = (byte)(x_1 * 6 + x_2); //rarray 뒤집었음.
                         }
                         else {
                             int index = y * 6 + (x / 2);
@@ -202,9 +202,10 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
             larray = arr;
+            System.Array.Reverse(arr); //오른쪽 뒤집었음.
             rarray = arr;
         }
-        else {// normal case
+        else {// 기울기: 0f
             if(clamp_ang < incline_deadzone) {
                 //Debug.Log("deadzone");
                 for(int i= 0; i<108; i++) {
@@ -231,7 +232,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
                     if (angle >= 337.5 || angle < 22.5) {
                         /*왼쪽*/
-                        Debug.Log("left");
+                        //Debug.Log("left");
                         for (int y = 0; y < 18; y++) {
                             for (int x = 0; x < 12; x++) {
                                 if (x >= vib_width) { res = 0; }
@@ -239,13 +240,13 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
                     }
                     else if (angle >= 22.5 && angle < 67.5) {
-                        Debug.Log("left down");
+                       // Debug.Log("left down");
                         /*좌측 아래*/
                         for (int y = 0; y < 18; y++) {
                             for (int x = 0; x < 12; x++) {
@@ -254,14 +255,14 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
                     }
                     else if (angle >= 67.5 && angle < 112.5) {
                         /*아래*/
-                        Debug.Log("down");
+                        //Debug.Log("down");
                         for (int y = 0; y < 18; y++) {
                             for (int x = 0; x < 12; x++) {
                                 if (y < 18 - vib_width) { res = 0; }
@@ -269,7 +270,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -277,7 +278,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                     else if (angle >= 112.5 && angle < 157.5) {
                         /*우측 아래*/
-                        Debug.Log("right down");
+                       // Debug.Log("right down");
                         for (int y = 0; y < 18; y++) {
                             for (int x = 0; x < 12; x++) {
                                 if ((11 - x) + (17 - y) < vib_width) { res = vib_level; }
@@ -285,7 +286,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -300,13 +301,13 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
                     }
                     else if (angle >= 202.5 && angle < 247.5) {
-                        Debug.Log("right up");
+                        //Debug.Log("right up");
                         /*우측 위*/
                         for (int y = 0; y < 18; y++) {
                             for (int x = 0; x < 12; x++) {
@@ -315,7 +316,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -323,7 +324,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                     else if (angle >= 247.5 && angle < 292.5) {
                         // 위
-                        Debug.Log("up");
+                        //Debug.Log("up");
                         for (int y = 0; y < 18; y++) {
                             for (int x = 0; x < 12; x++) {
                                 if (y >= vib_width) { res = 0; }
@@ -331,7 +332,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -340,7 +341,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                     else if (angle >= 292.5 && angle < 337.5) {
                         /*좌측 위*/
-                        Debug.Log("left up");
+                        //Debug.Log("left up");
                         for (int y = 0; y < 18; y++) {
                             for (int x = 0; x < 12; x++) {
                                 if (x + y < vib_width) { res = vib_level; }
@@ -348,7 +349,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -381,7 +382,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -395,7 +396,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -411,7 +412,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -425,7 +426,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -439,7 +440,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -453,7 +454,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -469,7 +470,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -484,7 +485,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -518,7 +519,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -533,7 +534,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -548,7 +549,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -564,7 +565,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -579,7 +580,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -594,7 +595,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -610,7 +611,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -627,7 +628,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -669,7 +670,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -684,7 +685,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -701,7 +702,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -715,7 +716,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -730,7 +731,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -744,7 +745,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)0;
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -760,7 +761,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
                                 }
                             }
                         }
@@ -775,7 +776,7 @@ public class FirstPersonMovement : MonoBehaviour {
                                 if (x % 2 == 0) { x_1 = res; }
                                 else {
                                     larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                                    rarray[y * 6 + (x / 2)] = (byte)0;
+                                    rarray[107 - (y * 6 + (x / 2))] = (byte)0;
                                 }
                             }
                         }
@@ -806,50 +807,83 @@ public class FirstPersonMovement : MonoBehaviour {
     void updateEachArray(bool isLeft, float vel, bool reverse, int sum, float water) {
         //water: 0 둘다 일반 노젓기 1: 왼쪽 땅, 1.5: 양쪽 땅, 2: 오른쪽 땅, 3: 풀 위
         byte[] arr = new byte[108];
-        int max_vib = 0;
-        int width = 4;
 
-        if(Mathf.Abs(sum )> 10) {
-            if (isLeft && water == 1) { width = 8; max_vib = 5; }
-            else if (!isLeft && water == 2) { width = 8; max_vib = 5; }
-            else if (water == 1.5f) { width = 8; max_vib = 5; }
-            else { 
-                if (vel <= 3) { max_vib = 5;}
-                else if(vel <= 5) { max_vib = 4;}
-                else if(vel <= 7) { max_vib = 3; }
-                else if(vel <= 9) { max_vib = 2; }
-                else { max_vib = 1; }    
-            }  
-        }
-
-        if (reverse && sum > 0) { max_vib = 0; }
-        if(!reverse && sum < 0) { max_vib = 0; }
-        int sero = Mathf.Abs(sum) / 120;
-        
-        if (isLeft && water == 1) { sero = Mathf.Abs(sum) / 210; }
-        if (!isLeft && water == 2) { sero = Mathf.Abs(sum) / 210; }
-        if(water == 1.5f) { sero = Mathf.Abs(sum) / 210; }
-        if(water == 3) {
-            sero = Mathf.Abs(sum) / 120;
-            int grass_idx = sero / 3;
-            if(grass_idx >= 6) { grass_idx = 5; }
-            if(grass[grass_idx]!= sero) {
-                if(grass_idx > 0) { sero = grass[grass_idx - 1]; }
-                else { sero = 0; }
-            }
-            
-        }
-        for (int y = 0; y< 18; y++) {
-            for(int n = 0; n<6; n++) {
-                if(y >= sero && y < sero + width) {
-                    arr[y * 6 + n] = (byte) (max_vib * 6 + max_vib);
+        switch (inputMethod) {
+            case InputMethod.HandStickThrottle:
+                if(water == 1) {
+                    for(int i = 0; i<108; i++) {
+                        larray[i] = (byte)3;
+                        rarray[i] = (byte)0;
+                    }
                 }
-                else { arr[y * 6  +n] =(byte) 0; }
-            }
+                else if(water == 1.5f) {
+                    for (int i = 0; i < 108; i++) {
+                        larray[i] = (byte)3;
+                        rarray[i] = (byte)3;
+                    }
+                }
+                else if(water == 2f) {
+                    for (int i = 0; i < 108; i++) {
+                        larray[i] = (byte)0;
+                        rarray[i] = (byte)3;
+                    }
+                }
+                else if(water == 3f) {
+
+                }
+                break;
+            case InputMethod.HandStickGesture: // 노젓기
+                int max_vib = 0;
+                int width = 4;
+
+                if(Mathf.Abs(sum )> 10) {
+                    if (isLeft && water == 1) { width = 8; max_vib = 5; }
+                    else if (!isLeft && water == 2) { width = 8; max_vib = 5; }
+                    else if (water == 1.5f) { width = 8; max_vib = 5; }
+                    else { 
+                        if (vel <= 3) { max_vib = 5;}
+                        else if(vel <= 5) { max_vib = 4;}
+                        else if(vel <= 7) { max_vib = 3; }
+                        else if(vel <= 9) { max_vib = 2; }
+                        else { max_vib = 1; }    
+                    }  
+                }
+
+                if (reverse && sum > 0) { max_vib = 0; }
+                if(!reverse && sum < 0) { max_vib = 0; }
+                int sero = Mathf.Abs(sum) / 120;
+        
+                if (isLeft && water == 1) { sero = Mathf.Abs(sum) / 210; }
+                if (!isLeft && water == 2) { sero = Mathf.Abs(sum) / 210; }
+                if(water == 1.5f) { sero = Mathf.Abs(sum) / 210; }
+                if(water == 3) {
+                    sero = Mathf.Abs(sum) / 120;
+                    int grass_idx = sero / 3;
+                    if(grass_idx >= 6) { grass_idx = 5; }
+                    if(grass[grass_idx]!= sero) {
+                        if(grass_idx > 0) { sero = grass[grass_idx - 1]; }
+                        else { sero = 0; }
+                    }
+            
+                }
+                for (int y = 0; y< 18; y++) {
+                    for(int n = 0; n<6; n++) {
+                        if(y >= sero && y < sero + width) {
+                            arr[y * 6 + n] = (byte) (max_vib * 6 + max_vib);
+                        }
+                        else { arr[y * 6  +n] =(byte) 0; }
+                    }
+                }
+                if (!reverse) { System.Array.Reverse(arr); }
+                if (isLeft) { larray = arr; }
+                else { 
+                    System.Array.Reverse(arr); //오른쪽 장치 뒤집어서 거꾸로 넣어줘야함.
+                    rarray = arr;
+                }
+
+                break;
         }
-        if (!reverse) { System.Array.Reverse(arr); }
-        if (isLeft) { larray = arr; }
-        else { rarray = arr; }
+        
 }
     void GrassEffect() {
         for(int i = 0; i< 6; i++) {
@@ -877,7 +911,6 @@ public class FirstPersonMovement : MonoBehaviour {
                 break;
         }
 
-
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
@@ -904,7 +937,6 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
                 break;
             case InputMethod.HandStickThrottle: //장치에 햅틱 피드백을 주는 경우
-            case InputMethod.HandStickGesture:
                 Vector3 up_vector = transform.up;
                 Vector3 forward_vector = -transform.forward;
                 float ang = Vector3.Angle(up_vector, Vector3.up);
@@ -924,19 +956,44 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
                 else {
                     collide = bef_coll;
+                    if (bef_coll == 1.5f) {
+                        collide = 2.0f;
+                    }
+                }
+                if(water_status != 0f) { // 무언가와 부딪히는 중
+                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
+                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
+                }
+                else {
+                    if(input_d.zerostream >= 100) {
+                        collide = 0f; //기울기 피드백은 여기서
+                    }
+                    updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); 
+                }
+                
+                
+
+                // 노젓기가 없기 때문에 update Each Array를 할 필요가 있나? -> 땅, 풀 처리할거면 필요하긴 함? water status만 보면 될 것 같은데.
+                break;
+            case InputMethod.HandStickGesture:
+                direct_ang = 0f; //기울기 표현 x이기 때문에 계산 필요 x.
+                c_ang = 0f;
+                c_speed = Mathf.Clamp(collide_speed, 0, 5);
+                c_speed /= 5;
+                if (direct_ang < 0) { direct_ang += 360; }
+                bef_coll = collide;
+                if (underwater.underwater) {
+                    collide = 1.5f;
+                    float currentPositionY = front.position.y;
+                    float diff = underwater.water_y - currentPositionY;
+                    c_ang = diff;
+                }
+                else {
+                    collide = bef_coll;
                     if(bef_coll == 1.5f) {
                         collide = 2.0f;
                     }
                 }
-        
-                if(collide == 0f || collide ==2f) {
-                    if(input_d.zerostream > 50) { 
-                        collide = 0f;
-                        c_speed = transform.position.y;
-                    }
-                    else { collide = 2.0f; }
-                }
-        
         
                 if(collide<2.0f) {updateArray(collide, direct_ang,  c_ang, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
                 else { // 노 젓기
