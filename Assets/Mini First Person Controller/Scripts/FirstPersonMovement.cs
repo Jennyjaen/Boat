@@ -42,7 +42,11 @@ public class FirstPersonMovement : MonoBehaviour {
     private bool grassboat;
     private int enterCount = 0;
     private bool grassin = false;
+    private int[,] left_grass = new int[12, 85];
+    private int[,] right_grass = new int[12, 85];
+
     private GamePadState state;
+
     //Input 방법을 여러개로 바꾸기
     public enum InputMethod {
         GamePad,
@@ -114,14 +118,72 @@ public class FirstPersonMovement : MonoBehaviour {
             rarray[i] = (byte)0;
 
         }
+        InitArray();
+        MarkArray(left_grass, GeneratePoints());
+        MarkArray(right_grass, GeneratePoints());
+    }
 
+    void InitArray() {
+        for(int i = 0; i < left_grass.GetLength(0); i++) {
+            for(int j= 0; j< right_grass.GetLength(1); j++) {
+                left_grass[i, j] = 0;
+                right_grass[i, j] = 0;
+            }
+        }
+    }
+
+    List<Vector2Int> GeneratePoints() {
+        List<Vector2Int> points = new List<Vector2Int>();
+        int previousX = -1;
+
+        for (int i = 0; i < 9; i++) {
+            int x;
+            do {
+                x = Random.Range(0, 3); // 가로 0, 1, 2 중 하나 선택
+            } while (x == previousX); // 이전 점의 가로 좌표와 다르게 선택
+
+            previousX = x;
+
+            // 3. 가로에 따른 세로 좌표 범위 설정
+            int yRangeStart = 6 * i + 19;
+            int yRangeEnd = 6 * i + 23;
+            int y = Random.Range(yRangeStart, yRangeEnd);
+
+            int specificX;
+            if (x == 0)
+                specificX = Random.Range(1, 4); // 가로가 0일 때 1~3 중 선택
+            else if (x == 1)
+                specificX = Random.Range(4, 8); // 가로가 1일 때 4~7 중 선택
+            else
+                specificX = Random.Range(8, 12); // 가로가 2일 때 8~10 중 선택
+
+            points.Add(new Vector2Int(specificX, y));
+        }
+
+        return points;
+    }
+
+    void MarkArray(int[,] targetArray, List<Vector2Int> points) {
+        foreach (var point in points) {
+            int startX = Mathf.Max(0, point.x - 1);
+            int endX = Mathf.Min(targetArray.GetLength(0) - 1, point.x);
+            int startY = Mathf.Max(0, point.y - 1);
+            int endY = Mathf.Min(targetArray.GetLength(1) - 1, point.y + 1);
+
+            for (int x = startX; x <= endX; x++) {
+                for (int y = startY; y <= endY; y++) {
+                    targetArray[x, y] = 4;
+                }
+            }
+        }
+        Print12Array(targetArray);
     }
 
     int Is_max(int maxim, int res) {
-        if(res == maxim) { return res; }
-        //else if(res == minim) { return res + 1; }
-        else { return 0; }      
-    }
+    if(res == maxim) { return res; }
+    //else if(res == minim) { return res + 1; }
+    else { return 0; }      
+}
 
 
     void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //충돌, 물에 빠짐, 배의 기울기
@@ -817,7 +879,35 @@ public class FirstPersonMovement : MonoBehaviour {
 
         Debug.Log(output);
     }
+    int[,] SliceArray(int[,] originalArray, int startX, int startY, int rows, int cols) {
+        int[,] result = new int[rows, cols];
 
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                //Debug.Log($"Position is: {startX + i} , {startY + j}");
+                result[i, j] = originalArray[startX + i, startY + j];
+            }
+        }
+
+        return result;
+    }
+
+    byte[] int2byteArray(int[, ] array, bool reverse) {
+        byte[] result = new byte[108];
+        for(int y=0; y<18; y++) {
+            for(int x= 0; x<6; x++) {
+                if (reverse) {
+                    result[107 - (y * 6 + x)] = (byte)(array[x * 2, y] + array[x * 2 + 1, y]* 6);
+                }
+                else {
+                    result[y * 6 + x] = (byte)(array[x * 2, y]* 6 + array[x * 2 + 1, y]);
+                }
+                
+            }
+        }
+
+        return result;
+    }
     void updateEachArray(bool isLeft, float vel, bool reverse, int sum, float water) {
         //water: 0 둘다 일반 노젓기 1: 왼쪽 땅, 1.5: 양쪽 땅, 2: 오른쪽 땅, 3: 풀 위
         byte[] arr = new byte[108];
@@ -843,7 +933,16 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                 }
                 else if(water == 3f) {
+                    int boat_pos = Mathf.FloorToInt((transform.position.z + 87) * 2);
+                    //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
 
+                    int[,] left_slice = SliceArray(left_grass,0, boat_pos, 12, 18);
+                    int[,] right_slice = SliceArray(right_grass,0, boat_pos,12, 18);
+                    larray = int2byteArray(left_slice, true);
+                    //System.Array.Reverse(larray);
+                    printArray(larray);
+                    rarray = int2byteArray(right_slice, false);
+                    
                 }
                 break;
             case InputMethod.HandStickGesture: // 노젓기
@@ -904,10 +1003,20 @@ public class FirstPersonMovement : MonoBehaviour {
             grass[i] = Random.Range(i * 3, i* 3 + 2);
         }
     }
+    void Print12Array(int[,] targetArray) {
+        string result = ""; // 전체 배열을 담을 문자열
 
+        for (int i = 0; i < targetArray.GetLength(0); i++) {
+            for (int j = 0; j < targetArray.GetLength(1); j++) {
+                result += targetArray[i, j] + " ";
+            }
+            result = result.TrimEnd() + "\n"; // 각 행의 끝에서 공백 제거 후 줄바꿈 추가
+        }
+
+        Debug.Log(result.TrimEnd()); // 전체 문자열을 한 번에 출력
+    }
 
     void Update() {
-        Debug.Log("status: " + water_status + " all boat in: " + grassboat);
         switch (inputMethod) {
             case InputMethod.GamePad:
                 GamePadInput.enabled = true;
