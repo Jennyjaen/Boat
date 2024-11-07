@@ -176,7 +176,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
         }
-        Print12Array(targetArray);
+        //Print12Array(targetArray);
     }
 
     int Is_max(int maxim, int res) {
@@ -939,8 +939,6 @@ public class FirstPersonMovement : MonoBehaviour {
                     int[,] left_slice = SliceArray(left_grass,0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass,0, boat_pos,12, 18);
                     larray = int2byteArray(left_slice, true);
-                    //System.Array.Reverse(larray);
-                    printArray(larray);
                     rarray = int2byteArray(right_slice, false);
                     
                 }
@@ -1085,13 +1083,15 @@ public class FirstPersonMovement : MonoBehaviour {
                         }
                     }
 
-                if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
+                Debug.Log($"collide: {collide} , water status: {water_status}");
+                if(collide <2f) {
+                    updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                }
+                else if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
                     updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
                     updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
                 }
-                else {
-                    updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); 
-                }
+                
                 //Debug.Log($"Collide: {collide}, Water status: {water_status}");
                 break;
 
@@ -1179,8 +1179,11 @@ public class FirstPersonMovement : MonoBehaviour {
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
-                        StartCoroutine(CollisionControl());
-                        water_status = 0f;
+                        if(collide != 1.0f && collide!= 0.5f) {
+                            StartCoroutine(CollisionControl());
+                            water_status = 0f;
+                        }
+                        
                     }
             
                 }
@@ -1258,7 +1261,11 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void OnCollisionExit(Collision c) {
-        collide = 0f;
+        /*
+        if(collide != 1f && collide != 0.5f) {
+            collide = 0f;
+        }*/
+        
         if (!c.collider.CompareTag("Grass")) {
             water_status = 0f;
         }
@@ -1277,6 +1284,7 @@ public class FirstPersonMovement : MonoBehaviour {
         if (other.CompareTag("GrassE")) {
             if (water_status != 3f && enterCount== 0) {
                 water_status = 3f;
+                collide = 2f;
             }
             if (grassboat && enterCount ==0) {
                 grassboat = false;
@@ -1293,12 +1301,16 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             if (!grassboat && enterCount ==1) {
                 water_status = 0f;
+                collide = 0f;
                 grassin = false;
             }
             enterCount--;
         }
     }
     private IEnumerator CollisionControl() {
+        if(collide == 1.0f || collide == 0.5f) {
+            yield break; //이미 충돌 신호가 1 이상 들어와 있으면 중복해서 다시 시작하는 것 금지.
+        }
         collide = 1.0f;
         yield return new WaitForSeconds(2.0f);
 
