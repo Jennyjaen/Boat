@@ -45,6 +45,8 @@ public class FirstPersonMovement : MonoBehaviour {
     private int[,] left_grass = new int[12, 85];
     private int[,] right_grass = new int[12, 85];
 
+    [HideInInspector]
+    public bool waterincline = false;
     private GamePadState state;
 
     //Input 방법을 여러개로 바꾸기
@@ -1015,6 +1017,7 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void Update() {
+        //Debug.Log(waterincline);
         switch (inputMethod) {
             case InputMethod.GamePad:
                 GamePadInput.enabled = true;
@@ -1039,7 +1042,9 @@ public class FirstPersonMovement : MonoBehaviour {
         if (rotation.z > 180) { rotation.z -= 360; }
         rotation.z = Mathf.Clamp(rotation.z, -40f, 40f);
         transform.eulerAngles = rotation;
-
+        if (underwater.underwater) {
+            waterincline = false;
+        }
 
         //최고속도 조절
         if (rigidbody.velocity.magnitude > 15.0f) {
@@ -1083,8 +1088,11 @@ public class FirstPersonMovement : MonoBehaviour {
                         }
                     }
 
-                Debug.Log($"collide: {collide} , water status: {water_status}");
-                if(collide <2f) {
+                if(collide <2f || water_status ==0) {
+                    if(water_status == 0) {
+                        collide = 0f;
+                        Debug.Log(direct_ang);
+                    }
                     updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
                 }
                 else if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
@@ -1161,7 +1169,6 @@ public class FirstPersonMovement : MonoBehaviour {
     void OnCollisionEnter(Collision c) {
         Vector3 colVelocity = c.relativeVelocity;
         collide_speed = colVelocity.magnitude;
-
         switch (inputMethod) {
             case InputMethod.GamePad:
                 if (!c.collider.CompareTag("Water")) {
@@ -1281,6 +1288,12 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("WaterE")){
+            waterincline = true;
+        }
+        if (other.CompareTag("WaterO")) {
+            waterincline = false;
+        }
         if (other.CompareTag("GrassE")) {
             if (water_status != 3f && enterCount== 0) {
                 water_status = 3f;

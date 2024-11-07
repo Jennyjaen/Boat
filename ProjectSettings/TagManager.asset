@@ -8,6 +8,8 @@ TagManager:
   - Grass
   - Land
   - GrassE
+  - WaterE
+  - WaterO
   layers:
   - Default
   - TransparentFX
