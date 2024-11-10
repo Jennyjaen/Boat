@@ -137,7 +137,6 @@ public class SerialControllerCustomDelimiter : MonoBehaviour
 
         int messageLength = messages[0].Length;
         int[] summedMessage = new int[messageLength];
-        Debug.Log(messageLength);
 
         for (int i = 0; i < messageLength; i++) {
             int sum = 0;
