@@ -1096,8 +1096,8 @@ public class FirstPersonMovement : MonoBehaviour {
                     updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
                 }
                 else if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
-                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
-                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
+                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
                 }
                 
                 //Debug.Log($"Collide: {collide}, Water status: {water_status}");
@@ -1127,8 +1127,8 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
                 if(collide<2.0f) {updateArray(collide, direct_ang,  c_ang, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
                 else { // 노 젓기
-                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_l, water_status); //left hand
-                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.reverse, input_d.sum_r, water_status); //right hand
+                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
                 }
         
                 break;

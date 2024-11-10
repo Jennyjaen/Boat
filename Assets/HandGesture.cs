@@ -37,12 +37,12 @@ public class HandGesture : MonoBehaviour
     {
         //아두이노로 보트 조작
         if (input_d.left_y != 0) {
-            if (input_d.left_y > 0 && !input_d.reverse) {
+            if (input_d.left_y > 0 && !input_d.l_reverse) {
                 rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
                 rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
                 //rigidbody.AddTorque(0.005f * input_d.left_y, 0, 0);
             }
-            else if (input_d.left_y < 0 && input_d.reverse) {
+            else if (input_d.left_y < 0 && input_d.l_reverse) {
                 rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
                 rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
             }
@@ -52,12 +52,12 @@ public class HandGesture : MonoBehaviour
 
         if (input_d.right_y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
-            if (input_d.right_y > 0 && !input_d.reverse) {
+            if (input_d.right_y > 0 && !input_d.r_reverse) {
                 rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
                 rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
                 //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
             }
-            else if (input_d.right_y < 0 && input_d.reverse) {
+            else if (input_d.right_y < 0 && input_d.r_reverse) {
                 rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
                 rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
             }

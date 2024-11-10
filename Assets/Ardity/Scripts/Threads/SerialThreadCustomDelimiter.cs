@@ -50,13 +50,20 @@ public class SerialThreadBinaryDelimited : AbstractSerialThread
     protected override object ReadFromWire(SerialPort serialPort)
     {
         // Try to fill the internal buffer
-        bufferUsed += serialPort.Read(buffer, bufferUsed, buffer.Length - bufferUsed);
+        int readbyte = serialPort.Read(buffer, bufferUsed, buffer.Length - bufferUsed);
+        bufferUsed += readbyte;
 
+        Debug.Log("read: "+ readbyte+" bufferused " + bufferUsed);
+        for(int i = 0; i<bufferUsed; i++) {
+            Debug.Log($"{i}th buffer: {buffer[i]}");
+        }
         // Search for the separator in the buffer
         int index = System.Array.FindIndex<byte>(buffer, 0, bufferUsed, IsSeparator);
-        if (index == -1)
+        if (index == -1) {
             return null;
-
+        }
+            
+        Debug.Log("idx: " + index);
         byte[] returnBuffer = new byte[index];
         System.Array.Copy(buffer, returnBuffer, index);
 

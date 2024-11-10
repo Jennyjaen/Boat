@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Input_Delim : MonoBehaviour {
 
@@ -18,7 +19,9 @@ public class Input_Delim : MonoBehaviour {
     [HideInInspector]
     public float right_y;
     [HideInInspector]
-    public bool reverse;
+    public bool r_reverse;
+    [HideInInspector]
+    public bool l_reverse;
     [HideInInspector]
     public int zerostream;
 
@@ -37,6 +40,10 @@ public class Input_Delim : MonoBehaviour {
 
     public int far_threshold = 500;
 
+    [SerializeField]
+    private Text LText;
+    [SerializeField]
+    private Text RText;
     public enum Choice{
         FarUpDown,
         FootInput
@@ -61,7 +68,9 @@ public class Input_Delim : MonoBehaviour {
 
         sum_l = 0;
         sum_r = 0;
-        reverse = false;
+        r_reverse = false;
+        l_reverse = false;
+
     }
 
     // Update is called once per frame
@@ -82,21 +91,41 @@ public class Input_Delim : MonoBehaviour {
 
         switch (selected) {
             case Choice.FarUpDown: //해야하는 것: x축에서 얼마나 떨어졌는지
-                if(accum_lx < -1 * far_threshold && accum_rx > far_threshold) {
-                    reverse = true;
+                if(accum_lx < -1 * far_threshold) {
+                    l_reverse = true;
+                    if (LText != null) {
+                        LText.gameObject.SetActive(true);
+                    }
                 }
                 else {
-                    reverse = false;
+                    l_reverse = false;
+                    if (LText != null) {
+                        LText.gameObject.SetActive(false);
+                    }
+                }
+                if (accum_rx > far_threshold) {
+                    r_reverse = true;
+                    if (RText != null) {
+                        RText.gameObject.SetActive(true);
+                    }
+                }
+                else {
+                    r_reverse = false;
+                    if (RText != null) {
+                        RText.gameObject.SetActive(false);
+                    }
                 }
 
                 break;
 
             case Choice.FootInput: //해야하는 것: 특정 키보드가 눌렸는지
                 if (Input.GetKey(KeyCode.B)) {
-                    reverse = true;
+                    l_reverse = true;
+                    r_reverse = true;
                 }
                 else {
-                    reverse = false;
+                    l_reverse = false;
+                    r_reverse = false;
                 }
                 break;
         }
