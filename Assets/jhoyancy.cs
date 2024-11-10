@@ -35,13 +35,15 @@ public class jhoyancy : MonoBehaviour
             float waveHeight = GetWaveHeightOnPlane(targetObject.position, closestPlane, Time.time);
 
             if(count % frequency < (frequency / 2)) {
-                if(targetObject.position.z > transform.position.z) {
-                    ApplyBuoyancy(rb, targetObject.position, waveHeight, buoyancyStrength);
-                }
+                Debug.Log("Left");
+                if(targetObject.position.z > transform.position.z) { // 양쪽에 번갈아가며 부력을 주기 위해 추가.
+                ApplyBuoyancy(rb, targetObject.position, waveHeight, buoyancyStrength);
+               }
             }
             else {
+                Debug.Log("Right");
                 if (targetObject.position.z < transform.position.z) {
-                    ApplyBuoyancy(rb, targetObject.position, waveHeight, buoyancyStrength);
+                ApplyBuoyancy(rb, targetObject.position, waveHeight, buoyancyStrength);
                 }
             }
             count++;
@@ -70,12 +72,11 @@ public class jhoyancy : MonoBehaviour
 
     void ApplyBuoyancy(Rigidbody rb, Vector3 position, float waveHeight, float buoyancyStrength) {
         float objectHeight = position.y;
-        float displacement = waveHeight - objectHeight;
-
+        float displacement = Mathf.Abs(waveHeight - objectHeight);
         if (displacement > 0) {
-            Vector3 buoyancyForce = targetObject.up * displacement * buoyancyStrength;
+            Vector3 buoyancyForce = Vector3.up * displacement * buoyancyStrength;
             //rb.AddForce(buoyancyForce, ForceMode.Acceleration);
-            rb.AddForceAtPosition(buoyancyForce, transform.position);
+            rb.AddForceAtPosition(buoyancyForce, transform.position, ForceMode.Acceleration);
         }
     }
 }

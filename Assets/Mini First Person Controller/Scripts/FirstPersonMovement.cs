@@ -611,8 +611,7 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void Update() {
-        Debug.Log($"collide: {collide} , water: {water_status}");
-        //Debug.Log(waterincline);
+        //Debug.Log($"collide: {collide} , water: {water_status}");
         switch (inputMethod) {
             case InputMethod.GamePad:
                 GamePadInput.enabled = true;
@@ -846,7 +845,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     break;
                 case InputMethod.HandStickThrottle:
                 case InputMethod.HandStickGesture:
-
+                    collide = 2f;
                     int[] count = CountZ(c.contacts);
                     if (count[0] >= 1 && count[1] >= 1) {
                         water_status = 1.5f;
@@ -879,6 +878,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     break;
             }
             collide_land = false;
+            collide = 0f;
         }
     }
 
