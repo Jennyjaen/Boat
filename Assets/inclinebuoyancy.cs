@@ -16,7 +16,7 @@ public class inclinebuoyancy : MonoBehaviour
     public Transform plane1;
     public Transform plane2;
     private int count = 0;
-    public int frequency = 50;
+    private int frequency = 80;
     // Start is called before the first frame update
     void Start()
     {
@@ -75,11 +75,25 @@ public class inclinebuoyancy : MonoBehaviour
         float displacement = Mathf.Abs(waveHeight - objectHeight);
         if (displacement > 0) {
             //Debug.Log(objectHeight);
-            Vector3 buoyancyForce = Vector3.up * displacement * buoyancyStrength * (position.y * 0.6f);
-            Debug.Log(buoyancyForce.y);
-            if(buoyancyForce.y < 0.3f) {
-                buoyancyForce.y = 0.3f;
+            Vector3 buoyancyForce = Vector3.up * displacement * buoyancyStrength;
+            buoyancyForce *= (position.y * 0.4f);
+            if(rb.position.y > 0.8f) {
+                if (buoyancyForce.y < 0.6f) {
+                    buoyancyForce.y = 0.6f;
+                }
             }
+            else if(rb.position.y > 0.6f){
+                if (buoyancyForce.y < 0.4f) {
+                    buoyancyForce.y = 0.4f;
+                }
+            }
+            else if(rb.position.y < 0.3f) {
+                if (buoyancyForce.y > 0.3f) {
+                    buoyancyForce.y = 0.3f;
+                }
+            }
+
+            //Debug.Log($"height : {rb.transform.position.y} , and buoyancy: {buoyancyForce.y}");
             rb.AddForceAtPosition(buoyancyForce, transform.position);
             //Debug.Log($"target object: {position}, buoyancy object: {transform.position}");
         }
