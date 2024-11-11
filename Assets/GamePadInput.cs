@@ -43,7 +43,7 @@ public class GamePadInput : MonoBehaviour
             float ry = state.ThumbSticks.Right.Y;
 
             if (ly != 0) {
-                Vector3 forwardMovement = -transform.right * ly * 2.5f * Time.deltaTime;
+                Vector3 forwardMovement = -transform.right * ly * 2f * Time.deltaTime;
                 float turnAmount = ly * 15f * Time.deltaTime;
                 Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
                 Vector3 targetPosition = rb.position + forwardMovement;
@@ -59,7 +59,7 @@ public class GamePadInput : MonoBehaviour
                 }
             }
             if (ry != 0) {
-                Vector3 forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
+                Vector3 forwardMovement = transform.right * ry * 2f * Time.deltaTime;
                 float turnAmount = ry * 15f * Time.deltaTime;
                 Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
                 Vector3 targetPosition = rb.position + forwardMovement;
