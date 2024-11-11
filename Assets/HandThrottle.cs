@@ -11,6 +11,22 @@ public class HandThrottle : MonoBehaviour
     private float rotationY = 0f;
     private Rigidbody rb;
     private bool colliding = false;
+
+    private GameObject lPaddle;
+    private GameObject rPaddle;
+
+    private Vector3 leftPos;
+    private Quaternion leftRot;
+    private Vector3 leftPos_back;
+    private Quaternion leftRot_back;
+
+    private Vector3 rightPos;
+    private Quaternion rightRot;
+    private Vector3 rightPos_back;
+    private Quaternion rightRot_back;
+    private float sum_left = 0f;
+    private float sum_right = 0f;
+
     // Start is called before the first frame update
 
 
@@ -22,6 +38,17 @@ public class HandThrottle : MonoBehaviour
             Debug.Log("can not find camera");
         }
         rb = GetComponent<Rigidbody>();
+        lPaddle = GameObject.Find("LPaddle");
+        rPaddle = GameObject.Find("RPaddle");
+        leftPos = lPaddle.transform.localPosition;
+        leftRot = lPaddle.transform.localRotation;
+        leftPos_back = new Vector3(-0.80f, 0.52f, -0.96f);
+        leftRot_back = new Quaternion(0.44040f, -0.85550f, 0.27184f, -0.01661f);
+        rightPos = rPaddle.transform.localPosition;
+        rightRot = rPaddle.transform.localRotation;
+        rightPos_back = new Vector3(-0.79f, 0.52f, 0.88f);
+        rightRot_back = new Quaternion(0.27185f, 0.01661f, 0.44040f, 0.85550f);
+
     }
 
     // Update is called once per frame

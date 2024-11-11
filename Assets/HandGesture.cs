@@ -14,8 +14,17 @@ public class HandGesture : MonoBehaviour
 
     private Vector3 leftPos;
     private Quaternion leftRot;
+    private Vector3 leftPos_back;
+    private Quaternion leftRot_back;
+
     private Vector3 rightPos;
     private Quaternion rightRot;
+    private Vector3 rightPos_back;
+    private Quaternion rightRot_back;
+    private float sum_left = 0f;
+    private float sum_right = 0f;
+
+
     private GameObject boat;
     private FirstPersonMovement person;
     // Start is called before the first frame update
@@ -28,8 +37,12 @@ public class HandGesture : MonoBehaviour
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
         leftPos = lPaddle.transform.localPosition;
         leftRot = lPaddle.transform.localRotation;
+        leftPos_back = new Vector3(-0.80f, 0.52f, -0.96f);
+        leftRot_back = new Quaternion(0.44040f, -0.85550f, 0.27184f, -0.01661f);
         rightPos = rPaddle.transform.localPosition;
         rightRot = rPaddle.transform.localRotation;
+        rightPos_back = new Vector3(-0.79f, 0.52f, 0.88f);
+        rightRot_back = new Quaternion(0.27185f, 0.01661f, 0.44040f, 0.85550f);
         boat = GameObject.Find("Boat");
     }
 
@@ -48,8 +61,19 @@ public class HandGesture : MonoBehaviour
                 rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
                 rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
             }
-            //lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.left_y / 10));
-
+            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, rigidbody.transform.forward, (input_d.left_y /30));
+            sum_left += (input_d.left_y / 30);
+            if(sum_left >81) {
+                sum_left = 0;
+                lPaddle.transform.localPosition = leftPos;
+                lPaddle.transform.localRotation = leftRot;
+            }
+            else if(sum_left < -1) {
+                sum_left = 80;
+                lPaddle.transform.localPosition = leftPos_back;
+                lPaddle.transform.localRotation = leftRot_back;
+            }
+            //Debug.Log($"transform: {lPaddle.transform.localPosition} , rotation: {lPaddle.transform.localRotation}, sum: {sum_left}");
         }
 
         if (input_d.right_y != 0) {
@@ -64,8 +88,19 @@ public class HandGesture : MonoBehaviour
                 rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
             }
             //노 회전 애니메이션
-            //rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, boat.transform.forward, (input_d.right_y / 10));
-
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, rigidbody.transform.forward, (input_d.right_y / 30));
+            sum_right += (input_d.right_y / 30);
+            if (sum_right > 81) {
+                sum_right = 0;
+                lPaddle.transform.localPosition = rightPos;
+                lPaddle.transform.localRotation = rightRot;
+            }
+            else if (sum_right < -1) {
+                sum_right = 80;
+                lPaddle.transform.localPosition = rightPos_back;
+                lPaddle.transform.localRotation = rightRot_back;
+            }
+            //Debug.Log($"transform: {rPaddle.transform.localPosition} , rotation: {rPaddle.transform.localRotation}, sum: {sum_right}");
         }
 
 
