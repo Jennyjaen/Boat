@@ -128,7 +128,6 @@ public class GamePadInput : MonoBehaviour
                 transform.rotation *= rotation;
 
                 sum_right += (ry * Time.deltaTime * 30);
-                Debug.Log(sum_right);
                 if (ry > 0) {
                     if (last_ry <= 0) { //후진하다 전진하는 케이스
                         rPaddle.transform.localPosition = rightPos;

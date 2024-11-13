@@ -188,15 +188,15 @@ public class FirstPersonMovement : MonoBehaviour {
             int x_1 = 0;
             int x_2 = 0;
 
-            float intensity = Mathf.Ceil(col_s * 5) / 5;
-            intensity *= 6;
+            //float intensity = Mathf.Ceil(col_s * 5) / 5;
+            float intensity = col_s * 6;
             intensity = Mathf.Round(intensity);
 
             if (intensity == 6) {
                 intensity = 5;
             }
-
-             for (int y = 0; y < 18; y++) {
+            Debug.Log($"collide speed: {col_s}, so intensity: {intensity}");
+            for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++){
                     float cent_x = ((float)x +0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 12;
@@ -859,6 +859,29 @@ public class FirstPersonMovement : MonoBehaviour {
                     break;
             }
         }
+        if (c.collider.CompareTag("Moving")) {
+            collide = 1.0f;
+            Vector3 colVelocity = c.relativeVelocity;
+            //collide_speed = colVelocity.magnitude;
+            collide_speed = 2f;
+            Vector3 colPoint = c.contacts[0].point;
+            Vector3 playerPoint = transform.position;
+            Vector3 direction = colPoint - playerPoint;
+            Vector3 localDirection = transform.InverseTransformDirection(direction).normalized;
+
+            float angle = Mathf.Atan2(localDirection.x, localDirection.z) * Mathf.Rad2Deg;
+            angle *= -1;
+            if (angle < 0) {
+                angle += 360;
+            }
+            collide_ang = angle;
+            switch (inputMethod) {
+                case InputMethod.GamePad:
+                    float c_speed = Mathf.Clamp(collide_speed * 8f, 0, 1);
+                    GamePad.SetVibration(PlayerIndex.One, c_speed, c_speed);
+                    break;
+            }
+        }
     }
 
     void OnCollisionExit(Collision c) {
@@ -879,6 +902,14 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             collide_land = false;
             collide = 0f;
+        }
+        if (c.collider.CompareTag("Moving")) {
+            collide = 0f;
+            switch (inputMethod) {
+                case InputMethod.GamePad:
+                    GamePad.SetVibration(PlayerIndex.One, 0, 0);
+                    break;
+            }
         }
     }
 
@@ -925,6 +956,13 @@ public class FirstPersonMovement : MonoBehaviour {
         collide = 1.0f;
         yield return new WaitForSeconds(2.0f);
 
+        switch (inputMethod) {
+            case InputMethod.HandStickGesture:
+                if(water_status >= 1 && water_status <=2 && collide == 2) {
+                    yield break;
+                }
+                break;
+        }
         collide = 0.5f;
         yield return new WaitForSeconds(1.0f);
 

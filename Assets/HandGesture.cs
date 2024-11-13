@@ -79,12 +79,12 @@ public class HandGesture : MonoBehaviour
         if (input_d.right_y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
             if (input_d.right_y > 0 && !input_d.r_reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
+                rigidbody.AddForce(-1 * transform.right * 0.05f * input_d.right_y);
                 rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
                 //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
             }
             else if (input_d.right_y < 0 && input_d.r_reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
+                rigidbody.AddForce(-1 * transform.right * 0.05f * input_d.right_y);
                 rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
             }
             //노 회전 애니메이션
@@ -92,13 +92,13 @@ public class HandGesture : MonoBehaviour
             sum_right += (input_d.right_y / 30);
             if (sum_right > 81) {
                 sum_right = 0;
-                lPaddle.transform.localPosition = rightPos;
-                lPaddle.transform.localRotation = rightRot;
+                rPaddle.transform.localPosition = rightPos;
+                rPaddle.transform.localRotation = rightRot;
             }
             else if (sum_right < -1) {
                 sum_right = 80;
-                lPaddle.transform.localPosition = rightPos_back;
-                lPaddle.transform.localRotation = rightRot_back;
+                rPaddle.transform.localPosition = rightPos_back;
+                rPaddle.transform.localRotation = rightRot_back;
             }
             //Debug.Log($"transform: {rPaddle.transform.localPosition} , rotation: {rPaddle.transform.localRotation}, sum: {sum_right}");
         }
