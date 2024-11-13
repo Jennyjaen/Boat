@@ -252,7 +252,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         x_2 = (int)res;
                         if (x >= 12) {
                             int index = y * 6 + ((x - 12) / 2);
-                            rarray[107- index] = (byte)(x_1 * 6 + x_2); //rarray 뒤집었음.
+                            rarray[107- index] = (byte)(x_1 + x_2* 6); //rarray 뒤집었음.
                         }
                         else {
                             int index = y * 6 + (x / 2);
@@ -358,7 +358,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         if (x % 2 == 0) { x_1 = res; }
                         else {
                             larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
+                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 + res * 6);
                         }
                     }
                 }
@@ -374,7 +374,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         if (x % 2 == 0) { x_1 = res; }
                         else {
                             larray[y * 6 + (x / 2)] = (byte)0;
-                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
+                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 + res * 6);
                         }
                     }
                 }
@@ -389,7 +389,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         if (x % 2 == 0) { x_1 = res; }
                         else {
                             larray[y * 6 + (x / 2)] = (byte)0;
-                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
+                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 + res * 6);
                         }
                     }
                 }
@@ -404,7 +404,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         if (x % 2 == 0) { x_1 = res; }
                         else {
                             larray[y * 6 + (x / 2)] = (byte)0;
-                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
+                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 + res * 6);
                         }
                     }
                 }
@@ -420,7 +420,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         if (x % 2 == 0) { x_1 = res; }
                         else {
                             larray[y * 6 + (x / 2)] = (byte)(x_1 * 6 + res);
-                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 * 6 + res);
+                            rarray[107 - (y * 6 + (x / 2))] = (byte)(x_1 + res * 6);
                         }
                     }
                 }
