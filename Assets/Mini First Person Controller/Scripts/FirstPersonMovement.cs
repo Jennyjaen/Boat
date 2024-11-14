@@ -191,7 +191,7 @@ public class FirstPersonMovement : MonoBehaviour {
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
             float intensity = col_s * 6;
             intensity = Mathf.Round(intensity);
-
+            Debug.Log($"col_s: {col_s}, intensity: {intensity}");
             if (intensity == 6) {
                 intensity = 5;
             }
@@ -499,20 +499,20 @@ public class FirstPersonMovement : MonoBehaviour {
             case InputMethod.HandStickThrottle:
                 if(water == 1) {
                     for(int i = 0; i<108; i++) {
-                        larray[i] = (byte)3;
+                        larray[i] = (byte)21;
                         rarray[i] = (byte)0;
                     }
                 }
                 else if(water == 1.5f) {
                     for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)3;
-                        rarray[i] = (byte)3;
+                        larray[i] = (byte)21;
+                        rarray[i] = (byte)21;
                     }
                 }
                 else if(water == 2f) {
                     for (int i = 0; i < 108; i++) {
                         larray[i] = (byte)0;
-                        rarray[i] = (byte)3;
+                        rarray[i] = (byte)21;
                     }
                 }
                 else if(water == 3f) {
@@ -684,9 +684,10 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
 
                 if(collide <2f || water_status ==0) {
-                    if(waterfall > 0) { // 이 코드를 왜 넣었엇지/?
+                    if(waterfall > 0) {
                         collide = 0f;
                     }
+                    //Debug.Log($"{collide}, {water_status}, {underwater.underwater}, {waterincline}");
                     updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
                 }
                 else if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
@@ -863,7 +864,15 @@ public class FirstPersonMovement : MonoBehaviour {
             collide = 1.0f;
             Vector3 colVelocity = c.relativeVelocity;
             //collide_speed = colVelocity.magnitude;
-            collide_speed = 2f;
+            switch (inputMethod) {
+                case InputMethod.HandStickThrottle:
+                    collide_speed = 0.24f;
+                    break;
+                case InputMethod.HandStickGesture:
+                    collide_speed = 2.0f;
+                    break;
+            }
+            
             Vector3 colPoint = c.contacts[0].point;
             Vector3 playerPoint = transform.position;
             Vector3 direction = colPoint - playerPoint;
