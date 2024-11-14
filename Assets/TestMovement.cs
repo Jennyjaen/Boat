@@ -94,13 +94,67 @@ public class TestMovement : MonoBehaviour
             rarray[i] = (byte)0;
 
         }
-        //InitArray();
-        //MarkArray(left_grass, GeneratePoints());
-        //MarkArray(right_grass, GeneratePoints());
+        InitArray();
+        MarkArray(left_grass, GeneratePoints());
+        MarkArray(right_grass, GeneratePoints());
 
     }
 
+    void InitArray() {
+        for (int i = 0; i < left_grass.GetLength(0); i++) {
+            for (int j = 0; j < right_grass.GetLength(1); j++) {
+                left_grass[i, j] = 0;
+                right_grass[i, j] = 0;
+            }
+        }
+    }
 
+    List<Vector2Int> GeneratePoints() {
+        List<Vector2Int> points = new List<Vector2Int>();
+        int previousX = -1;
+
+        for (int i = 0; i < 9; i++) {
+            int x;
+            do {
+                x = Random.Range(0, 3); // 가로 0, 1, 2 중 하나 선택
+            } while (x == previousX); // 이전 점의 가로 좌표와 다르게 선택
+
+            previousX = x;
+
+            // 3. 가로에 따른 세로 좌표 범위 설정
+            int yRangeStart = 6 * i + 19;
+            int yRangeEnd = 6 * i + 23;
+            int y = Random.Range(yRangeStart, yRangeEnd);
+
+            int specificX;
+            if (x == 0)
+                specificX = Random.Range(1, 4); // 가로가 0일 때 1~3 중 선택
+            else if (x == 1)
+                specificX = Random.Range(4, 8); // 가로가 1일 때 4~7 중 선택
+            else
+                specificX = Random.Range(8, 12); // 가로가 2일 때 8~10 중 선택
+
+            points.Add(new Vector2Int(specificX, y));
+        }
+
+        return points;
+    }
+
+    void MarkArray(int[,] targetArray, List<Vector2Int> points) {
+        foreach (var point in points) {
+            int startX = Mathf.Max(0, point.x - 1);
+            int endX = Mathf.Min(targetArray.GetLength(0) - 1, point.x);
+            int startY = Mathf.Max(0, point.y - 1);
+            int endY = Mathf.Min(targetArray.GetLength(1) - 1, point.y + 1);
+
+            for (int x = startX; x <= endX; x++) {
+                for (int y = startY; y <= endY; y++) {
+                    targetArray[x, y] = 4;
+                }
+            }
+        }
+        //Print12Array(targetArray);
+    }
 
     void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //충돌, 물에 빠짐, 배의 기울기
         if (collide == 0.5f) { // collide 후 아무런 피드백 x
@@ -576,11 +630,16 @@ public class TestMovement : MonoBehaviour
 
         switch (inputMethod) {
             case InputMethod.GamePad: //게임 패드에 햅틱 피드백을 주는 경우
-                if (underwater.underwater) {
-                    float currentPositionY = front.position.y;
-                    float diff = underwater.water_y - currentPositionY;
-                    float intensity = Mathf.Clamp(diff * 5, 0, 1);
-                    GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                switch (situation.env) {
+                    case UserTest.Environment.Waterfall:
+                        if (underwater.underwater) {
+                            float currentPositionY = front.position.y;
+                            float diff = underwater.water_y - currentPositionY;
+                            float intensity = Mathf.Clamp(diff * 5, 0, 1);
+                            GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                        }
+                        break;
+
                 }
                 break;
             case InputMethod.HandStickThrottle: //장치에 햅틱 피드백을 주는 경우
@@ -798,8 +857,15 @@ public class TestMovement : MonoBehaviour
                         StartCoroutine(ShortVibration(0.2f));
                     }
                     else {
-                        float c_speed = Mathf.Clamp(collide_speed * 10f, 0, 1);
-                        StartCoroutine(ShortVibration(c_speed));
+                        switch (situation.env) {
+                            case UserTest.Environment.Collision:
+                            case UserTest.Environment.Moving:
+                            case UserTest.Environment.Land:
+                                float c_speed = Mathf.Clamp(collide_speed * 10f, 0, 1);
+                                StartCoroutine(ShortVibration(c_speed));
+                                break;
+                        }
+                        
                     }
                 }
                 break;
@@ -853,24 +919,29 @@ public class TestMovement : MonoBehaviour
         if (c.collider.CompareTag("Land")) {
             switch (inputMethod) {
                 case InputMethod.GamePad:
-                    state = GamePad.GetState(PlayerIndex.One);
-                    if (state.IsConnected) {
-                        float LX = state.ThumbSticks.Left.X;
-                        float LY = state.ThumbSticks.Left.Y;
+                    switch (situation.env) {
+                        case UserTest.Environment.Land:
+                            state = GamePad.GetState(PlayerIndex.One);
+                            if (state.IsConnected) {
+                                float LX = state.ThumbSticks.Left.X;
+                                float LY = state.ThumbSticks.Left.Y;
 
-                        if (LX > 0 || LY > 0) {
-                            float magnitude = Mathf.Sqrt(LX * LX + LY * LY); // 벡터의 크기 계산
-                            float normalizedIntensity = Mathf.Clamp01(magnitude);
-                            float intensity = 0.3f * normalizedIntensity;
-                            GamePad.SetVibration(PlayerIndex.One, 0, intensity);
-                        }
-                        else {
-                            GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
-                        }
+                                if (LX > 0 || LY > 0) {
+                                    float magnitude = Mathf.Sqrt(LX * LX + LY * LY); // 벡터의 크기 계산
+                                    float normalizedIntensity = Mathf.Clamp01(magnitude);
+                                    float intensity = 0.3f * normalizedIntensity;
+                                    GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                                }
+                                else {
+                                    GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
+                                }
+                            }
+                            else {
+                                Debug.Log("GamePad disconnected.");
+                            }
+                            break;
                     }
-                    else {
-                        Debug.Log("GamePad disconnected.");
-                    }
+                    
                     break;
                 case InputMethod.HandStickThrottle:
                 case InputMethod.HandStickGesture:
@@ -914,8 +985,12 @@ public class TestMovement : MonoBehaviour
             collide_ang = angle;
             switch (inputMethod) {
                 case InputMethod.GamePad:
-                    float c_speed = Mathf.Clamp(collide_speed * 8f, 0, 1);
-                    GamePad.SetVibration(PlayerIndex.One, c_speed, c_speed);
+                    switch (situation.env) {
+                        case UserTest.Environment.Moving:
+                            float c_speed = Mathf.Clamp(collide_speed * 8f, 0, 1);
+                            GamePad.SetVibration(PlayerIndex.One, c_speed, c_speed);
+                            break;
+                    }
                     break;
             }
         }
@@ -982,6 +1057,13 @@ public class TestMovement : MonoBehaviour
                 water_status = 0f;
                 collide = 0f;
                 grassin = false;
+
+                if(left_grass != null && right_grass != null) {
+                    InitArray();
+                    MarkArray(left_grass, GeneratePoints());
+                    MarkArray(right_grass, GeneratePoints());
+                }
+
             }
             enterCount--;
         }

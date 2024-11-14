@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class inclinebuoyancy : MonoBehaviour
+public class InclineBuo2 : MonoBehaviour
 {
+
     public Transform targetObject; // 부력 적용할 오브젝트
     public float buoyancyStrength = 3.5f; // 부력 강도
     private Rigidbody rb;
@@ -12,7 +13,7 @@ public class inclinebuoyancy : MonoBehaviour
     public float waveFrequency = 0.5f; // 파도 주기
     public float waveAmplitude = 2f; // 파도 높이
     public float waveSpeed = 1.0f;     // 파도 이동 속도
-    private FirstPersonMovement parentScript;
+    private TestMovement parentScript;
     public Transform plane1;
     public Transform plane2;
     private int count = 0;
@@ -22,7 +23,7 @@ public class inclinebuoyancy : MonoBehaviour
     {
         if (targetObject != null) {
             rb = targetObject.GetComponent<Rigidbody>();
-            parentScript = targetObject.GetComponent<FirstPersonMovement>();
+            parentScript = targetObject.GetComponent<TestMovement>();
         }
     }
 
@@ -32,9 +33,9 @@ public class inclinebuoyancy : MonoBehaviour
             // 가까운 plane을 선택하고, 해당 plane의 파도 높이 계산
             Transform closestPlane = GetClosestPlane(targetObject.position, plane1, plane2);
             float waveHeight = GetWaveHeightOnPlane(targetObject.position, closestPlane, Time.time);
-            
-            if(count % frequency < (frequency / 2)) {
-                if(targetObject.position.z >= transform.position.z) { // 양쪽에 번갈아가며 부력을 주기 위해 추가.
+
+            if (count % frequency < (frequency / 2)) {
+                if (targetObject.position.z >= transform.position.z) { // 양쪽에 번갈아가며 부력을 주기 위해 추가.
                     ApplyBuoyancy(rb, targetObject.position, waveHeight, buoyancyStrength);
                     //Debug.Log($"Left: {count}");
                 }
@@ -77,17 +78,17 @@ public class inclinebuoyancy : MonoBehaviour
             //Debug.Log(objectHeight);
             Vector3 buoyancyForce = Vector3.up * displacement * buoyancyStrength;
             buoyancyForce *= (position.y * 0.4f);
-            if(rb.position.y > 0.8f) {
+            if (rb.position.y > 0.8f) {
                 if (buoyancyForce.y < 0.6f) {
                     buoyancyForce.y = 0.6f;
                 }
             }
-            else if(rb.position.y > 0.6f){
+            else if (rb.position.y > 0.6f) {
                 if (buoyancyForce.y < 0.4f) {
                     buoyancyForce.y = 0.4f;
                 }
             }
-            else if(rb.position.y < 0.3f) {
+            else if (rb.position.y < 0.3f) {
                 if (buoyancyForce.y > 0.3f) {
                     buoyancyForce.y = 0.3f;
                 }
