@@ -111,8 +111,8 @@ public class HandThrottle : MonoBehaviour
             }
         }*/
         if (ry != 0) {
-            Vector3 forwardMovement = -transform.right * ry * 2.5f * Time.deltaTime;
-            float turnAmount =- ry * 15f * Time.deltaTime;
+            Vector3 forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
+            float turnAmount = ry * 15f * Time.deltaTime;
             Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
             Vector3 targetPosition = rb.position + forwardMovement;
             if (!colliding) {
@@ -120,9 +120,9 @@ public class HandThrottle : MonoBehaviour
             }
             transform.rotation *= rotation;
 
-            sum_right += (ry * Time.deltaTime * 30);
-            if (ry > 0) {
-                if (last_ry <= 0) { //후진하다 전진하는 케이스
+            sum_right += (-ry * Time.deltaTime * 30);
+            if (ry < 0) {
+                if (last_ry >= 0) { //후진하다 전진하는 케이스
                     rPaddle.transform.localPosition = rightPos;
                     rPaddle.transform.localRotation = rightRot;
                 }
@@ -134,8 +134,8 @@ public class HandThrottle : MonoBehaviour
                     }
                 }
             }
-            else if (ry < 0) {
-                if (last_ry >= 0) { //전진하다 후진하는 케이스
+            else if (ry > 0) {
+                if (last_ry <= 0) { //전진하다 후진하는 케이스
                     rPaddle.transform.localPosition = rightPos_back;
                     rPaddle.transform.localRotation = rightRot_back;
                 }
@@ -147,11 +147,11 @@ public class HandThrottle : MonoBehaviour
                     }
                 }
             }
-            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, rb.transform.forward, (ry * Time.deltaTime * 30));
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, rb.transform.forward, (-ry * Time.deltaTime * 30));
 
             last_ry = ry;
         }
-        Debug.Log($"left : {ly} sum: {sum_left}, right: {ry}, sum: {sum_right}");
+        //Debug.Log($"left : {ly} sum: {sum_left}, right: {ry}, sum: {sum_right}");
     }
 
 
