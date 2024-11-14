@@ -32,18 +32,21 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Density: 0.24
-    - _DepthTransparency: 0.2
+    - _Density: 0.525
+    - _DepthTransparency: 0
     - _Distortion: 0.686
     - _EnableProbeRelfections: 1
     - _FoamContrast: 0.276
     - _FoamTiling: 1
+    - _Gloss: 0.2
+    - _LightWrapping: 0
     - _NormalStrength: 1
     - _ProbeReflectionIntensity: 0.578
     - _RealtimeReflectionIntensity: 1
+    - _Refraction: 1
     m_Colors:
     - _DeepWaterColor: {r: 0.06763973, g: 0.11615724, b: 0.1509434, a: 1}
     - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
-    - _MainColor: {r: 0.4745098, g: 1, b: 0.80784315, a: 1}
-    - _SpecularColor: {r: 0.9716981, g: 0.9139198, b: 0.7104397, a: 1}
+    - _MainColor: {r: 0.19357423, g: 0.35874712, b: 0.5471698, a: 1}
+    - _SpecularColor: {r: 0.1457814, g: 0.18227129, b: 0.26415092, a: 1}
   m_BuildTextureStacks: []
