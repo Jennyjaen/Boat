@@ -195,7 +195,7 @@ public class FirstPersonMovement : MonoBehaviour {
             if (intensity == 6) {
                 intensity = 5;
             }
-            Debug.Log($"collide speed: {col_s}, so intensity: {intensity}");
+            //Debug.Log($"collide speed: {col_s}, so intensity: {intensity}");
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++){
                     float cent_x = ((float)x +0.5f) / 24;

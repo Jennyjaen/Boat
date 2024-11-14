@@ -10,6 +10,7 @@ TagManager:
   - GrassE
   - WaterE
   - WaterO
+  - Moving
   layers:
   - Default
   - TransparentFX

@@ -110,12 +110,12 @@ public class GamePadInput : MonoBehaviour
 
                 last_ly = ly;
             }
-            else {
+            /*else {
                 if (lx < 0) {
                     rotationY += lx * 20f * Time.deltaTime;
                     rotationY = Mathf.Clamp(rotationY, -40f, 40f);
                 }
-            }
+            }*/
             if (ry != 0) {
                 ry = -1 * ry;
                 Vector3 forwardMovement = -transform.right * ry * 2f * Time.deltaTime;
@@ -158,7 +158,7 @@ public class GamePadInput : MonoBehaviour
 
                 last_ry = ry;
             }
-            else {
+            /*else {
                 if (rx > 0) {
                     rotationY += rx * 20f * Time.deltaTime;
                     rotationY = Mathf.Clamp(rotationY, -40f, 40f);
@@ -166,7 +166,7 @@ public class GamePadInput : MonoBehaviour
             }
             if (xrRig != null) {
                 xrRig.localRotation = Quaternion.Euler(0f, rotationY, 0f);
-            }
+            }*/
         }
         else {
             Debug.Log("GamePad disconnected.");

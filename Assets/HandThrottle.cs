@@ -6,9 +6,6 @@ public class HandThrottle : MonoBehaviour
 {
     [HideInInspector]
     public Input_Delim input_d;
-    private Transform xrRig;
-    private float rotationX = 0f;
-    private float rotationY = 0f;
     private Rigidbody rb;
     private bool colliding = false;
 
@@ -29,14 +26,12 @@ public class HandThrottle : MonoBehaviour
 
     // Start is called before the first frame update
 
-
+    private float last_ly = 0;
+    private float last_ry = 0;
     void Start()
     {
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
-        xrRig = GameObject.Find("XR Rig/Camera Offset")?.transform;
-        if (xrRig == null) {
-            Debug.Log("can not find camera");
-        }
+        
         rb = GetComponent<Rigidbody>();
         lPaddle = GameObject.Find("LPaddle");
         rPaddle = GameObject.Find("RPaddle");
@@ -55,52 +50,108 @@ public class HandThrottle : MonoBehaviour
     void Update()
     {
         int accum_x = input_d.accum_lx;
-        float LX =accum_x / 900f;
+        float LX =accum_x / 800f;
         int accum_y = input_d.accum_ly;
-        float LY = accum_y / 600f;
+        float ly = accum_y / 800f;
         LX = Mathf.Abs(LX) < 0.15f ? 0 : Mathf.Clamp(LX, -1f, 1f);
-        LY = Mathf.Abs(LY) < 0.15f ? 0 : Mathf.Clamp(LY, -1f, 1f);
-        float rx = input_d.accum_rx / 750f;
-        float ry = input_d.accum_ry / 750f;
+        ly = Mathf.Abs(ly) < 0.15f ? 0 : Mathf.Clamp(ly, -1f, 1f);
+        float rx = input_d.accum_rx / 800f;
+        float ry = input_d.accum_ry / 800f;
         rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
         ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
 
 
-        if(LY != 0) {
-            Vector3 forwardMovement = transform.right * LY * 2.5f * Time.deltaTime;
-            float turnAmount = -LY * 15f * Time.deltaTime;
+        if(ly != 0) {
+            Vector3 forwardMovement = transform.right * ly * 2.5f * Time.deltaTime;
+            float turnAmount = -ly * 15f * Time.deltaTime;
             Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
             Vector3 targetPosition = rb.position + forwardMovement;
             if (!colliding) {
                 rb.MovePosition(targetPosition);
             }
             transform.rotation *= rotation;
+
+            sum_left += (-ly * Time.deltaTime * 30);
+            if (ly < 0) {
+                if (last_ly >= 0) { //후진하다 전진하는 케이스
+                    lPaddle.transform.localPosition = leftPos;
+                    lPaddle.transform.localRotation = leftRot;
+                }
+                else {
+                    if (sum_left > 81) {
+                        sum_left = 0;
+                        lPaddle.transform.localPosition = leftPos;
+                        lPaddle.transform.localRotation = leftRot;
+                    }
+                }
+            }
+            else if (ly > 0) {
+                if (last_ly <= 0) { //전진하다 후진하는 케이스
+                    lPaddle.transform.localPosition = leftPos_back;
+                    lPaddle.transform.localRotation = leftRot_back;
+                }
+                else {
+                    if (sum_left < -1) {
+                        sum_left = 80;
+                        lPaddle.transform.localPosition = leftPos_back;
+                        lPaddle.transform.localRotation = leftRot_back;
+                    }
+                }
+            }
+            lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, rb.transform.forward, (-ly * Time.deltaTime * 30));
+
+            last_ly = ly;
+
         }
+        /*
         else {
             if(LX < 0) {
                 rotationY += LX * 20f * Time.deltaTime;
                 rotationY = Mathf.Clamp(rotationY, -40f, 40f);
             }
-        }
+        }*/
         if (ry != 0) {
-            Vector3 forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
-            float turnAmount = ry * 15f * Time.deltaTime;
+            Vector3 forwardMovement = -transform.right * ry * 2.5f * Time.deltaTime;
+            float turnAmount =- ry * 15f * Time.deltaTime;
             Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
             Vector3 targetPosition = rb.position + forwardMovement;
             if (!colliding) {
                 rb.MovePosition(targetPosition);
             }
             transform.rotation *= rotation;
-        }
-        else {
-            if(rx > 0) {
-                rotationY += rx * 20f * Time.deltaTime;
-                rotationY = Mathf.Clamp(rotationY, -40f, 40f);
+
+            sum_right += (ry * Time.deltaTime * 30);
+            if (ry > 0) {
+                if (last_ry <= 0) { //후진하다 전진하는 케이스
+                    rPaddle.transform.localPosition = rightPos;
+                    rPaddle.transform.localRotation = rightRot;
+                }
+                else {
+                    if (sum_right > 81) {
+                        sum_right = 0;
+                        rPaddle.transform.localPosition = rightPos;
+                        rPaddle.transform.localRotation = rightRot;
+                    }
+                }
             }
+            else if (ry < 0) {
+                if (last_ry >= 0) { //전진하다 후진하는 케이스
+                    rPaddle.transform.localPosition = rightPos_back;
+                    rPaddle.transform.localRotation = rightRot_back;
+                }
+                else {
+                    if (sum_right < -1) {
+                        sum_right = 80;
+                        rPaddle.transform.localPosition = rightPos_back;
+                        rPaddle.transform.localRotation = rightRot_back;
+                    }
+                }
+            }
+            rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, rb.transform.forward, (ry * Time.deltaTime * 30));
+
+            last_ry = ry;
         }
-        if (xrRig != null) {
-            xrRig.localRotation = Quaternion.Euler(0f, rotationY, 0f);
-        }
+        Debug.Log($"left : {ly} sum: {sum_left}, right: {ry}, sum: {sum_right}");
     }
 
 
