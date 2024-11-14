@@ -1,11 +1,13 @@
-ï»¿using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using XInputDotNetPure;
 
-//í•´ë‹¹ scriptì—ì„œëŠ” ì´ê´„ê³¼ haptic feedbackì„ ë‹´ë‹¹í•¨.
-public class FirstPersonMovement : MonoBehaviour {
+public class TestMovement : MonoBehaviour
+{
+    // Start is called before the first frame update
+    private UserTest situation;
+
     [HideInInspector]
     public Underwater underwater;
     [HideInInspector]
@@ -15,7 +17,9 @@ public class FirstPersonMovement : MonoBehaviour {
 
     Rigidbody rigidbody;
     Transform front;
-
+    private GameObject lPaddle;
+    private GameObject rPaddle;
+    private GameObject boat;
 
     private bool collide_land;
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
@@ -41,10 +45,9 @@ public class FirstPersonMovement : MonoBehaviour {
     [HideInInspector]
     public bool waterincline = false;
     private int waterfall = 0;
-
+    private float max_incline;
     private GamePadState state;
 
-    //Input ë°©ë²•ì„ ì—¬ëŸ¬ê°œë¡œ ë°”ê¾¸ê¸°
     public enum InputMethod {
         GamePad,
         HandStickThrottle,
@@ -60,21 +63,16 @@ public class FirstPersonMovement : MonoBehaviour {
     [HideInInspector]
     public MonoBehaviour HandGesture;
 
-    private float max_incline;
-
     [HideInInspector]
     public byte[] larray = new byte[108];
     [HideInInspector]
     public byte[] rarray = new byte[108];
-    [HideInInspector]
 
-    void Awake() {
-        // Get the rigidbody on this.
+    void Start()
+    {
+        situation = GameObject.Find("TestEnvironment").GetComponent<UserTest>();
         rigidbody = GetComponent<Rigidbody>();
         front = transform.Find("Front");
-    }
-
-    void Start() {
         max_incline = 0f;
         collide = 0f;
         collide_ang = 0f;
@@ -96,76 +94,16 @@ public class FirstPersonMovement : MonoBehaviour {
             rarray[i] = (byte)0;
 
         }
-        InitArray();
-        MarkArray(left_grass, GeneratePoints());
-        MarkArray(right_grass, GeneratePoints());
+        //InitArray();
+        //MarkArray(left_grass, GeneratePoints());
+        //MarkArray(right_grass, GeneratePoints());
+
     }
 
-    void InitArray() {
-        for(int i = 0; i < left_grass.GetLength(0); i++) {
-            for(int j= 0; j< right_grass.GetLength(1); j++) {
-                left_grass[i, j] = 0;
-                right_grass[i, j] = 0;
-            }
-        }
-    }
-
-    List<Vector2Int> GeneratePoints() {
-        List<Vector2Int> points = new List<Vector2Int>();
-        int previousX = -1;
-
-        for (int i = 0; i < 9; i++) {
-            int x;
-            do {
-                x = Random.Range(0, 3); // ê°€ë¡œ 0, 1, 2 ì¤‘ í•˜ë‚˜ ì„ íƒ
-            } while (x == previousX); // ì´ì „ ì ì˜ ê°€ë¡œ ì¢Œí‘œì™€ ë‹¤ë¥´ê²Œ ì„ íƒ
-
-            previousX = x;
-
-            // 3. ê°€ë¡œì— ë”°ë¥¸ ì„¸ë¡œ ì¢Œí‘œ ë²”ìœ„ ì„¤ì •
-            int yRangeStart = 6 * i + 19;
-            int yRangeEnd = 6 * i + 23;
-            int y = Random.Range(yRangeStart, yRangeEnd);
-
-            int specificX;
-            if (x == 0)
-                specificX = Random.Range(1, 4); // ê°€ë¡œê°€ 0ì¼ ë•Œ 1~3 ì¤‘ ì„ íƒ
-            else if (x == 1)
-                specificX = Random.Range(4, 8); // ê°€ë¡œê°€ 1ì¼ ë•Œ 4~7 ì¤‘ ì„ íƒ
-            else
-                specificX = Random.Range(8, 12); // ê°€ë¡œê°€ 2ì¼ ë•Œ 8~10 ì¤‘ ì„ íƒ
-
-            points.Add(new Vector2Int(specificX, y));
-        }
-
-        return points;
-    }
-
-    void MarkArray(int[,] targetArray, List<Vector2Int> points) {
-        foreach (var point in points) {
-            int startX = Mathf.Max(0, point.x - 1);
-            int endX = Mathf.Min(targetArray.GetLength(0) - 1, point.x);
-            int startY = Mathf.Max(0, point.y - 1);
-            int endY = Mathf.Min(targetArray.GetLength(1) - 1, point.y + 1);
-
-            for (int x = startX; x <= endX; x++) {
-                for (int y = startY; y <= endY; y++) {
-                    targetArray[x, y] = 4;
-                }
-            }
-        }
-        //Print12Array(targetArray);
-    }
-
-    int Is_max(int maxim, int res) {
-    if(res == maxim) { return res; }
-    //else if(res == minim) { return res + 1; }
-    else { return 0; }      
-}
 
 
-    void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //ì¶©ëŒ, ë¬¼ì— ë¹ ì§, ë°°ì˜ ê¸°ìš¸ê¸°
-        if (collide == 0.5f) { // collide í›„ ì•„ë¬´ëŸ° í”¼ë“œë°± x
+    void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //Ãæµ¹, ¹°¿¡ ºüÁü, ¹èÀÇ ±â¿ï±â
+        if (collide == 0.5f) { // collide ÈÄ ¾Æ¹«·± ÇÇµå¹é x
             for (int i = 0; i < 108; i++) {
                 larray[i] = (byte)0;
                 rarray[i] = (byte)0;
@@ -184,8 +122,8 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             //Debug.Log($"collide speed: {col_s}, so intensity: {intensity}");
             for (int y = 0; y < 18; y++) {
-                for (int x = 0; x < 24; x++){
-                    float cent_x = ((float)x +0.5f) / 24;
+                for (int x = 0; x < 24; x++) {
+                    float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 12;
                     float res;
                     if (col_ang >= 22.5 && col_ang < 67.5) {
@@ -195,7 +133,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         else { res = 0; }
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
-                        //ìœ„
+                        //À§
                         //Debug.Log("up");
                         if (cent_y < col_s) { res = intensity; }
                         else { res = 0; }
@@ -206,7 +144,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         else { res = 0; }
                     }
                     else if (col_ang >= 157.5 && col_ang < 202.5) {
-                        //ì™¼ìª½
+                        //¿ŞÂÊ
                         //Debug.Log("Left");
                         if (cent_x < col_s) { res = intensity; }
                         else { res = 0; }
@@ -217,7 +155,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         else { res = 0; }
                     }
                     else if (col_ang >= 247.5 && col_ang < 292.5) {
-                        //ì•„ë˜
+                        //¾Æ·¡
                         //Debug.Log("down");
                         if (cent_y >= 1 - col_s) { res = intensity; }
                         else { res = 0; }
@@ -228,7 +166,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         else { res = 0; }
                     }
                     else {
-                        //ì˜¤ë¥¸ìª½?
+                        //¿À¸¥ÂÊ?
                         //Debug.Log("right");
                         if (cent_x >= 1 - col_s) { res = intensity; }
                         else { res = 0; }
@@ -239,7 +177,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         x_2 = (int)res;
                         if (x >= 12) {
                             int index = y * 6 + ((x - 12) / 2);
-                            rarray[107- index] = (byte)(x_1 + x_2* 6); //rarray ë’¤ì§‘ì—ˆìŒ.
+                            rarray[107 - index] = (byte)(x_1 + x_2 * 6); //rarray µÚÁı¾úÀ½.
                         }
                         else {
                             int index = y * 6 + (x / 2);
@@ -249,25 +187,25 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
         }
-        else if(collide == 1.5f) { // ë¬¼ì— ë¹ ì¡Œì„ ë•Œ
+        else if (collide == 1.5f) { // ¹°¿¡ ºüÁ³À» ¶§
             byte[] arr = new byte[108];
-            int sero = (int) (clamp_ang / 0.03f);
+            int sero = (int)(clamp_ang / 0.03f);
             for (int y = 0; y < 18; y++) {
                 for (int n = 0; n < 6; n++) {
-                    if (y >= 0 && y <= sero ) {
+                    if (y >= 0 && y <= sero) {
                         arr[y * 6 + n] = (byte)(5 * 6 + 5);
                     }
                     else { arr[y * 6 + n] = (byte)0; }
                 }
             }
             larray = (byte[])arr.Clone();
-            System.Array.Reverse(arr); //ì˜¤ë¥¸ìª½ ë’¤ì§‘ì—ˆìŒ.
+            System.Array.Reverse(arr); //¿À¸¥ÂÊ µÚÁı¾úÀ½.
             rarray = arr;
         }
-        else if(collide == 0f){// ê¸°ìš¸ê¸°: 0f
-            if(clamp_ang < incline_deadzone) {
+        else if (collide == 0f) {// ±â¿ï±â: 0f
+            if (clamp_ang < incline_deadzone) {
                 //Debug.Log("deadzone");
-                for(int i= 0; i<108; i++) {
+                for (int i = 0; i < 108; i++) {
                     larray[i] = (byte)0;
                     rarray[i] = (byte)0;
                     return;
@@ -275,29 +213,29 @@ public class FirstPersonMovement : MonoBehaviour {
             }
 
             float valid_ang = clamp_ang - incline_deadzone;
-            if(waterfall > 0 && waterincline) {
+            if (waterfall > 0 && waterincline) {
                 valid_ang = clamp_ang - 16;
             }
             int vib_level;
-                int vib_width;
+            int vib_width;
             Vector3 localvel = transform.InverseTransformDirection(rigidbody.velocity);
             float velo = Mathf.Sqrt(localvel.y * localvel.y + localvel.z * localvel.z);
-            if(velo > 0.1) {
+            if (velo > 0.1) {
                 vib_level = Mathf.FloorToInt(valid_ang / 1.8f) + 2;
-                if(vib_level > max_v) { vib_level = max_v; }
+                if (vib_level > max_v) { vib_level = max_v; }
             }
-            else { //ì†ë„ ëŠë¦´ë•Œ: ì´ë•Œ max magnitudeë¥¼ 3ìœ¼ë¡œ í•œì •í•˜ëŠ” ê²ƒì´ ë‚˜ì„ ê²ƒ ê°™ìŒ.
-                        
-                if(valid_ang< 0) { vib_level = 0; }
+            else { //¼Óµµ ´À¸±¶§: ÀÌ¶§ max magnitude¸¦ 3À¸·Î ÇÑÁ¤ÇÏ´Â °ÍÀÌ ³ªÀ» °Í °°À½.
+
+                if (valid_ang < 0) { vib_level = 0; }
                 else {
                     vib_level = Mathf.FloorToInt(valid_ang) + 1;
-                    if(vib_level > 3) { vib_level = 3; }
+                    if (vib_level > 3) { vib_level = 3; }
                 }
             }
             float height = transform.position.y;
             if (height < 0) { height = 0; }
             vib_width = Mathf.FloorToInt(30f * height) + min_width;
-            if(vib_width > max_width) { vib_width = max_width; }
+            if (vib_width > max_width) { vib_width = max_width; }
 
             if (waterfall > 0) {
                 vib_width = 6;
@@ -306,7 +244,7 @@ public class FirstPersonMovement : MonoBehaviour {
             int x_1 = 0;
 
             if (angle >= 337.5 || angle < 22.5) {
-                /*ì™¼ìª½*/
+                /*¿ŞÂÊ*/
                 //Debug.Log("left");
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
@@ -322,7 +260,7 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             else if (angle >= 22.5 && angle < 67.5) {
                 //Debug.Log("left down");
-                /*ì¢Œì¸¡ ì•„ë˜*/
+                /*ÁÂÃø ¾Æ·¡*/
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
                         if (x + (17 - y) < vib_width) { res = vib_level; }
@@ -336,7 +274,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
             else if (angle >= 67.5 && angle < 112.5) {
-                /*ì•„ë˜*/
+                /*¾Æ·¡*/
                 //Debug.Log("down");
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
@@ -352,7 +290,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
             }
             else if (angle >= 112.5 && angle < 157.5) {
-                /*ìš°ì¸¡ ì•„ë˜*/
+                /*¿ìÃø ¾Æ·¡*/
                 //Debug.Log("right down");
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
@@ -368,7 +306,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
             }
             else if (angle >= 157.5 && angle < 202.5) {
-                /*ì˜¤ë¥¸ìª½*/
+                /*¿À¸¥ÂÊ*/
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
                         if (x < 12 - vib_width) { res = 0; }
@@ -383,7 +321,7 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             else if (angle >= 202.5 && angle < 247.5) {
                 //Debug.Log("right up");
-                /*ìš°ì¸¡ ìœ„*/
+                /*¿ìÃø À§*/
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
                         if ((11 - x) + y < vib_width) { res = vib_level; }
@@ -398,7 +336,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
             }
             else if (angle >= 247.5 && angle < 292.5) {
-                // ìœ„
+                // À§
                 //Debug.Log("up");
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
@@ -415,7 +353,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
             }
             else if (angle >= 292.5 && angle < 337.5) {
-                /*ì¢Œì¸¡ ìœ„*/
+                /*ÁÂÃø À§*/
                 //Debug.Log("left up");
                 for (int y = 0; y < 18; y++) {
                     for (int x = 0; x < 12; x++) {
@@ -430,7 +368,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
 
-            }
+        }
 
         //Debug.Log(string.Join(",", larray));
     }
@@ -439,10 +377,10 @@ public class FirstPersonMovement : MonoBehaviour {
         string output = "";
 
         for (int i = 0; i < array.Length; i++) {
-            output += (int)(array[i] / 6) + " "+ (int)(array[i] % 6)+" "; 
+            output += (int)(array[i] / 6) + " " + (int)(array[i] % 6) + " ";
 
             if ((i + 1) % 6 == 0) {
-                output += "\n"; 
+                output += "\n";
             }
         }
 
@@ -461,77 +399,77 @@ public class FirstPersonMovement : MonoBehaviour {
         return result;
     }
 
-    byte[] int2byteArray(int[, ] array, bool reverse) {
+    byte[] int2byteArray(int[,] array, bool reverse) {
         byte[] result = new byte[108];
-        for(int y=0; y<18; y++) {
-            for(int x= 0; x<6; x++) {
+        for (int y = 0; y < 18; y++) {
+            for (int x = 0; x < 6; x++) {
                 if (reverse) {
-                    result[107 - (y * 6 + x)] = (byte)(array[x * 2, y] + array[x * 2 + 1, y]* 6);
+                    result[107 - (y * 6 + x)] = (byte)(array[x * 2, y] + array[x * 2 + 1, y] * 6);
                 }
                 else {
-                    result[y * 6 + x] = (byte)(array[x * 2, y]* 6 + array[x * 2 + 1, y]);
+                    result[y * 6 + x] = (byte)(array[x * 2, y] * 6 + array[x * 2 + 1, y]);
                 }
-                
+
             }
         }
 
         return result;
     }
     void updateEachArray(bool isLeft, float vel, bool reverse, int sum, float water) {
-        //water: 0 ë‘˜ë‹¤ ì¼ë°˜ ë…¸ì “ê¸° 1: ì™¼ìª½ ë•…, 1.5: ì–‘ìª½ ë•…, 2: ì˜¤ë¥¸ìª½ ë•…, 3: í’€ ìœ„
+        //water: 0 µÑ´Ù ÀÏ¹İ ³ëÁ£±â 1: ¿ŞÂÊ ¶¥, 1.5: ¾çÂÊ ¶¥, 2: ¿À¸¥ÂÊ ¶¥, 3: Ç® À§
         //water incline
         byte[] arr = new byte[108];
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
-                if(water == 1) {
-                    for(int i = 0; i<108; i++) {
+                if (water == 1) {
+                    for (int i = 0; i < 108; i++) {
                         larray[i] = (byte)21;
                         rarray[i] = (byte)0;
                     }
                 }
-                else if(water == 1.5f) {
+                else if (water == 1.5f) {
                     for (int i = 0; i < 108; i++) {
                         larray[i] = (byte)21;
                         rarray[i] = (byte)21;
                     }
                 }
-                else if(water == 2f) {
+                else if (water == 2f) {
                     for (int i = 0; i < 108; i++) {
                         larray[i] = (byte)0;
                         rarray[i] = (byte)21;
                     }
                 }
-                else if(water == 3f) {
+                else if (water == 3f) {
                     int boat_pos = Mathf.FloorToInt((transform.position.z + 87) * 2);
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
 
-                    int[,] left_slice = SliceArray(left_grass,0, boat_pos, 12, 18);
-                    int[,] right_slice = SliceArray(right_grass,0, boat_pos,12, 18);
+                    int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
+                    int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
                     larray = int2byteArray(left_slice, true);
                     rarray = int2byteArray(right_slice, false);
-                    
+
                 }
                 break;
-            case InputMethod.HandStickGesture: // ë…¸ì “ê¸°
+            case InputMethod.HandStickGesture: // ³ëÁ£±â
                 int max_vib = 0;
                 int width = 4;
 
-                if(Mathf.Abs(sum )> 10) {
+                if (Mathf.Abs(sum) > 10) {
                     if (isLeft && water == 1) { width = 8; max_vib = 5; }
                     else if (!isLeft && water == 2) { width = 8; max_vib = 5; }
                     else if (water == 1.5f) { width = 8; max_vib = 5; }
-                    else { 
-                        if (vel <= 3) { max_vib = 5;}
-                        else if(vel <= 5) { max_vib = 4;}
-                        else if(vel <= 7) { max_vib = 3; }
-                        else if(vel <= 9) { max_vib = 2; }
-                        else { max_vib = 1; }    
-                    }  
+                    else {
+                        if (vel <= 3) { max_vib = 5; }
+                        else if (vel <= 5) { max_vib = 4; }
+                        else if (vel <= 7) { max_vib = 3; }
+                        else if (vel <= 9) { max_vib = 2; }
+                        else { max_vib = 1; }
+                    }
                 }
 
                 if (reverse && sum > 0) { max_vib = 0; }
-                if(!reverse && sum < 0) { max_vib = 0; }
+                if (!reverse && sum < 0) { max_vib = 0; }
                 int sero = Mathf.Abs(sum) / 120;
                 if (waterincline) {
                     //zRot = parent.eulerAngles.z;
@@ -542,59 +480,59 @@ public class FirstPersonMovement : MonoBehaviour {
                     if (zRot > 15) {
                         sero = Mathf.Abs(sum) / 100;
                     }
-                    else if(zRot < -15) {
+                    else if (zRot < -15) {
                         sero = Mathf.Abs(sum) / 210;
                     }
 
                 }
                 if (isLeft && water == 1) { sero = Mathf.Abs(sum) / 210; }
                 if (!isLeft && water == 2) { sero = Mathf.Abs(sum) / 210; }
-                if(water == 1.5f) { sero = Mathf.Abs(sum) / 210; }
-                if(water == 3) {
+                if (water == 1.5f) { sero = Mathf.Abs(sum) / 210; }
+                if (water == 3) {
                     sero = Mathf.Abs(sum) / 120;
                     int grass_idx = sero / 3;
-                    if(grass_idx >= 6) { grass_idx = 5; }
-                    if(grass[grass_idx]!= sero) {
-                        if(grass_idx > 0) { sero = grass[grass_idx - 1]; }
+                    if (grass_idx >= 6) { grass_idx = 5; }
+                    if (grass[grass_idx] != sero) {
+                        if (grass_idx > 0) { sero = grass[grass_idx - 1]; }
                         else { sero = 0; }
                     }
-            
+
                 }
-                for (int y = 0; y< 18; y++) {
-                    for(int n = 0; n<6; n++) {
-                        if(y >= sero && y < sero + width) {
-                            arr[y * 6 + n] = (byte) (max_vib * 6 + max_vib);
+                for (int y = 0; y < 18; y++) {
+                    for (int n = 0; n < 6; n++) {
+                        if (y >= sero && y < sero + width) {
+                            arr[y * 6 + n] = (byte)(max_vib * 6 + max_vib);
                         }
-                        else { arr[y * 6  +n] =(byte) 0; }
+                        else { arr[y * 6 + n] = (byte)0; }
                     }
                 }
                 if (!reverse) { System.Array.Reverse(arr); }
                 if (isLeft) { larray = (byte[])arr.Clone(); }
-                else { 
-                    System.Array.Reverse(arr); //ì˜¤ë¥¸ìª½ ì¥ì¹˜ ë’¤ì§‘ì–´ì„œ ê±°ê¾¸ë¡œ ë„£ì–´ì¤˜ì•¼í•¨.
+                else {
+                    System.Array.Reverse(arr); //¿À¸¥ÂÊ ÀåÄ¡ µÚÁı¾î¼­ °Å²Ù·Î ³Ö¾îÁà¾ßÇÔ.
                     rarray = (byte[])arr.Clone();
                 }
 
                 break;
         }
-        
-}
+
+    }
     void GrassEffect() {
-        for(int i = 0; i< 6; i++) {
-            grass[i] = Random.Range(i * 3, i* 3 + 2);
+        for (int i = 0; i < 6; i++) {
+            grass[i] = Random.Range(i * 3, i * 3 + 2);
         }
     }
     void Print12Array(int[,] targetArray) {
-        string result = ""; // ì „ì²´ ë°°ì—´ì„ ë‹´ì„ ë¬¸ìì—´
+        string result = ""; // ÀüÃ¼ ¹è¿­À» ´ãÀ» ¹®ÀÚ¿­
 
         for (int i = 0; i < targetArray.GetLength(0); i++) {
             for (int j = 0; j < targetArray.GetLength(1); j++) {
                 result += targetArray[i, j] + " ";
             }
-            result = result.TrimEnd() + "\n"; // ê° í–‰ì˜ ëì—ì„œ ê³µë°± ì œê±° í›„ ì¤„ë°”ê¿ˆ ì¶”ê°€
+            result = result.TrimEnd() + "\n"; // °¢ ÇàÀÇ ³¡¿¡¼­ °ø¹é Á¦°Å ÈÄ ÁÙ¹Ù²Ş Ãß°¡
         }
 
-        Debug.Log(result.TrimEnd()); // ì „ì²´ ë¬¸ìì—´ì„ í•œ ë²ˆì— ì¶œë ¥
+        Debug.Log(result.TrimEnd()); // ÀüÃ¼ ¹®ÀÚ¿­À» ÇÑ ¹ø¿¡ Ãâ·Â
     }
 
     void Update() {
@@ -618,7 +556,7 @@ public class FirstPersonMovement : MonoBehaviour {
         }
 
         Vector3 rotation = transform.eulerAngles;
-        if (rotation.x > 180){rotation.x -= 360;}
+        if (rotation.x > 180) { rotation.x -= 360; }
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         if (rotation.z > 180) { rotation.z -= 360; }
         rotation.z = Mathf.Clamp(rotation.z, -40f, 40f);
@@ -628,7 +566,7 @@ public class FirstPersonMovement : MonoBehaviour {
             waterfall = 0;
         }
 
-        //ìµœê³ ì†ë„ ì¡°ì ˆ
+        //ÃÖ°í¼Óµµ Á¶Àı
         if (rigidbody.velocity.magnitude > 15.0f) {
             rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
         }
@@ -637,7 +575,7 @@ public class FirstPersonMovement : MonoBehaviour {
         }
 
         switch (inputMethod) {
-            case InputMethod.GamePad: //ê²Œì„ íŒ¨ë“œì— í–…í‹± í”¼ë“œë°±ì„ ì£¼ëŠ” ê²½ìš°
+            case InputMethod.GamePad: //°ÔÀÓ ÆĞµå¿¡ ÇİÆ½ ÇÇµå¹éÀ» ÁÖ´Â °æ¿ì
                 if (underwater.underwater) {
                     float currentPositionY = front.position.y;
                     float diff = underwater.water_y - currentPositionY;
@@ -645,7 +583,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                 }
                 break;
-            case InputMethod.HandStickThrottle: //ì¥ì¹˜ì— í–…í‹± í”¼ë“œë°±ì„ ì£¼ëŠ” ê²½ìš°
+            case InputMethod.HandStickThrottle: //ÀåÄ¡¿¡ ÇİÆ½ ÇÇµå¹éÀ» ÁÖ´Â °æ¿ì
                 Vector3 up_vector = transform.up;
                 Vector3 forward_vector = -transform.forward;
                 float ang = Vector3.Angle(up_vector, Vector3.up);
@@ -667,26 +605,78 @@ public class FirstPersonMovement : MonoBehaviour {
                     collide = bef_coll;
                     if (bef_coll == 1.5f) {
                         collide = 0f;
-                        }
                     }
+                }
 
-                if(collide <2f || water_status ==0) {
-                    if(waterfall > 0) {
+                if (collide < 2f || water_status == 0) {
+                    if (waterfall > 0) {
                         collide = 0f;
                     }
-                    //Debug.Log($"{collide}, {water_status}, {underwater.underwater}, {waterincline}");
-                    updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                    switch (situation.env) {
+                        case UserTest.Environment.Water:
+                            if(collide == 0) {
+                                updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            break;
+                        case UserTest.Environment.Waterfall:
+                            if(collide == 1.5f) {
+                                updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            else {
+                                updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            break;
+                        case UserTest.Environment.Collision:
+                        case UserTest.Environment.Moving:
+                            if (collide == 1.0f) {
+                                updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            else {
+                                updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            break;
+                        case UserTest.Environment.Grass:
+                        case UserTest.Environment.Land:
+                        case UserTest.Environment.Rowing:
+                            updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            break;
+                    }
                 }
-                else if(water_status != 0f) { // ë¬´ì–¸ê°€ì™€ ë¶€ë”ªíˆëŠ” ì¤‘; ë•…, í’€
-                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
-                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                else if (water_status != 0f) { // ¹«¾ğ°¡¿Í ºÎµúÈ÷´Â Áß; ¶¥, Ç®
+                    switch (situation.env) {
+                        case UserTest.Environment.Collision:
+                        case UserTest.Environment.Waterfall:
+                        case UserTest.Environment.Moving:
+                        case UserTest.Environment.Rowing:
+                        case UserTest.Environment.Water:
+                            break;
+                        case UserTest.Environment.Land:
+                            if(water_status >= 1 && water_status <= 2) {
+                                updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                                updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                            }
+                            else {
+                                updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            break;
+                        case UserTest.Environment.Grass:
+                            if (water_status ==3) {
+                                updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                                updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                            }
+                            else {
+                                updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            break;
+                    }
+
                 }
-                
+
                 //Debug.Log($"Collide: {collide}, Water status: {water_status}");
                 break;
 
             case InputMethod.HandStickGesture:
-                direct_ang = 0f; //ê¸°ìš¸ê¸° í‘œí˜„ xì´ê¸° ë•Œë¬¸ì— ê³„ì‚° í•„ìš” x.
+                direct_ang = 0f; //±â¿ï±â Ç¥Çö xÀÌ±â ¶§¹®¿¡ °è»ê ÇÊ¿ä x.
                 c_ang = 0f;
                 c_speed = Mathf.Clamp(collide_speed, 0, 5);
                 c_speed /= 5;
@@ -700,32 +690,82 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
                 else {
                     collide = bef_coll;
-                    if(bef_coll == 1.5f) {
+                    if (bef_coll == 1.5f) {
                         collide = 2.0f;
                     }
                 }
-                if(collide == 0f) {
+                if (collide == 0f) {
                     collide = 2f;
                 }
-                if(collide<2.0f) {updateArray(collide, direct_ang,  c_ang, collide_ang, c_speed); } // ê·¸ ì™¸: ì¶©ëŒ, ë¬¼ì— ë¹ ì§, ì¶œë ì„
-                else { // ë…¸ ì “ê¸°
-                    updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
-                    updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                if (collide < 2.0f) { // ±× ¿Ü: Ãæµ¹, ¹°¿¡ ºüÁü, Ãâ··ÀÓ
+                    switch (situation.env) {
+                        case UserTest.Environment.Collision:
+                        case UserTest.Environment.Moving:
+                            if (collide == 1.0f) { updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); }
+                            else { updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed); }
+                            break;
+                        case UserTest.Environment.Waterfall:
+                            if(collide == 1.5f) { updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); }
+                            else { updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed); }
+                            break;
+                        case UserTest.Environment.Land:
+                        case UserTest.Environment.Grass:
+                        case UserTest.Environment.Rowing:
+                        case UserTest.Environment.Water:
+                            updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            break;
+                    }
+
+                
+                } 
+                else { // ³ë Á£±â
+                    switch (situation.env) {
+                        case UserTest.Environment.Land:
+                            if(water_status >= 1 && water_status <= 2) {
+                                updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                                updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                            }
+                            else { updateArray(0.5f, 0, 0, 0, 0); }
+                            break;
+                        case UserTest.Environment.Grass:
+                            if (water_status== 3) {
+                                updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                                updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                            }
+                            else { updateArray(0.5f, 0, 0, 0, 0); }
+                            break;
+                        case UserTest.Environment.Water:
+                            if (water_status ==0) {
+                                updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                                updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                            }
+                            else { updateArray(0.5f, 0, 0, 0, 0); }
+                            break;
+                        case UserTest.Environment.Rowing:
+                            updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
+                            updateEachArray(false, rigidbody.velocity.magnitude, input_d.r_reverse, input_d.sum_r, water_status); //right hand
+                            break;
+                        case UserTest.Environment.Waterfall:
+                        case UserTest.Environment.Moving:
+                        case UserTest.Environment.Collision:
+                            updateArray(0.5f, 0, 0, 0, 0);
+                            break;
+                    }
                 }
-        
+
                 break;
         }
-        
+
 
     }
 
     public float AverageZ(ContactPoint[] contacts) {
-        if(contacts.Length == 0) { return 0f; }
+        if (contacts.Length == 0) { return 0f; }
         float sumZ = 0f;
-        foreach(ContactPoint contact in contacts) {
+        foreach (ContactPoint contact in contacts) {
             Vector3 world_collide = contact.point;
             Vector3 local_collide = transform.InverseTransformPoint(world_collide);
-            sumZ +=local_collide.z;
+            sumZ += local_collide.z;
         }
         return sumZ / contacts.Length;
     }
@@ -747,7 +787,7 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         return result;
     }
-    
+
     void OnCollisionEnter(Collision c) {
         Vector3 colVelocity = c.relativeVelocity;
         collide_speed = colVelocity.magnitude;
@@ -768,23 +808,24 @@ public class FirstPersonMovement : MonoBehaviour {
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
-                        if(collide != 1.0f && collide!= 0.5f) {
+                        if (collide != 1.0f && collide != 0.5f) {
                             StartCoroutine(CollisionControl());
                             water_status = 0f;
                         }
-                        
+
                     }
-            
+
                 }
                 else {
                     collide = 2.0f;
                     if (c.collider.CompareTag("Land")) {
                         collide_land = true;
                         float col = AverageZ(c.contacts);
-                        if(col >= 0) { water_status = 2.0f; }
-                        else if(col < 0){ water_status = 1.0f; }
+                        if (col >= 0) { water_status = 2.0f; }
+                        else if (col < 0) { water_status = 1.0f; }
                         else {
-                            water_status = 0f; }
+                            water_status = 0f;
+                        }
                     }
                     if (c.collider.CompareTag("Grass")) {
                         //water_status = 3.0f;
@@ -805,20 +846,20 @@ public class FirstPersonMovement : MonoBehaviour {
                 collide_ang = angle;
 
                 break;
-        }  
+        }
     }
 
     private void OnCollisionStay(Collision c) {
         if (c.collider.CompareTag("Land")) {
             switch (inputMethod) {
                 case InputMethod.GamePad:
-                   state = GamePad.GetState(PlayerIndex.One);
+                    state = GamePad.GetState(PlayerIndex.One);
                     if (state.IsConnected) {
                         float LX = state.ThumbSticks.Left.X;
                         float LY = state.ThumbSticks.Left.Y;
 
                         if (LX > 0 || LY > 0) {
-                            float magnitude = Mathf.Sqrt(LX * LX + LY * LY); // ë²¡í„°ì˜ í¬ê¸° ê³„ì‚°
+                            float magnitude = Mathf.Sqrt(LX * LX + LY * LY); // º¤ÅÍÀÇ Å©±â °è»ê
                             float normalizedIntensity = Mathf.Clamp01(magnitude);
                             float intensity = 0.3f * normalizedIntensity;
                             GamePad.SetVibration(PlayerIndex.One, 0, intensity);
@@ -859,7 +900,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     collide_speed = 2.0f;
                     break;
             }
-            
+
             Vector3 colPoint = c.contacts[0].point;
             Vector3 playerPoint = transform.position;
             Vector3 direction = colPoint - playerPoint;
@@ -885,11 +926,11 @@ public class FirstPersonMovement : MonoBehaviour {
         if(collide != 1f && collide != 0.5f) {
             collide = 0f;
         }*/
-        
+
         if (!c.collider.CompareTag("Grass")) {
             water_status = 0f;
         }
-        
+
         if (c.collider.CompareTag("Land")) {
             switch (inputMethod) {
                 case InputMethod.GamePad:
@@ -910,7 +951,7 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     private void OnTriggerEnter(Collider other) {
-        if (other.CompareTag("WaterE")){
+        if (other.CompareTag("WaterE")) {
             waterincline = true;
             water_status = 0f;
             waterfall++;
@@ -920,13 +961,13 @@ public class FirstPersonMovement : MonoBehaviour {
             water_status = 0f;
         }
         if (other.CompareTag("GrassE")) {
-            if (water_status != 3f && enterCount== 0) {
+            if (water_status != 3f && enterCount == 0) {
                 water_status = 3f;
                 collide = 2f;
             }
-            if (grassboat && enterCount ==0) {
+            if (grassboat && enterCount == 0) {
                 grassboat = false;
-            }  
+            }
             enterCount++;
         }
     }
@@ -937,7 +978,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 grassboat = true;
                 grassin = true;
             }
-            if (!grassboat && enterCount ==1) {
+            if (!grassboat && enterCount == 1) {
                 water_status = 0f;
                 collide = 0f;
                 grassin = false;
@@ -946,15 +987,15 @@ public class FirstPersonMovement : MonoBehaviour {
         }
     }
     private IEnumerator CollisionControl() {
-        if(collide == 1.0f || collide == 0.5f) {
-            yield break; //ì´ë¯¸ ì¶©ëŒ ì‹ í˜¸ê°€ 1 ì´ìƒ ë“¤ì–´ì™€ ìˆìœ¼ë©´ ì¤‘ë³µí•´ì„œ ë‹¤ì‹œ ì‹œì‘í•˜ëŠ” ê²ƒ ê¸ˆì§€.
+        if (collide == 1.0f || collide == 0.5f) {
+            yield break; //ÀÌ¹Ì Ãæµ¹ ½ÅÈ£°¡ 1 ÀÌ»ó µé¾î¿Í ÀÖÀ¸¸é Áßº¹ÇØ¼­ ´Ù½Ã ½ÃÀÛÇÏ´Â °Í ±İÁö.
         }
         collide = 1.0f;
         yield return new WaitForSeconds(2.0f);
 
         switch (inputMethod) {
             case InputMethod.HandStickGesture:
-                if(water_status >= 1 && water_status <=2 && collide == 2) {
+                if (water_status >= 1 && water_status <= 2 && collide == 2) {
                     yield break;
                 }
                 break;
@@ -969,7 +1010,5 @@ public class FirstPersonMovement : MonoBehaviour {
         yield return new WaitForSeconds(0.1f);
         GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
     }
-
-
 
 }
