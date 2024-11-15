@@ -39,14 +39,15 @@ public class TestMovement : MonoBehaviour
     private bool grassboat;
     private int enterCount = 0;
     private bool grassin = false;
-    private int[,] left_grass = new int[12, 85];
-    private int[,] right_grass = new int[12, 85];
+    private int[,] left_grass = new int[12, 92];
+    private int[,] right_grass = new int[12, 92];
 
     [HideInInspector]
     public bool waterincline = false;
     private int waterfall = 0;
     private float max_incline;
     private GamePadState state;
+    private Transform triggered;
 
     public enum InputMethod {
         GamePad,
@@ -97,7 +98,15 @@ public class TestMovement : MonoBehaviour
         InitArray();
         MarkArray(left_grass, GeneratePoints());
         MarkArray(right_grass, GeneratePoints());
-
+        switch (inputMethod) {
+            case InputMethod.GamePad:
+                foreach(Transform child in transform) {
+                    if(child.name == "Input") {
+                        child.gameObject.SetActive(false);
+                    }
+                }
+                break;
+        }
     }
 
     void InitArray() {
@@ -495,9 +504,14 @@ public class TestMovement : MonoBehaviour
                     }
                 }
                 else if (water == 3f) {
-                    int boat_pos = Mathf.FloorToInt((transform.position.z + 87) * 2);
+                    int boat_pos = 0;
+                    if(triggered!= null) {
+                        boat_pos = Mathf.FloorToInt((transform.position.z - triggered.position.z + 2.43f) * 2);
+                        if(boat_pos < 0) { boat_pos = 0; }
+                    }
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
-
+                    Debug.Log(transform.position.z - triggered.position.z);
+                    Debug.Log(boat_pos);
                     int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
                     larray = int2byteArray(left_slice, true);
@@ -1039,6 +1053,7 @@ public class TestMovement : MonoBehaviour
             if (water_status != 3f && enterCount == 0) {
                 water_status = 3f;
                 collide = 2f;
+                triggered = other.transform;
             }
             if (grassboat && enterCount == 0) {
                 grassboat = false;
@@ -1057,9 +1072,11 @@ public class TestMovement : MonoBehaviour
                 water_status = 0f;
                 collide = 0f;
                 grassin = false;
+                triggered = null;
 
                 if(left_grass != null && right_grass != null) {
                     InitArray();
+                    
                     MarkArray(left_grass, GeneratePoints());
                     MarkArray(right_grass, GeneratePoints());
                 }

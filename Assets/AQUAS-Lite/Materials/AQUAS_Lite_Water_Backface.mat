@@ -14,7 +14,6 @@ Material:
   m_ValidKeywords: []
   m_InvalidKeywords:
   - _ENABLEPROBERELFECTIONS_ON
-  - _ENABLEREALTIMEREFLECTIONS_ON
   - _ENABLEREFLECTIONS_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -32,22 +31,24 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Density: 0.525
+    - _Density: 0.097
     - _DepthTransparency: 0
-    - _Distortion: 0.686
+    - _Distortion: 0.569
     - _EnableProbeRelfections: 1
+    - _EnableRealtimeReflections: 0
     - _FoamContrast: 0
     - _FoamTiling: 0
     - _FoamVisibility: 0
     - _Gloss: 0.2
     - _LightWrapping: 0
-    - _NormalStrength: 1
-    - _ProbeReflectionIntensity: 0.578
+    - _NormalStrength: 0.9
+    - _NormalTiling: 0.46
+    - _ProbeReflectionIntensity: 0.537
     - _RealtimeReflectionIntensity: 1
     - _Refraction: 1
     m_Colors:
-    - _DeepWaterColor: {r: 0.06763973, g: 0.11615724, b: 0.1509434, a: 1}
-    - _FoamColor: {r: 1, g: 1, b: 1, a: 1}
+    - _DeepWaterColor: {r: 0.2247241, g: 0.37761277, b: 0.4716981, a: 1}
+    - _FoamColor: {r: 1, g: 1, b: 1, a: 0}
     - _MainColor: {r: 0.19357423, g: 0.35874712, b: 0.5471698, a: 1}
     - _SpecularColor: {r: 0.1457814, g: 0.18227129, b: 0.26415092, a: 1}
   m_BuildTextureStacks: []

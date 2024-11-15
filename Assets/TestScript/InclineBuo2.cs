@@ -93,8 +93,14 @@ public class InclineBuo2 : MonoBehaviour
                     buoyancyForce.y = 0.3f;
                 }
             }
+            else {
 
-            Debug.Log($"height : {rb.transform.position.y} , and buoyancy: {buoyancyForce.y}");
+                if (buoyancyForce.y < 0.1f) {
+                    buoyancyForce.y = 0.1f;
+                }
+            }
+
+            //Debug.Log($"height : {rb.transform.position.y} , and buoyancy: {buoyancyForce.y}");
             rb.AddForceAtPosition(buoyancyForce, transform.position);
             //Debug.Log($"target object: {position}, buoyancy object: {transform.position}");
         }
