@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Input_Delim : MonoBehaviour {
 
     [HideInInspector]
-    public LeftDelimiter lserial;
+    public IDelimeter lserial;
     [HideInInspector]
-    public RightDelimiter rserial;
+    public IDelimeter rserial;
 
     [HideInInspector]
     public float left_x;
@@ -54,8 +55,16 @@ public class Input_Delim : MonoBehaviour {
     // Start is called before the first frame update
     void Start()
     {
-        lserial = transform.Find("LDelim").GetComponent<LeftDelimiter>();
-        rserial = transform.Find("RDelim").GetComponent<RightDelimiter>();
+        string sceneName = SceneManager.GetActiveScene().name;
+        if(sceneName == "main") {
+            lserial = transform.Find("LDelim").GetComponent<LeftDelimiter>();
+            rserial = transform.Find("RDelim").GetComponent<RightDelimiter>();
+        }
+        else if(sceneName == "HapticTest") {
+            lserial = transform.Find("LDelim").GetComponent<Test_LDelim>();
+            rserial = transform.Find("RDelim").GetComponent<Test_RDelim>();
+        }
+
         left_x = 0;
         right_x = 0;
         left_y = 0;

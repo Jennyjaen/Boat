@@ -13,31 +13,20 @@ using System.Text;
 /**
  * Sample for reading using polling by yourself, and writing too.
  */
-public class RightDelimiter : MonoBehaviour {
+public class RightDelimiter : MonoBehaviour, IDelimeter {
     public SerialControllerCustomDelimiter serialController;
 
     private byte[] sendArray;
     private FirstPersonMovement person;
 
-    [HideInInspector]
-    public int x;
-    [HideInInspector]
-    public int y;
-
-    [HideInInspector]
-    public int stream;
-
-    [HideInInspector]
-    public int zerostream;
-    [HideInInspector]
-    public int zerostream_x;
-    [HideInInspector]
-    public int zerostream_y;
-
-    [HideInInspector]
-    public int sum_x;
-    [HideInInspector]
-    public int sum_y;
+    [HideInInspector] public int x { get; set; }
+    [HideInInspector] public int y { get; set; }
+    [HideInInspector] public int stream { get; set; }
+    [HideInInspector] public int zerostream { get; set; }
+    [HideInInspector] public int zerostream_x { get; set; }
+    [HideInInspector] public int zerostream_y { get; set; }
+    [HideInInspector] public int sum_x { get; set; }
+    [HideInInspector] public int sum_y { get; set; }
 
     private int accum_x; //지금까지 총 누적된 거리
     private int accum_y;
@@ -49,7 +38,7 @@ public class RightDelimiter : MonoBehaviour {
 
 
     void Start() {
-        serialController = GameObject.Find("RSerial").GetComponent<SerialControllerCustomDelimiter>(); 
+        serialController = GameObject.Find("RSerial").GetComponent<SerialControllerCustomDelimiter>();
 
         person = GetComponentInParent<FirstPersonMovement>();
         if (person == null) {

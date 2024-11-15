@@ -16,7 +16,7 @@ public class ControlBuoyancy : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(player.transform.position.z);
+        //Debug.Log(player.transform.position.z);
         if(player.transform.position.z <3.5f) {
             for (int i = 0; i < scripts.Length; i++) {
                 if (i == 0)

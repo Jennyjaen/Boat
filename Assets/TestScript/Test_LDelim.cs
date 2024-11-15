@@ -1,23 +1,13 @@
-/**
- * Ardity (Serial Communication for Arduino + Unity)
- * Author: Daniel Wilches <dwilches@gmail.com>
- *
- * This work is released under the Creative Commons Attributions license.
- * https://creativecommons.org/licenses/by/2.0/
- */
-
-using UnityEngine;
 using System.Collections;
-using System.Text;
+using System.Collections.Generic;
+using UnityEngine;
 
-/**
- * Sample for reading using polling by yourself, and writing too.
- */
-public class LeftDelimiter : MonoBehaviour, IDelimeter {
+public class Test_LDelim : MonoBehaviour, IDelimeter
+{
     public SerialControllerCustomDelimiter serialController;
 
     private byte[] sendArray;
-    private FirstPersonMovement person;
+    private TestMovement person;
     // Initialization
     [HideInInspector] public int x { get; set; }
     [HideInInspector] public int y { get; set; }
@@ -27,7 +17,6 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
     [HideInInspector] public int zerostream_y { get; set; }
     [HideInInspector] public int sum_x { get; set; }
     [HideInInspector] public int sum_y { get; set; }
-
     private int accum_x; //지금까지 총 누적된 거리
     private int accum_y;
     [HideInInspector]
@@ -38,7 +27,7 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
     void Start() {
         serialController = GameObject.Find("LSerial").GetComponent<SerialControllerCustomDelimiter>();
 
-        person = GetComponentInParent<FirstPersonMovement>();
+        person = GetComponentInParent<TestMovement>();
         if (person == null) {
             Debug.Log("Can not find person");
         }
@@ -80,7 +69,7 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
         }
 
         int[] message = serialController.ReadSerialMessage();
-        
+
         if (message == null) {
             //Debug.Log("no message");
             x = 0;
@@ -92,11 +81,11 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
             sendArray = person.larray;
             //printArray(sendArray);
         }
-        
+
         serialController.SendSerialMessage(sendArray);
-        
- 
-        if(message.Length == 2) {
+
+
+        if (message.Length == 2) {
             /*
             y = (int)message[0];
             x = (int)message[1];
@@ -107,9 +96,9 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
             x = message[1];
             accum_x += x;
             accum_y += y;
-            if(person.inputMethod == FirstPersonMovement.InputMethod.HandStickGesture) {
-                if (x != 0 || y!= 0) {
-                    if(y!= 0) {
+            if (person.inputMethod == TestMovement.InputMethod.HandStickGesture) {
+                if (x != 0 || y != 0) {
+                    if (y != 0) {
                         if (sum_y * y < 0) {
                             sum_y = y;
                         }
@@ -147,8 +136,8 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
 
                 zerostream = Mathf.Min(zerostream_x, zerostream_y);
             }
-            else if(person.inputMethod == FirstPersonMovement.InputMethod.HandStickThrottle) {
-                if(Mathf.Abs(accum_x) < 100 && Mathf.Abs(accum_y) < 100) {
+            else if (person.inputMethod == TestMovement.InputMethod.HandStickThrottle) {
+                if (Mathf.Abs(accum_x) < 100 && Mathf.Abs(accum_y) < 100) {
                     zerostream++;
                 }
                 else {
@@ -163,6 +152,6 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
             x = 0;
             y = 0;
         }
-        
+
     }
 }
