@@ -13,8 +13,7 @@ public class TestCollision : MonoBehaviour {
     public float throwSpeed = 5f;
     private float distance;
     public float spawnDistance = 20f;
-    private bool canThrow = false;
-
+    Transform explainImage;
 
     private void Start() {
         // Rigidbody 컴포넌트 가져오기
@@ -32,6 +31,7 @@ public class TestCollision : MonoBehaviour {
         insitu = false;
         rock = GameObject.Find("Collision/Rock");
         distance = spawnDistance;
+        explainImage = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/Explain");
     }
 
 
@@ -106,6 +106,16 @@ public class TestCollision : MonoBehaviour {
                     float RX = state.ThumbSticks.Right.X;
                     float RY = state.ThumbSticks.Right.Y;
 
+                    if(LX == -1 && RX == 1) {
+                        insitu = false;
+                        rb.constraints = RigidbodyConstraints.None;
+                        Vector3 newPosition = transform.position; 
+                        newPosition.z += 25f; 
+                        transform.position = newPosition;
+                        explainImage.gameObject.SetActive(false);
+
+                        GamePadInput.enabled = true;
+                    }
                     float angle = CalculateAngle(LX + RX, LY -RY);
 
                     float max_i = GetMagnitude(angle);
@@ -113,12 +123,10 @@ public class TestCollision : MonoBehaviour {
 
                     if (LX == 0 && LY == 0 && RX == 0 && RY == 0) {
                         distance = spawnDistance;
-                        canThrow = false;
                     }
                     else {
                         distance -= magnitude * Time.deltaTime * 5f;
                         distance = Mathf.Max(distance, 0.5f);
-                        ThrowRock(angle, magnitude);
                     }
                     ThrowRock(angle, magnitude);
                     break;
@@ -140,7 +148,6 @@ public class TestCollision : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("Collide")) {
-            Transform explainImage = transform.Find("XR Rig/Camera Offset/Main Camera/Canvas/Explain");
             if (explainImage != null)
             {
                 explainImage.gameObject.SetActive(true);
