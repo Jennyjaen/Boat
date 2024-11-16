@@ -107,6 +107,24 @@ public class TestMovement : MonoBehaviour
                 }
                 break;
         }
+
+        switch (inputMethod) {
+            case InputMethod.GamePad:
+                GamePadInput.enabled = true;
+                HandThrottle.enabled = false;
+                HandGesture.enabled = false;
+                break;
+            case InputMethod.HandStickThrottle:
+                GamePadInput.enabled = false;
+                HandThrottle.enabled = true;
+                HandGesture.enabled = false;
+                break;
+            case InputMethod.HandStickGesture:
+                GamePadInput.enabled = false;
+                HandThrottle.enabled = false;
+                HandGesture.enabled = true;
+                break;
+        }
     }
 
     void InitArray() {
@@ -605,23 +623,6 @@ public class TestMovement : MonoBehaviour
 
     void Update() {
         //Debug.Log($"collide: {collide} , water: {water_status}");
-        switch (inputMethod) {
-            case InputMethod.GamePad:
-                GamePadInput.enabled = true;
-                HandThrottle.enabled = false;
-                HandGesture.enabled = false;
-                break;
-            case InputMethod.HandStickThrottle:
-                GamePadInput.enabled = false;
-                HandThrottle.enabled = true;
-                HandGesture.enabled = false;
-                break;
-            case InputMethod.HandStickGesture:
-                GamePadInput.enabled = false;
-                HandThrottle.enabled = false;
-                HandGesture.enabled = true;
-                break;
-        }
 
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180) { rotation.x -= 360; }
