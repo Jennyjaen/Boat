@@ -22,7 +22,7 @@ public class TestCollision : MonoBehaviour {
         if (rb == null) {
             Debug.LogError("Rigidbody가 이 오브젝트에 없습니다.");
         }
-
+        input_d = transform.Find("Input").GetComponent<Input_Delim>();
         person = GetComponent<TestMovement>();
         GamePadInput = GetComponent<GamePadInput>();
         HandThrottle = GetComponent<HandThrottle>();
@@ -95,33 +95,37 @@ public class TestCollision : MonoBehaviour {
         return max_i;
     }
 
+    public void EndScenario() {
+        insitu = false;
+        rb.constraints = RigidbodyConstraints.None;
+        Vector3 newPosition = transform.position;
+        newPosition.z += 25f;
+        transform.position = newPosition;
+        explainImage.gameObject.SetActive(false);
+
+        GamePadInput.enabled = true;
+    }
+
     private void Update() {
         if (insitu) {
             switch (person.inputMethod) {
                 case TestMovement.InputMethod.GamePad:
                     GamePadState state = GamePad.GetState(PlayerIndex.One);
 
-                    float LX = state.ThumbSticks.Left.X; 
-                    float LY = state.ThumbSticks.Left.Y;  
-                    float RX = state.ThumbSticks.Right.X;
-                    float RY = state.ThumbSticks.Right.Y;
+                    float lx = state.ThumbSticks.Left.X; 
+                    float ly = state.ThumbSticks.Left.Y;  
+                    float rx = state.ThumbSticks.Right.X;
+                    float ry = state.ThumbSticks.Right.Y;
 
-                    if(LX == -1 && RX == 1) {
-                        insitu = false;
-                        rb.constraints = RigidbodyConstraints.None;
-                        Vector3 newPosition = transform.position; 
-                        newPosition.z += 25f; 
-                        transform.position = newPosition;
-                        explainImage.gameObject.SetActive(false);
-
-                        GamePadInput.enabled = true;
+                    if(lx == -1 && rx == 1) {
+                        EndScenario();
                     }
-                    float angle = CalculateAngle(LX + RX, LY -RY);
+                    float angle = CalculateAngle(lx + rx, ly -ry);
 
                     float max_i = GetMagnitude(angle);
-                    float magnitude = Mathf.Sqrt((LX + RX) * (LX + RX) + (LY - RY) * (LY - RY)) / max_i;
+                    float magnitude = Mathf.Sqrt((lx + rx) * (lx + rx) + (ly - ry) * (ly - ry)) / max_i;
 
-                    if (LX == 0 && LY == 0 && RX == 0 && RY == 0) {
+                    if (lx == 0 && ly == 0 && rx == 0 && ry == 0) {
                         distance = spawnDistance;
                     }
                     else {
@@ -131,6 +135,32 @@ public class TestCollision : MonoBehaviour {
                     ThrowRock(angle, magnitude);
                     break;
                 case TestMovement.InputMethod.HandStickThrottle:
+                    int accum_x = input_d.accum_lx;
+                    lx = accum_x / 800f;
+                    int accum_y = input_d.accum_ly;
+                    ly = accum_y / 800f;
+                    lx = Mathf.Abs(lx) < 0.15f ? 0 : Mathf.Clamp(lx, -1f, 1f);
+                    ly = Mathf.Abs(ly) < 0.15f ? 0 : Mathf.Clamp(ly, -1f, 1f);
+                    rx = input_d.accum_rx / 800f;
+                    ry = input_d.accum_ry / 800f;
+                    rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
+                    ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
+                    if (lx == -1 && rx == 1) {
+                        EndScenario();
+                    }
+                    angle = CalculateAngle(lx + rx, -ly- ry);
+
+                    max_i = GetMagnitude(angle);
+                    magnitude = Mathf.Sqrt((lx + rx) * (lx + rx) + (ly + ry) * (ly + ry)) / max_i;
+
+                    if (lx == 0 && ly == 0 && rx == 0 && ry == 0) {
+                        distance = spawnDistance;
+                    }
+                    else {
+                        distance -= magnitude * Time.deltaTime * 5f;
+                        distance = Mathf.Max(distance, 0.5f);
+                    }
+                    ThrowRock(angle, magnitude);
                     break;
                 case TestMovement.InputMethod.HandStickGesture:
                     break;

@@ -58,11 +58,11 @@ public class TestMovement : MonoBehaviour
 
 
     [HideInInspector]
-    public MonoBehaviour GamePadInput;
+    public GamePadInput GamePadInput;
     [HideInInspector]
-    public MonoBehaviour HandThrottle;
+    public HandThrottle HandThrottle;
     [HideInInspector]
-    public MonoBehaviour HandGesture;
+    public HandGesture HandGesture;
 
     [HideInInspector]
     public byte[] larray = new byte[108];
@@ -71,7 +71,7 @@ public class TestMovement : MonoBehaviour
 
     void Start()
     {
-        situation = GameObject.Find("TestEnvironment").GetComponent<UserTest>();
+        situation = transform.GetComponent<UserTest>();
         rigidbody = GetComponent<Rigidbody>();
         front = transform.Find("Front");
         max_incline = 0f;
@@ -503,6 +503,7 @@ public class TestMovement : MonoBehaviour
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
+                Debug.Log(rigidbody.velocity.magnitude);
                 if (water == 1) {
                     for (int i = 0; i < 108; i++) {
                         larray[i] = (byte)21;
@@ -623,7 +624,45 @@ public class TestMovement : MonoBehaviour
 
     void Update() {
         //Debug.Log($"collide: {collide} , water: {water_status}");
-
+        switch (situation.env) {
+            case UserTest.Environment.Land:
+                transform.eulerAngles = new Vector3(transform.eulerAngles.x, 90f, transform.eulerAngles.z);
+                rigidbody.constraints = RigidbodyConstraints.FreezeRotationY;
+                switch (inputMethod) {
+                    case InputMethod.GamePad:
+                        GamePadInput.rotation_m = 0;
+                        break;
+                    case InputMethod.HandStickThrottle:
+                        HandThrottle.rotation_m = 0;
+                        break;
+                    case InputMethod.HandStickGesture:
+                        HandGesture.rotation_m = 0;
+                        break;
+                }
+                break;
+            default:
+                switch (inputMethod) {
+                    case InputMethod.GamePad:
+                        GamePadInput.rotation_m = 15f;
+                        if (GamePadInput.enabled) {
+                            rigidbody.constraints = RigidbodyConstraints.None;
+                        }
+                        break;
+                    case InputMethod.HandStickThrottle:
+                        HandThrottle.rotation_m = 15f;
+                        if (HandThrottle.enabled) {
+                            rigidbody.constraints = RigidbodyConstraints.None;
+                        }
+                        break;
+                    case InputMethod.HandStickGesture:
+                        HandGesture.rotation_m = 0.01f;
+                        if (HandGesture.enabled) {
+                            rigidbody.constraints = RigidbodyConstraints.None;
+                        }
+                        break;
+                }
+                break;
+        }
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180) { rotation.x -= 360; }
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
@@ -654,7 +693,6 @@ public class TestMovement : MonoBehaviour
                             GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                         }
                         break;
-
                 }
                 break;
             case InputMethod.HandStickThrottle: //장치에 햅틱 피드백을 주는 경우

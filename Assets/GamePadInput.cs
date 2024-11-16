@@ -11,7 +11,8 @@ public class GamePadInput : MonoBehaviour
     Rigidbody rb;
     private Transform xrRig;
 
-    private float rotationY = 0f;
+    [HideInInspector]
+    public float rotation_m = 15f;
     private bool colliding = false;
     private GameObject lPaddle;
     private GameObject rPaddle;
@@ -70,7 +71,7 @@ public class GamePadInput : MonoBehaviour
 
             if (ly != 0) {
                 Vector3 forwardMovement = -transform.right * ly * 2.5f * Time.deltaTime;
-                float turnAmount = ly * 15f * Time.deltaTime;
+                float turnAmount = ly * rotation_m * Time.deltaTime;
                 Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
                 Vector3 targetPosition = rb.position + forwardMovement;
                 if (!colliding) {
@@ -119,7 +120,7 @@ public class GamePadInput : MonoBehaviour
             if (ry != 0) {
                 ry = -1 * ry;
                 Vector3 forwardMovement = -transform.right * ry * 2.5f * Time.deltaTime;
-                float turnAmount = -ry * 15f * Time.deltaTime;
+                float turnAmount = -ry * rotation_m * Time.deltaTime;
                 Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
                 Vector3 targetPosition = rb.position + forwardMovement;
                 if (!colliding) {

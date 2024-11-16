@@ -24,7 +24,8 @@ public class HandGesture : MonoBehaviour
     private float sum_left = 0f;
     private float sum_right = 0f;
 
-
+    [HideInInspector]
+    public float rotation_m = 0.01f; 
     private GameObject boat;
     private FirstPersonMovement person;
     // Start is called before the first frame update
@@ -80,12 +81,12 @@ public class HandGesture : MonoBehaviour
             //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
             if (input_d.right_y > 0 && !input_d.r_reverse) {
                 rigidbody.AddForce(-1 * transform.right * 0.05f * input_d.right_y);
-                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
+                rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
                 //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
             }
             else if (input_d.right_y < 0 && input_d.r_reverse) {
                 rigidbody.AddForce(-1 * transform.right * 0.05f * input_d.right_y);
-                rigidbody.AddTorque(0, -0.01f * input_d.right_y, 0);
+                rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
             }
             //노 회전 애니메이션
             rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, rigidbody.transform.forward, (input_d.right_y / 30));

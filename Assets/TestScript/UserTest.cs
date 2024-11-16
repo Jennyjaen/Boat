@@ -5,11 +5,6 @@ using UnityEngine;
 public class UserTest : MonoBehaviour
 {
     // Start is called before the first frame update
-    public enum UT {
-        Test2,
-        Test3
-    }
-    public UT ut;
 
     public enum Environment {
         Collision,
@@ -23,7 +18,7 @@ public class UserTest : MonoBehaviour
 
     public Environment env;
     private Environment previousEnv;
-    public GameObject gameObjectA;
+
     void Start()
     {
         SetPositionBasedOnEnvironment();
@@ -40,11 +35,12 @@ public class UserTest : MonoBehaviour
     }
 
     private void SetPositionBasedOnEnvironment() {
-        Transform targetParent = transform.Find(env.ToString());
+        GameObject testEnvironment = GameObject.Find("TestEnvironment");
+        Transform targetParent = testEnvironment.transform.Find(env.ToString());
         if (targetParent != null) {
             Transform startingPoint = targetParent.Find("StartPoint");
             if (startingPoint != null) {
-                gameObjectA.transform.position = startingPoint.position;
+                transform.position = startingPoint.position;
             }
             else {
                 Debug.LogWarning($"StartingPoint not found in {env} parent.");
