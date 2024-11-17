@@ -197,7 +197,7 @@ public class TestMovement : MonoBehaviour
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
             float intensity = col_s * 6;
             intensity = Mathf.Round(intensity);
-            Debug.Log($"col_s: {col_s}, real speed: {collide_speed}, intensity: {intensity}");
+            //Debug.Log($"col_s: {col_s}, real speed: {collide_speed}, intensity: {intensity}");
             if (intensity == 6) {
                 intensity = 5;
             }
@@ -529,8 +529,8 @@ public class TestMovement : MonoBehaviour
                         if(boat_pos < 0) { boat_pos = 0; }
                     }
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
-                    Debug.Log(transform.position.z - triggered.position.z);
-                    Debug.Log(boat_pos);
+                    //Debug.Log(transform.position.z - triggered.position.z);
+                    //Debug.Log(boat_pos);
                     int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
                     larray = int2byteArray(left_slice, true);
@@ -1036,6 +1036,13 @@ public class TestMovement : MonoBehaviour
                 angle += 360;
             }
             collide_ang = angle;
+
+            Vector3 col_center = c.collider.bounds.center;
+            Vector3 my_center = GetComponent<Collider>().bounds.center;
+            Vector3 dir = (my_center - col_center);
+            dir.Normalize();
+
+            transform.position += dir * 0.3f * Time.deltaTime;
             switch (inputMethod) {
                 case InputMethod.GamePad:
                     switch (situation.env) {

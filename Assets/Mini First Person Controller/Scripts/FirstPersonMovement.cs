@@ -35,8 +35,8 @@ public class FirstPersonMovement : MonoBehaviour {
     private bool grassboat;
     private int enterCount = 0;
     private bool grassin = false;
-    private int[,] left_grass = new int[12, 85];
-    private int[,] right_grass = new int[12, 85];
+    private int[,] left_grass = new int[12, 92];
+    private int[,] right_grass = new int[12, 92];
 
     [HideInInspector]
     public bool waterincline = false;
@@ -52,6 +52,13 @@ public class FirstPersonMovement : MonoBehaviour {
     }
     public InputMethod inputMethod;
 
+    public enum Track {
+        Practice,
+        Track1,
+        Track2
+    }
+
+    public Track track;
 
     [HideInInspector]
     public MonoBehaviour GamePadInput;
@@ -66,7 +73,8 @@ public class FirstPersonMovement : MonoBehaviour {
     public byte[] larray = new byte[108];
     [HideInInspector]
     public byte[] rarray = new byte[108];
-    [HideInInspector]
+
+    private Transform triggered;
 
     void Awake() {
         // Get the rigidbody on this.
@@ -99,6 +107,43 @@ public class FirstPersonMovement : MonoBehaviour {
         InitArray();
         MarkArray(left_grass, GeneratePoints());
         MarkArray(right_grass, GeneratePoints());
+        triggered = null;
+        switch (track) {
+            case Track.Practice:
+                GameObject practiceObject = GameObject.Find("Practice");
+                    if (practiceObject != null) {
+                        Transform practicePoint = practiceObject.transform.Find("Point");
+                        if (practicePoint != null) {
+                            transform.position = practicePoint.position;
+                        }
+                    }
+                break;
+            case Track.Track1:
+                practiceObject = GameObject.Find("Track1");
+                if (practiceObject != null) {
+                    Transform practicePoint = practiceObject.transform.Find("Point");
+                    if (practicePoint != null) {
+                        transform.position = practicePoint.position;
+                    }
+                }
+                Vector3 currentRotation = transform.eulerAngles;
+                currentRotation.y = 160f;
+                transform.eulerAngles = currentRotation;
+                break;
+
+            case Track.Track2:
+                practiceObject = GameObject.Find("Track2");
+                if (practiceObject != null) {
+                    Transform practicePoint = practiceObject.transform.Find("Point");
+                    if (practicePoint != null) {
+                        transform.position = practicePoint.position;
+                    }
+                }
+                currentRotation = transform.eulerAngles;
+                currentRotation.y = 160f;
+                transform.eulerAngles = currentRotation;
+                break;
+        }
     }
 
     void InitArray() {
@@ -503,7 +548,12 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                 }
                 else if(water == 3f) {
-                    int boat_pos = Mathf.FloorToInt((transform.position.z + 87) * 2);
+                    int boat_pos = 0;
+                    if (triggered != null) {
+                        Vector3 otherLocalPosition = transform.InverseTransformPoint(triggered.position);
+                        boat_pos = Mathf.FloorToInt((- otherLocalPosition.z + 2.43f) * 2);
+                        if (boat_pos < 0) { boat_pos = 0; }
+                    }
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
 
                     int[,] left_slice = SliceArray(left_grass,0, boat_pos, 12, 18);
@@ -871,6 +921,13 @@ public class FirstPersonMovement : MonoBehaviour {
                 angle += 360;
             }
             collide_ang = angle;
+
+            Vector3 col_center = c.collider.bounds.center;
+            Vector3 my_center = GetComponent<Collider>().bounds.center;
+            Vector3 dir = (my_center - col_center);
+            dir.Normalize();
+
+            transform.position += dir * 0.3f * Time.deltaTime;
             switch (inputMethod) {
                 case InputMethod.GamePad:
                     float c_speed = Mathf.Clamp(collide_speed * 8f, 0, 1);
@@ -918,11 +975,16 @@ public class FirstPersonMovement : MonoBehaviour {
         if (other.CompareTag("WaterO")) {
             waterincline = false;
             water_status = 0f;
+            if (underwater.underwater) {
+                underwater.underwater = false;
+                underwater.water_y = 0f;
+            }
         }
         if (other.CompareTag("GrassE")) {
             if (water_status != 3f && enterCount== 0) {
                 water_status = 3f;
                 collide = 2f;
+                triggered = other.transform;
             }
             if (grassboat && enterCount ==0) {
                 grassboat = false;
@@ -941,6 +1003,13 @@ public class FirstPersonMovement : MonoBehaviour {
                 water_status = 0f;
                 collide = 0f;
                 grassin = false;
+                triggered = null;
+                if (left_grass != null && right_grass != null) {
+                    InitArray();
+
+                    MarkArray(left_grass, GeneratePoints());
+                    MarkArray(right_grass, GeneratePoints());
+                }
             }
             enterCount--;
         }
