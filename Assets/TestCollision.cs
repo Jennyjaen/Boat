@@ -10,9 +10,9 @@ public class TestCollision : MonoBehaviour {
     private Input_Delim input_d;
     private bool insitu;
     private GameObject rock;
-    public float throwSpeed = 5f;
+    public float throwSpeed = 0.7f;
     private float distance;
-    public float spawnDistance = 20f;
+    public float spawnDistance = 10f;
     Transform explainImage;
 
     private void Start() {

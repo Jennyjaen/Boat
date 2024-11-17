@@ -27,12 +27,12 @@ public class HandGesture : MonoBehaviour
     [HideInInspector]
     public float rotation_m = 0.01f; 
     private GameObject boat;
-    private FirstPersonMovement person;
+    
     // Start is called before the first frame update
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
-        person = transform.GetComponent<FirstPersonMovement>();
+
         lPaddle = GameObject.Find("LPaddle");
         rPaddle = GameObject.Find("RPaddle");
         input_d = transform.Find("Input").GetComponent<Input_Delim>();

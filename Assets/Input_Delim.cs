@@ -26,6 +26,7 @@ public class Input_Delim : MonoBehaviour {
     [HideInInspector]
     public int zerostream;
 
+    private HandGesture handGesture;
     [HideInInspector]
     public int sum_l;
     [HideInInspector]
@@ -45,6 +46,7 @@ public class Input_Delim : MonoBehaviour {
     private Text LText;
     [SerializeField]
     private Text RText;
+
     public enum Choice{
         FarUpDown,
         FootInput
@@ -65,6 +67,7 @@ public class Input_Delim : MonoBehaviour {
             rserial = transform.Find("RDelim").GetComponent<Test_RDelim>();
         }
 
+        handGesture = transform.GetComponentInParent<HandGesture>();
         left_x = 0;
         right_x = 0;
         left_y = 0;
@@ -97,46 +100,47 @@ public class Input_Delim : MonoBehaviour {
         accum_ry = rserial.save_y;
 
         zerostream = Mathf.Min(lserial.zerostream, rserial.zerostream);
+        if (handGesture.enabled) {
+            switch (selected) {
+                case Choice.FarUpDown: //해야하는 것: x축에서 얼마나 떨어졌는지
+                    if (accum_lx < -1 * far_threshold) {
+                        l_reverse = true;
+                        if (LText != null) {
+                            LText.gameObject.SetActive(true);
+                        }
+                    }
+                    else {
+                        l_reverse = false;
+                        if (LText != null) {
+                            LText.gameObject.SetActive(false);
+                        }
+                    }
+                    if (accum_rx > far_threshold) {
+                        r_reverse = true;
+                        if (RText != null) {
+                            RText.gameObject.SetActive(true);
+                        }
+                    }
+                    else {
+                        r_reverse = false;
+                        if (RText != null) {
+                            RText.gameObject.SetActive(false);
+                        }
+                    }
 
-        switch (selected) {
-            case Choice.FarUpDown: //해야하는 것: x축에서 얼마나 떨어졌는지
-                if(accum_lx < -1 * far_threshold) {
-                    l_reverse = true;
-                    if (LText != null) {
-                        LText.gameObject.SetActive(true);
-                    }
-                }
-                else {
-                    l_reverse = false;
-                    if (LText != null) {
-                        LText.gameObject.SetActive(false);
-                    }
-                }
-                if (accum_rx > far_threshold) {
-                    r_reverse = true;
-                    if (RText != null) {
-                        RText.gameObject.SetActive(true);
-                    }
-                }
-                else {
-                    r_reverse = false;
-                    if (RText != null) {
-                        RText.gameObject.SetActive(false);
-                    }
-                }
+                    break;
 
-                break;
-
-            case Choice.FootInput: //해야하는 것: 특정 키보드가 눌렸는지
-                if (Input.GetKey(KeyCode.B)) {
-                    l_reverse = true;
-                    r_reverse = true;
-                }
-                else {
-                    l_reverse = false;
-                    r_reverse = false;
-                }
-                break;
+                case Choice.FootInput: //해야하는 것: 특정 키보드가 눌렸는지
+                    if (Input.GetKey(KeyCode.B)) {
+                        l_reverse = true;
+                        r_reverse = true;
+                    }
+                    else {
+                        l_reverse = false;
+                        r_reverse = false;
+                    }
+                    break;
+            }
         }
-    }
+    }      
 }

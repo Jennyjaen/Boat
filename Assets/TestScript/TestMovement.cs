@@ -197,7 +197,7 @@ public class TestMovement : MonoBehaviour
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
             float intensity = col_s * 6;
             intensity = Mathf.Round(intensity);
-            Debug.Log($"col_s: {col_s}, intensity: {intensity}");
+            Debug.Log($"col_s: {col_s}, real speed: {collide_speed}, intensity: {intensity}");
             if (intensity == 6) {
                 intensity = 5;
             }
