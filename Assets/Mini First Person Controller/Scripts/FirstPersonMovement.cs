@@ -41,7 +41,6 @@ public class FirstPersonMovement : MonoBehaviour {
     [HideInInspector]
     public bool waterincline = false;
     private int waterfall = 0;
-
     private GamePadState state;
 
     //Input 방법을 여러개로 바꾸기
@@ -51,7 +50,7 @@ public class FirstPersonMovement : MonoBehaviour {
         HandStickGesture
     }
     public InputMethod inputMethod;
-
+    [SerializeField] private bool disableWater = false;
     public enum Track {
         Practice,
         Track1,
@@ -61,11 +60,11 @@ public class FirstPersonMovement : MonoBehaviour {
     public Track track;
 
     [HideInInspector]
-    public MonoBehaviour GamePadInput;
+    public GamePadInput GamePadInput;
     [HideInInspector]
-    public MonoBehaviour HandThrottle;
+    public HandThrottle HandThrottle;
     [HideInInspector]
-    public MonoBehaviour HandGesture;
+    public HandGesture HandGesture;
 
     private float max_incline;
 
@@ -75,7 +74,6 @@ public class FirstPersonMovement : MonoBehaviour {
     public byte[] rarray = new byte[108];
 
     private Transform triggered;
-
     void Awake() {
         // Get the rigidbody on this.
         rigidbody = GetComponent<Rigidbody>();
@@ -223,7 +221,7 @@ public class FirstPersonMovement : MonoBehaviour {
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
             float intensity = col_s * 6;
             intensity = Mathf.Round(intensity);
-            Debug.Log($"col_s: {col_s}, intensity: {intensity}");
+            //Debug.Log($"col_s: {col_s}, intensity: {intensity}");
             if (intensity == 6) {
                 intensity = 5;
             }
@@ -529,22 +527,26 @@ public class FirstPersonMovement : MonoBehaviour {
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
-                if(water == 1) {
+                float moving = HandThrottle.ly + HandThrottle.ry;
+                moving /= 2;
+                int intense = Mathf.CeilToInt(3 * moving);
+                if (water == 1) {
+                    
                     for(int i = 0; i<108; i++) {
-                        larray[i] = (byte)21;
+                        larray[i] = (byte)(intense * 7);
                         rarray[i] = (byte)0;
                     }
                 }
                 else if(water == 1.5f) {
                     for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)21;
-                        rarray[i] = (byte)21;
+                        larray[i] = (byte)(intense * 7);
+                        rarray[i] = (byte)(intense * 7);
                     }
                 }
                 else if(water == 2f) {
                     for (int i = 0; i < 108; i++) {
                         larray[i] = (byte)0;
-                        rarray[i] = (byte)21;
+                        rarray[i] = (byte)(intense * 7);
                     }
                 }
                 else if(water == 3f) {
@@ -648,7 +650,7 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void Update() {
-        //Debug.Log($"collide: {collide} , water: {water_status}");
+        
         switch (inputMethod) {
             case InputMethod.GamePad:
                 GamePadInput.enabled = true;
@@ -725,7 +727,29 @@ public class FirstPersonMovement : MonoBehaviour {
                         collide = 0f;
                     }
                     //Debug.Log($"{collide}, {water_status}, {underwater.underwater}, {waterincline}");
-                    updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                    switch (track) {
+                        case Track.Practice:
+                            if(collide == 0) {
+                                updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            else {
+                                updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            break;
+                        default:
+                            if (disableWater) {
+                                if (collide == 0) {
+                                    updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                                }
+                                else { updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); }
+                            }
+                            else {
+                                updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            
+                            break;
+                    }
+                    
                 }
                 else if(water_status != 0f) { // 무언가와 부딪히는 중; 땅, 풀
                     updateEachArray(true, rigidbody.velocity.magnitude, input_d.l_reverse, input_d.sum_l, water_status); //left hand
@@ -815,6 +839,8 @@ public class FirstPersonMovement : MonoBehaviour {
                 break;
             case InputMethod.HandStickThrottle:
             case InputMethod.HandStickGesture:
+                Debug.Log(c.collider.name);
+                Debug.Log(c.collider.tag);
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
@@ -827,7 +853,10 @@ public class FirstPersonMovement : MonoBehaviour {
             
                 }
                 else {
-                    collide = 2.0f;
+                    if (!c.collider.CompareTag("Water")) {
+                        collide = 2.0f;
+                    }
+                    
                     if (c.collider.CompareTag("Land")) {
                         collide_land = true;
                         float col = AverageZ(c.contacts);
@@ -978,6 +1007,8 @@ public class FirstPersonMovement : MonoBehaviour {
             if (underwater.underwater) {
                 underwater.underwater = false;
                 underwater.water_y = 0f;
+                GamePad.SetVibration(PlayerIndex.One, 0, 0);
+                collide = 0f;
             }
         }
         if (other.CompareTag("GrassE")) {

@@ -6,6 +6,16 @@ public class HandThrottle : MonoBehaviour
 {
     [HideInInspector]
     public Input_Delim input_d;
+    [HideInInspector]
+    public float rx;
+    [HideInInspector]
+    public float ry;
+    [HideInInspector]
+    public float lx;
+    [HideInInspector]
+    public float ly;
+
+
     private Rigidbody rb;
     private bool colliding = false;
 
@@ -52,13 +62,13 @@ public class HandThrottle : MonoBehaviour
     void Update()
     {
         int accum_x = input_d.accum_lx;
-        float LX =accum_x / 800f;
+        lx =accum_x / 800f;
         int accum_y = input_d.accum_ly;
-        float ly = accum_y / 800f;
-        LX = Mathf.Abs(LX) < 0.15f ? 0 : Mathf.Clamp(LX, -1f, 1f);
+        ly = accum_y / 800f;
+        lx = Mathf.Abs(lx) < 0.15f ? 0 : Mathf.Clamp(lx, -1f, 1f);
         ly = Mathf.Abs(ly) < 0.15f ? 0 : Mathf.Clamp(ly, -1f, 1f);
-        float rx = input_d.accum_rx / 800f;
-        float ry = input_d.accum_ry / 800f;
+        rx = input_d.accum_rx / 800f;
+        ry = input_d.accum_ry / 800f;
         rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
         ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
 
@@ -107,8 +117,8 @@ public class HandThrottle : MonoBehaviour
         }
         /*
         else {
-            if(LX < 0) {
-                rotationY += LX * 20f * Time.deltaTime;
+            if(lx < 0) {
+                rotationY += lx * 20f * Time.deltaTime;
                 rotationY = Mathf.Clamp(rotationY, -40f, 40f);
             }
         }*/

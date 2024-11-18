@@ -503,23 +503,26 @@ public class TestMovement : MonoBehaviour
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
-                Debug.Log(rigidbody.velocity.magnitude);
+                float moving = HandThrottle.ly + HandThrottle.ry;
+                moving /= 2;
+                int intense = Mathf.CeilToInt(3 * moving);
                 if (water == 1) {
+
                     for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)21;
+                        larray[i] = (byte)(intense * 7);
                         rarray[i] = (byte)0;
                     }
                 }
                 else if (water == 1.5f) {
                     for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)21;
-                        rarray[i] = (byte)21;
+                        larray[i] = (byte)(intense * 7);
+                        rarray[i] = (byte)(intense * 7);
                     }
                 }
                 else if (water == 2f) {
                     for (int i = 0; i < 108; i++) {
                         larray[i] = (byte)0;
-                        rarray[i] = (byte)21;
+                        rarray[i] = (byte)(intense * 7);
                     }
                 }
                 else if (water == 3f) {
@@ -624,6 +627,7 @@ public class TestMovement : MonoBehaviour
 
     void Update() {
         //Debug.Log($"collide: {collide} , water: {water_status}");
+        Debug.Log(rigidbody.velocity.magnitude);
         switch (situation.env) {
             case UserTest.Environment.Land:
                 transform.eulerAngles = new Vector3(transform.eulerAngles.x, 90f, transform.eulerAngles.z);
@@ -936,7 +940,9 @@ public class TestMovement : MonoBehaviour
 
                 }
                 else {
-                    collide = 2.0f;
+                    if (!c.collider.CompareTag("Water")) {
+                        collide = 2.0f;
+                    }
                     if (c.collider.CompareTag("Land")) {
                         collide_land = true;
                         float col = AverageZ(c.contacts);
@@ -1042,7 +1048,7 @@ public class TestMovement : MonoBehaviour
             Vector3 dir = (my_center - col_center);
             dir.Normalize();
 
-            transform.position += dir * 0.3f * Time.deltaTime;
+            transform.position += dir * 0.5f * Time.deltaTime;
             switch (inputMethod) {
                 case InputMethod.GamePad:
                     switch (situation.env) {
@@ -1094,6 +1100,12 @@ public class TestMovement : MonoBehaviour
         if (other.CompareTag("WaterO")) {
             waterincline = false;
             water_status = 0f;
+            if (underwater.underwater) {
+                underwater.underwater = false;
+                underwater.water_y = 0f;
+                GamePad.SetVibration(PlayerIndex.One, 0, 0);
+                collide = 0f;
+            }
         }
         if (other.CompareTag("GrassE")) {
             if (water_status != 3f && enterCount == 0) {
