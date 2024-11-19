@@ -520,6 +520,26 @@ public class FirstPersonMovement : MonoBehaviour {
 
         return result;
     }
+
+    public float CalculateDistanceToPlane(Transform planeTransform, Transform objectTransform) {
+        // 평면의 법선 벡터
+        Vector3 planeNormal = planeTransform.up;
+
+        // 평면의 기준점
+        Vector3 planePoint = planeTransform.position;
+
+        // 물체 위치
+        Vector3 objectPosition = objectTransform.position;
+
+        // 물체에서 평면까지의 벡터
+        Vector3 vectorToPoint = objectPosition - planePoint;
+
+        // 수직 거리 계산 (벡터와 법선 벡터의 내적)
+        float distance = Vector3.Dot(vectorToPoint, planeNormal);
+
+        return distance;
+    }
+
     void updateEachArray(bool isLeft, float vel, bool reverse, int sum, float water) {
         //water: 0 둘다 일반 노젓기 1: 왼쪽 땅, 1.5: 양쪽 땅, 2: 오른쪽 땅, 3: 풀 위
         //water incline
@@ -527,7 +547,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
-                float moving = HandThrottle.ly + HandThrottle.ry;
+                float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
                 int intense = Mathf.CeilToInt(3 * moving);
                 if (water == 1) {
@@ -552,9 +572,11 @@ public class FirstPersonMovement : MonoBehaviour {
                 else if(water == 3f) {
                     int boat_pos = 0;
                     if (triggered != null) {
-                        Vector3 otherLocalPosition = transform.InverseTransformPoint(triggered.position);
-                        boat_pos = Mathf.FloorToInt((- otherLocalPosition.z + 2.43f) * 2);
+                        float boat = CalculateDistanceToPlane(triggered, transform);
+                        //Debug.Log(boat);
+                        boat_pos = Mathf.FloorToInt((- boat + 2.43f) * 2);
                         if (boat_pos < 0) { boat_pos = 0; }
+                        //Debug.Log(boat_pos);
                     }
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
 
@@ -839,8 +861,6 @@ public class FirstPersonMovement : MonoBehaviour {
                 break;
             case InputMethod.HandStickThrottle:
             case InputMethod.HandStickGesture:
-                Debug.Log(c.collider.name);
-                Debug.Log(c.collider.tag);
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {

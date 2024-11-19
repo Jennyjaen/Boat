@@ -503,9 +503,10 @@ public class TestMovement : MonoBehaviour
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
-                float moving = HandThrottle.ly + HandThrottle.ry;
+                float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
                 int intense = Mathf.CeilToInt(3 * moving);
+                //Debug.Log($"moving: {moving} intense: {intense}");
                 if (water == 1) {
 
                     for (int i = 0; i < 108; i++) {
@@ -627,7 +628,6 @@ public class TestMovement : MonoBehaviour
 
     void Update() {
         //Debug.Log($"collide: {collide} , water: {water_status}");
-        Debug.Log(rigidbody.velocity.magnitude);
         switch (situation.env) {
             case UserTest.Environment.Land:
                 transform.eulerAngles = new Vector3(transform.eulerAngles.x, 90f, transform.eulerAngles.z);
