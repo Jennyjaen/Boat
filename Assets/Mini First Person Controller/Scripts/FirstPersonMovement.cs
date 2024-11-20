@@ -37,6 +37,7 @@ public class FirstPersonMovement : MonoBehaviour {
     private bool grassin = false;
     private int[,] left_grass = new int[12, 92];
     private int[,] right_grass = new int[12, 92];
+    private bool grass_front = false;
 
     [HideInInspector]
     public bool waterincline = false;
@@ -577,6 +578,9 @@ public class FirstPersonMovement : MonoBehaviour {
                         boat_pos = Mathf.FloorToInt((- boat + 2.43f) * 2);
                         if (boat_pos < 0) { boat_pos = 0; }
                         //Debug.Log(boat_pos);
+                        if (!grass_front) {
+                            boat_pos = 74 - boat_pos;
+                        }
                     }
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
 
@@ -854,7 +858,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         StartCoroutine(ShortVibration(0.2f));
                     }
                     else {
-                        float c_speed = Mathf.Clamp(collide_speed * 10f, 0, 1);
+                        float c_speed = Mathf.Clamp(collide_speed, 0, 1);
                         StartCoroutine(ShortVibration(c_speed));
                     }
                 }
@@ -924,6 +928,10 @@ public class FirstPersonMovement : MonoBehaviour {
                         }
                         else {
                             GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
+                            if(rigidbody.velocity.y > 0) {
+                                rigidbody.velocity = new Vector3(rigidbody.velocity.x, 0, rigidbody.velocity.z);
+                            }
+                        Debug.Log("land collision stay: " + rigidbody.velocity);
                         }
                     }
                     else {
@@ -974,9 +982,18 @@ public class FirstPersonMovement : MonoBehaviour {
             Vector3 col_center = c.collider.bounds.center;
             Vector3 my_center = GetComponent<Collider>().bounds.center;
             Vector3 dir = (my_center - col_center);
+            float depth = dir.magnitude;
+            Debug.Log(depth);
             dir.Normalize();
-
-            transform.position += dir * 0.3f * Time.deltaTime;
+            if (depth < 7) {
+                transform.position += dir * 1.5f * Time.deltaTime;
+            }
+            else if (depth < 10) {
+                transform.position += dir * 1.0f * Time.deltaTime;
+            }
+            else {
+                transform.position += dir * 0.5f * Time.deltaTime;
+            }
             switch (inputMethod) {
                 case InputMethod.GamePad:
                     float c_speed = Mathf.Clamp(collide_speed * 8f, 0, 1);
@@ -991,7 +1008,7 @@ public class FirstPersonMovement : MonoBehaviour {
         if(collide != 1f && collide != 0.5f) {
             collide = 0f;
         }*/
-        
+
         if (!c.collider.CompareTag("Grass")) {
             water_status = 0f;
         }
@@ -1036,6 +1053,17 @@ public class FirstPersonMovement : MonoBehaviour {
                 water_status = 3f;
                 collide = 2f;
                 triggered = other.transform;
+                Vector3 planeV = other.transform.up;
+                Debug.Log("plane forward "+ planeV + " transform forward: " + transform.forward + " right: " + transform.right);
+                Vector3 myF = transform.right;
+                float dot = Vector3.Dot(planeV, myF);
+                if (dot >= 0) {
+                    grass_front = true;
+                }
+                else if (dot < 0) {
+                    grass_front = false;
+                }
+
             }
             if (grassboat && enterCount ==0) {
                 grassboat = false;

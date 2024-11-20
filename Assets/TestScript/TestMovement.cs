@@ -68,8 +68,7 @@ public class TestMovement : MonoBehaviour
     public byte[] larray = new byte[108];
     [HideInInspector]
     public byte[] rarray = new byte[108];
-    [HideInInspector]
-
+    private bool grass_front = false;
     //test collision에서 자꾸 여러번 부딪힘: collision event가 반복해서 들어옴.
     public bool testcol;
     private float lastCollision = 0f;
@@ -537,6 +536,9 @@ public class TestMovement : MonoBehaviour
                     if(triggered!= null) {
                         boat_pos = Mathf.FloorToInt((transform.position.z - triggered.position.z + 2.43f) * 2);
                         if(boat_pos < 0) { boat_pos = 0; }
+                        if (!grass_front) {
+                            boat_pos = 74 - boat_pos;
+                        }
                     }
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
                     //Debug.Log(transform.position.z - triggered.position.z);
@@ -1080,9 +1082,19 @@ public class TestMovement : MonoBehaviour
             Vector3 col_center = c.collider.bounds.center;
             Vector3 my_center = GetComponent<Collider>().bounds.center;
             Vector3 dir = (my_center - col_center);
+            float depth = dir.magnitude;
+            Debug.Log(depth);
             dir.Normalize();
+            if(depth < 7) {
+                transform.position += dir * 1.5f * Time.deltaTime;
+            }
+            else if(depth < 10) {
+                transform.position += dir * 1.0f * Time.deltaTime;
+            }
+            else {
+                transform.position += dir * 0.5f * Time.deltaTime;
+            }
 
-            transform.position += dir * 0.5f * Time.deltaTime;
             switch (inputMethod) {
                 case InputMethod.GamePad:
                     switch (situation.env) {
@@ -1146,6 +1158,16 @@ public class TestMovement : MonoBehaviour
                 water_status = 3f;
                 collide = 2f;
                 triggered = other.transform;
+                Vector3 planeV = other.transform.up;
+                Debug.Log("plane forward " + planeV + " transform forward: " + transform.forward + " right: " + transform.right);
+                Vector3 myF = transform.right;
+                float dot = Vector3.Dot(planeV, myF);
+                if (dot >= 0) {
+                    grass_front = true;
+                }
+                else if (dot < 0) {
+                    grass_front = false;
+                }
             }
             if (grassboat && enterCount == 0) {
                 grassboat = false;
@@ -1182,7 +1204,7 @@ public class TestMovement : MonoBehaviour
             yield break; //이미 충돌 신호가 1 이상 들어와 있으면 중복해서 다시 시작하는 것 금지.
         }
         collide = 1.0f;
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(0.8f);
 
         switch (inputMethod) {
             case InputMethod.HandStickGesture:
@@ -1192,8 +1214,7 @@ public class TestMovement : MonoBehaviour
                 break;
         }
         collide = 0.5f;
-        yield return new WaitForSeconds(1.0f);
-
+        yield return new WaitForSeconds(0.2f);
         collide = 0.0f;
     }
     IEnumerator ShortVibration(float intensity) {
