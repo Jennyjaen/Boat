@@ -68,9 +68,15 @@ public class TestMovement : MonoBehaviour
     public byte[] larray = new byte[108];
     [HideInInspector]
     public byte[] rarray = new byte[108];
+    [HideInInspector]
 
+    //test collision에서 자꾸 여러번 부딪힘: collision event가 반복해서 들어옴.
+    public bool testcol;
+    private float lastCollision = 0f;
+    private float cooldown = 1f;
     void Start()
     {
+        testcol = false;
         situation = transform.GetComponent<UserTest>();
         rigidbody = GetComponent<Rigidbody>();
         front = transform.Find("Front");
@@ -627,7 +633,34 @@ public class TestMovement : MonoBehaviour
     }
 
     void Update() {
-        //Debug.Log($"collide: {collide} , water: {water_status}");
+        switch (situation.env) {
+            case UserTest.Environment.Water:
+            case UserTest.Environment.Land:
+            case UserTest.Environment.Moving:
+                if(transform.position.z > 270) {
+                    Vector3 newPos = transform.position;
+                    newPos.z = 155;
+                    transform.position = newPos;
+                }
+                break;
+            case UserTest.Environment.Grass:
+            case UserTest.Environment.Waterfall:
+                if (transform.position.z > 78) {
+                    Vector3 newPos = transform.position;
+                    newPos.z = -42;
+                    transform.position = newPos;
+                }
+                break;
+            case UserTest.Environment.Collision:
+                if (transform.position.z > 78) {
+                    Vector3 newPos = transform.position;
+                    newPos.z =9;
+                    transform.position = newPos;
+                }
+                break;
+        }
+
+
         switch (situation.env) {
             case UserTest.Environment.Land:
                 transform.eulerAngles = new Vector3(transform.eulerAngles.x, 90f, transform.eulerAngles.z);
@@ -919,7 +952,16 @@ public class TestMovement : MonoBehaviour
                             case UserTest.Environment.Moving:
                             case UserTest.Environment.Land:
                                 float c_speed = Mathf.Clamp(collide_speed * 10f, 0, 1);
-                                StartCoroutine(ShortVibration(c_speed));
+                                if (c_speed == 0) {
+                                    Debug.Log(collide_speed);
+                                }
+                                if (testcol) {
+                                    StartCoroutine(ShortVibration(c_speed));
+                                }
+                                else {
+                                    StartCoroutine(ShortVibration(c_speed));
+                                }
+                                
                                 break;
                         }
                         
@@ -1163,6 +1205,8 @@ public class TestMovement : MonoBehaviour
         collide = 0.0f;
     }
     IEnumerator ShortVibration(float intensity) {
+        if(testcol && (Time.time - lastCollision > cooldown)) { lastCollision = Time.time; }
+        else { yield break; }
         GamePad.SetVibration(PlayerIndex.One, intensity, intensity);
         yield return new WaitForSeconds(0.1f);
         GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
