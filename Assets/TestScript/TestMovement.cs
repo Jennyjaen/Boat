@@ -951,17 +951,9 @@ public class TestMovement : MonoBehaviour
                             case UserTest.Environment.Collision:
                             case UserTest.Environment.Moving:
                             case UserTest.Environment.Land:
-                                float c_speed = Mathf.Clamp(collide_speed * 10f, 0, 1);
-                                if (c_speed == 0) {
-                                    Debug.Log(collide_speed);
-                                }
-                                if (testcol) {
-                                    StartCoroutine(ShortVibration(c_speed));
-                                }
-                                else {
-                                    StartCoroutine(ShortVibration(c_speed));
-                                }
-                                
+                                float c_speed = Mathf.Clamp(collide_speed, 0, 1);
+                                Debug.Log("test: "+ collide_speed);
+                                StartCoroutine(ShortVibration(c_speed));
                                 break;
                         }
                         

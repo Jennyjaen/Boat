@@ -178,8 +178,11 @@ public class TestCollision : MonoBehaviour {
     }
 
     private void OnCollisionEnter(Collision collision) {
-        StartCoroutine(HandleCollision());
-        colliding = true;
+        if (collision.collider.CompareTag("Collide")) {
+            StartCoroutine(HandleCollision());
+            colliding = true;
+        }
+        
     }
     private IEnumerator HandleCollision() {
         if(Time.time - lastCollision > cooldown) { lastCollision = Time.time; }
