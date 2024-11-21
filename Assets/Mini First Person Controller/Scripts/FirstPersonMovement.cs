@@ -47,6 +47,9 @@ public class FirstPersonMovement : MonoBehaviour {
 
     private string land_name;
     private Vector3 land_down;
+
+    private VerticalCheck left_boat;
+    private VerticalCheck right_boat;
     //Input 방법을 여러개로 바꾸기
     public enum InputMethod {
         GamePad,
@@ -112,6 +115,11 @@ public class FirstPersonMovement : MonoBehaviour {
         MarkArray(left_grass, GeneratePoints());
         MarkArray(right_grass, GeneratePoints());
         triggered = null;
+
+        left_boat = GameObject.Find("LeftVertical").transform.GetComponent<VerticalCheck>();
+        right_boat = GameObject.Find("RightVertical").transform.GetComponent<VerticalCheck>();
+
+
         switch (track) {
             case Track.Practice:
                 GameObject practiceObject = GameObject.Find("Practice");

@@ -213,7 +213,6 @@ namespace Suimono.Core
 					}
 
 					buoyancyFactor = 10.0f;
-
 					if (isUnderwater){
 
 						if (this.transform.position.y+buoyancyOffset-0.5f < waveHeight-surfaceRange){

@@ -48,7 +48,8 @@ public class TestMovement : MonoBehaviour
     private float max_incline;
     private GamePadState state;
     private Transform triggered;
-
+    private VerticalCheck left_boat;
+    private VerticalCheck right_boat;
     private string land_name;
     private Vector3 land_down;
 
@@ -98,7 +99,8 @@ public class TestMovement : MonoBehaviour
         GamePadInput = GetComponent<GamePadInput>();
         HandThrottle = GetComponent<HandThrottle>();
         HandGesture = GetComponent<HandGesture>();
-
+        left_boat = GameObject.Find("LeftVertical").transform.GetComponent<VerticalCheck>();
+        right_boat = GameObject.Find("RightVertical").transform.GetComponent<VerticalCheck>();
         grassboat = false;
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
