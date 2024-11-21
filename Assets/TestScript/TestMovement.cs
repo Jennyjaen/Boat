@@ -49,6 +49,9 @@ public class TestMovement : MonoBehaviour
     private GamePadState state;
     private Transform triggered;
 
+    private string land_name;
+    private Vector3 land_down;
+
     public enum InputMethod {
         GamePad,
         HandStickThrottle,
@@ -86,6 +89,8 @@ public class TestMovement : MonoBehaviour
         water_status = 0;
         collide_land = false;
 
+        land_name = "";
+        land_down = new Vector3(0, 0, 0);
         underwater = transform.Find("Front").GetComponent<Underwater>();
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
         grass = new int[6];
@@ -954,7 +959,6 @@ public class TestMovement : MonoBehaviour
                             case UserTest.Environment.Moving:
                             case UserTest.Environment.Land:
                                 float c_speed = Mathf.Clamp(collide_speed, 0, 1);
-                                Debug.Log("test: "+ collide_speed);
                                 StartCoroutine(ShortVibration(c_speed));
                                 break;
                         }

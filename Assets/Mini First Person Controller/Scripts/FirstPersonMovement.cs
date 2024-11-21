@@ -44,6 +44,9 @@ public class FirstPersonMovement : MonoBehaviour {
     private int waterfall = 0;
     private GamePadState state;
 
+
+    private string land_name;
+    private Vector3 land_down;
     //Input 방법을 여러개로 바꾸기
     public enum InputMethod {
         GamePad,
@@ -82,6 +85,8 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void Start() {
+        land_name = "";
+        land_down = new Vector3(0, 0, 0);
         max_incline = 0f;
         collide = 0f;
         collide_ang = 0f;
@@ -815,8 +820,6 @@ public class FirstPersonMovement : MonoBehaviour {
         
                 break;
         }
-        
-
     }
 
     public float AverageZ(ContactPoint[] contacts) {
@@ -913,6 +916,11 @@ public class FirstPersonMovement : MonoBehaviour {
 
     private void OnCollisionStay(Collision c) {
         if (c.collider.CompareTag("Land")) {
+            if(land_name != c.collider.name) {
+                land_name = c.collider.name;
+                land_down = (transform.position - c.collider.bounds.center).normalized;
+                }
+            rigidbody.AddForce(land_down * 0.3f);
             switch (inputMethod) {
                 case InputMethod.GamePad:
                    state = GamePad.GetState(PlayerIndex.One);
@@ -931,7 +939,6 @@ public class FirstPersonMovement : MonoBehaviour {
                             if(rigidbody.velocity.y > 0) {
                                 rigidbody.velocity = new Vector3(rigidbody.velocity.x, 0, rigidbody.velocity.z);
                             }
-                        Debug.Log("land collision stay: " + rigidbody.velocity);
                         }
                     }
                     else {
@@ -1008,7 +1015,6 @@ public class FirstPersonMovement : MonoBehaviour {
         if(collide != 1f && collide != 0.5f) {
             collide = 0f;
         }*/
-
         if (!c.collider.CompareTag("Grass")) {
             water_status = 0f;
         }
@@ -1018,6 +1024,9 @@ public class FirstPersonMovement : MonoBehaviour {
                 case InputMethod.GamePad:
                     GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
                     break;
+            }
+            if (rigidbody.velocity.y > 0) {
+                rigidbody.velocity = new Vector3(0, 0, 0);
             }
             collide_land = false;
             collide = 0f;
