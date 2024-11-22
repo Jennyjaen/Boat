@@ -502,73 +502,38 @@ public class TestMovement : MonoBehaviour
             int x_2 = 0;
 
             float intensity = 3;
-            float width = intensity / 5;
-            if (Diagonal(col_ang)) {
-                if(col_s > 14) {
-                    width *= ((16.5f - col_s) / 1.5f);
-                }
-            }
+            float width = 0.2f;
+            float adj_ang = 20f;
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
                     float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 12;
                     float res;
-                    if (col_ang >= 22.5 && col_ang < 67.5) {
-                        //Debug.Log("ru");
-                        if (cent_x - cent_y >= 1 - 2 * width) { 
-                            res = intensity;
-                        }
-                        else { res = 0; }
-                    }
-                    else if (col_ang >= 67.5 && col_ang < 112.5) {
-                        //À§
-                        //Debug.Log("up");
-                        if (cent_y < width) { 
-                            res = intensity;
-                            if (col_s > 15.3) {
-                                int upper = Mathf.FloorToInt((col_s - 15.3f) / 0.05f); //24Ä­ÀÓ
-                                if (x >= 23 - upper) { res = 0; }
-                            }
-                        }
-                        else { res = 0; }
-                    }
-                    else if (col_ang >= 112.5 && col_ang < 157.5) {
-                        //Debug.Log("lu");
-                        if (cent_x + cent_y <= 2 * width) { res = intensity; }
-                        else { res = 0; }
-                    }
-                    else if (col_ang >= 157.5 && col_ang < 202.5) {
+                    //Debug.Log(col_s);
+                    //Debug.Log(collide_speed);
+                    if (col_ang >= 90 && col_ang < 270 - adj_ang) {
                         //¿ÞÂÊ
                         //Debug.Log("Left");
                         if (cent_x < width) {
                             res = intensity;
-                            if (col_s > 13) {
-                                int upper = Mathf.FloorToInt((col_s - 13) / 0.2f);
+                            if (collide_speed > 13) {
+                                int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
+                                Debug.Log($"col_s = {col_s} , upper: {upper}");
                                 if(y <= upper) { res = 0; }
                             }
                         }
                         else { res = 0; }
                     }
-                    else if (col_ang >= 202.5 && col_ang < 247.5) {
-                        //Debug.Log("ld");
-                        if (-cent_x + cent_y >= 1 - 2 * width) { res = intensity; }
-                        else { res = 0; }
-                    }
-                    else if (col_ang >= 247.5 && col_ang < 292.5) {
+                    else if (col_ang >= 270 - adj_ang && col_ang < 270 + adj_ang) {
                         //¾Æ·¡
                         //Debug.Log("down");
                         if (cent_y >= 1 - width) { 
                             res = intensity; 
-                            if(col_s > 15.3) {
-                                int upper = Mathf.FloorToInt((col_s - 15.3f) / 0.05f); //24Ä­ÀÓ
+                            if(collide_speed > 15.3) {
+                                int upper = Mathf.FloorToInt((collide_speed - 15.3f) / 0.05f); //24Ä­ÀÓ
                                 if (x <= upper) { res = 0; }
                             }
                         }
-                        else { res = 0; }
-                    }
-                    else if (col_ang >= 292.5 && col_ang < 337.5) {
-                        //Debug.Log("rd");
-                        if (cent_x + cent_y >= (2 - width * 2)) { res = intensity; }
                         else { res = 0; }
                     }
                     else {
@@ -576,9 +541,10 @@ public class TestMovement : MonoBehaviour
                         //Debug.Log("right");
                         if (cent_x >= 1 - width) { 
                             res = intensity;
-                            if (col_s > 13) {
-                                int upper = Mathf.FloorToInt((col_s - 13) / 0.2f);
+                            if (collide_speed > 13) {
+                                int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
                                 if (y >= 17 -upper) { res = 0; }
+                                Debug.Log($"col_s = {col_s} , upper: {upper}");
                             }
                         }
                         else { res = 0; }
@@ -598,6 +564,7 @@ public class TestMovement : MonoBehaviour
                     }
                 }
             }
+            //printArray(rarray);
         }
         //Debug.Log(string.Join(",", larray));
     }
