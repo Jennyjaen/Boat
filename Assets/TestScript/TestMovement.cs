@@ -75,9 +75,12 @@ public class TestMovement : MonoBehaviour
     public byte[] rarray = new byte[108];
     private bool grass_front = false;
     //test collision에서 자꾸 여러번 부딪힘: collision event가 반복해서 들어옴.
-    public bool testcol;
+    [HideInInspector]
+    public bool testcol; //testCollision에서 이미 한 번 부딪힌 것을 확인하기 위함.
     private float lastCollision = 0f;
     private float cooldown = 1f;
+
+    public bool bouncy_col; // 교수님께서 말씀하셨던 spatio temporal한 충돌을 적용할지 여부에 따라 달라질 변수
     void Start()
     {
         testcol = false;
@@ -199,6 +202,32 @@ public class TestMovement : MonoBehaviour
         //Print12Array(targetArray);
     }
 
+    bool Diagonal(float col_ang) {
+        if (col_ang >= 22.5 && col_ang < 67.5) {
+            return true;
+        }
+        else if (col_ang >= 67.5 && col_ang < 112.5) {
+            return false;
+        }
+        else if (col_ang >= 112.5 && col_ang < 157.5) {
+            return true;
+        }
+        else if (col_ang >= 157.5 && col_ang < 202.5) {
+            return false;
+        }
+        else if (col_ang >= 202.5 && col_ang < 247.5) {
+            return true;
+        }
+        else if (col_ang >= 247.5 && col_ang < 292.5) {
+            return false;
+        }
+        else if (col_ang >= 292.5 && col_ang < 337.5) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
     void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //충돌, 물에 빠짐, 배의 기울기
         if (testCollision.enabled) {
             col_ang = testCollision.col_angle;
@@ -303,7 +332,6 @@ public class TestMovement : MonoBehaviour
             rarray = arr;
         }
         else if (collide == 0f) {// 기울기: 0f
-            Debug.Log(clamp_ang);
             if (clamp_ang < incline_deadzone) {
                 for (int k = 0; k < 108; k++) {
                     larray[k] = 0;
@@ -469,7 +497,108 @@ public class TestMovement : MonoBehaviour
             }
 
         }
+        else if(collide == 1.3f) { //Moving Object용
+            int x_1 = 0;
+            int x_2 = 0;
 
+            float intensity = 3;
+            float width = intensity / 5;
+            if (Diagonal(col_ang)) {
+                if(col_s > 14) {
+                    width *= ((16.5f - col_s) / 1.5f);
+                }
+            }
+            for (int y = 0; y < 18; y++) {
+                for (int x = 0; x < 24; x++) {
+                    float cent_x = ((float)x + 0.5f) / 24;
+                    float cent_y = ((float)y + 0.5f) / 12;
+                    float res;
+                    if (col_ang >= 22.5 && col_ang < 67.5) {
+                        //Debug.Log("ru");
+                        if (cent_x - cent_y >= 1 - 2 * width) { 
+                            res = intensity;
+                        }
+                        else { res = 0; }
+                    }
+                    else if (col_ang >= 67.5 && col_ang < 112.5) {
+                        //위
+                        //Debug.Log("up");
+                        if (cent_y < width) { 
+                            res = intensity;
+                            if (col_s > 15.3) {
+                                int upper = Mathf.FloorToInt((col_s - 15.3f) / 0.05f); //24칸임
+                                if (x >= 23 - upper) { res = 0; }
+                            }
+                        }
+                        else { res = 0; }
+                    }
+                    else if (col_ang >= 112.5 && col_ang < 157.5) {
+                        //Debug.Log("lu");
+                        if (cent_x + cent_y <= 2 * width) { res = intensity; }
+                        else { res = 0; }
+                    }
+                    else if (col_ang >= 157.5 && col_ang < 202.5) {
+                        //왼쪽
+                        //Debug.Log("Left");
+                        if (cent_x < width) {
+                            res = intensity;
+                            if (col_s > 13) {
+                                int upper = Mathf.FloorToInt((col_s - 13) / 0.2f);
+                                if(y <= upper) { res = 0; }
+                            }
+                        }
+                        else { res = 0; }
+                    }
+                    else if (col_ang >= 202.5 && col_ang < 247.5) {
+                        //Debug.Log("ld");
+                        if (-cent_x + cent_y >= 1 - 2 * width) { res = intensity; }
+                        else { res = 0; }
+                    }
+                    else if (col_ang >= 247.5 && col_ang < 292.5) {
+                        //아래
+                        //Debug.Log("down");
+                        if (cent_y >= 1 - width) { 
+                            res = intensity; 
+                            if(col_s > 15.3) {
+                                int upper = Mathf.FloorToInt((col_s - 15.3f) / 0.05f); //24칸임
+                                if (x <= upper) { res = 0; }
+                            }
+                        }
+                        else { res = 0; }
+                    }
+                    else if (col_ang >= 292.5 && col_ang < 337.5) {
+                        //Debug.Log("rd");
+                        if (cent_x + cent_y >= (2 - width * 2)) { res = intensity; }
+                        else { res = 0; }
+                    }
+                    else {
+                        //오른쪽
+                        //Debug.Log("right");
+                        if (cent_x >= 1 - width) { 
+                            res = intensity;
+                            if (col_s > 13) {
+                                int upper = Mathf.FloorToInt((col_s - 13) / 0.2f);
+                                if (y >= 17 -upper) { res = 0; }
+                            }
+                        }
+                        else { res = 0; }
+                    }
+
+                    if (x % 2 == 0) { x_1 = (int)res; }
+                    else {
+                        x_2 = (int)res;
+                        if (x >= 12) {
+                            int index = y * 6 + ((x - 12) / 2);
+                            rarray[107 - index] = (byte)(x_1 + x_2 * 6); //rarray 뒤집었음.
+                        }
+                        else {
+                            int index = y * 6 + (x / 2);
+                            larray[index] = (byte)(x_1 * 6 + x_2);
+                        }
+                    }
+                }
+            }
+        }
         //Debug.Log(string.Join(",", larray));
     }
 
@@ -600,9 +729,7 @@ public class TestMovement : MonoBehaviour
                             boat_pos = 74 - boat_pos;
                         }
                     }
-                    //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
-                    //Debug.Log(transform.position.z - triggered.position.z);
-                    Debug.Log(boat_pos);
+
                     int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
                     larray = int2byteArray(left_slice, true);
@@ -696,7 +823,6 @@ public class TestMovement : MonoBehaviour
 
     void Update() {
         //최고속도 조절
-        printArray(larray);
         if (rigidbody.velocity.magnitude > 15.0f) {
             rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
         }
@@ -814,8 +940,15 @@ public class TestMovement : MonoBehaviour
                             }
                             break;
                         case UserTest.Environment.Collision:
-                        case UserTest.Environment.Moving:
                             if (collide == 1.0f) {
+                                updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            else {
+                                updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed);
+                            }
+                            break;
+                        case UserTest.Environment.Moving:
+                            if (collide == 1.3f) {
                                 updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
                             }
                             else {
@@ -887,8 +1020,11 @@ public class TestMovement : MonoBehaviour
                 if (collide < 2.0f) { // 그 외: 충돌, 물에 빠짐, 출렁임
                     switch (situation.env) {
                         case UserTest.Environment.Collision:
-                        case UserTest.Environment.Moving:
                             if (collide == 1.0f) { updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); }
+                            else { updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed); }
+                            break;
+                        case UserTest.Environment.Moving:
+                            if (collide == 1.3f) { updateArray(collide, direct_ang, c_ang, collide_ang, c_speed); }
                             else { updateArray(0.5f, direct_ang, c_ang, collide_ang, c_speed); }
                             break;
                         case UserTest.Environment.Waterfall:
@@ -1090,17 +1226,9 @@ public class TestMovement : MonoBehaviour
             }
         }
         if (c.collider.CompareTag("Moving")) {
-            collide = 1.0f;
+            collide = 1.3f;
             Vector3 colVelocity = c.relativeVelocity;
             //collide_speed = colVelocity.magnitude;
-            switch (inputMethod) {
-                case InputMethod.HandStickThrottle:
-                    collide_speed = 0.24f;
-                    break;
-                case InputMethod.HandStickGesture:
-                    collide_speed = 2.0f;
-                    break;
-            }
 
             Vector3 colPoint = c.contacts[0].point;
             Vector3 playerPoint = transform.position;
@@ -1118,7 +1246,7 @@ public class TestMovement : MonoBehaviour
             Vector3 my_center = GetComponent<Collider>().bounds.center;
             Vector3 dir = (my_center - col_center);
             float depth = dir.magnitude;
-            Debug.Log(depth);
+            collide_speed = depth;
             dir.Normalize();
             if(depth < 7) {
                 transform.position += dir * 1.5f * Time.deltaTime;
@@ -1244,13 +1372,14 @@ public class TestMovement : MonoBehaviour
         collide = 1.0f;
         yield return new WaitForSeconds(0.8f);
 
-        switch (inputMethod) {
-            case InputMethod.HandStickGesture:
-                if (water_status >= 1 && water_status <= 2 && collide == 2) {
-                    yield break;
-                }
-                break;
+        //switch (inputMethod) {
+
+           // case InputMethod.HandStickGesture:
+        if (water_status >= 1 && water_status <= 2 && collide == 2) {
+            yield break;
         }
+        //break;
+        //}
         collide = 0.5f;
         yield return new WaitForSeconds(0.2f);
         collide = 0.0f;
