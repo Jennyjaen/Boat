@@ -520,25 +520,65 @@ public class TestMovement : MonoBehaviour
             case InputMethod.HandStickThrottle:
                 float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
-                int intense = Mathf.CeilToInt(3 * moving);
+                int intense = Mathf.CeilToInt(4 * moving);
                 //Debug.Log($"moving: {moving} intense: {intense}");
                 if (water == 1) {
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)(intense * 7);
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
 
-                    for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)(intense * 7);
-                        rarray[i] = (byte)0;
                     }
                 }
                 else if (water == 1.5f) {
-                    for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)(intense * 7);
-                        rarray[i] = (byte)(intense * 7);
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)(intense * 7);
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                rarray[y * 6 + x] = (byte)(intense * 7);
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
                     }
                 }
                 else if (water == 2f) {
-                    for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)0;
-                        rarray[i] = (byte)(intense * 7);
+                    for (int y = 0; y < 18; y++) {
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)(intense * 7);
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
                     }
                 }
                 else if (water == 3f) {
@@ -651,8 +691,15 @@ public class TestMovement : MonoBehaviour
     }
 
     void Update() {
-        Debug.Log(GamePadInput.enabled);
-        switch (situation.env) {
+        //최고속도 조절
+        if (rigidbody.velocity.magnitude > 15.0f) {
+            rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
+        }
+        if (rigidbody.angularVelocity.magnitude > 1.0f) {
+            rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
+        }
+
+        switch (situation.env) { // 무한 반복코드
             case UserTest.Environment.Water:
             case UserTest.Environment.Land:
             case UserTest.Environment.Moving:
@@ -679,63 +726,30 @@ public class TestMovement : MonoBehaviour
                 break;
         }
 
-
-        switch (situation.env) {
-            case UserTest.Environment.Land:
-                transform.eulerAngles = new Vector3(transform.eulerAngles.x, 90f, transform.eulerAngles.z);
-                rigidbody.constraints = RigidbodyConstraints.FreezeRotationY;
-                switch (inputMethod) {
-                    case InputMethod.GamePad:
-                        GamePadInput.rotation_m = 0;
-                        break;
-                    case InputMethod.HandStickThrottle:
-                        HandThrottle.rotation_m = 0;
-                        break;
-                    case InputMethod.HandStickGesture:
-                        HandGesture.rotation_m = 0;
-                        break;
-                }
-                break;
-            default:
-                switch (inputMethod) {
-                    case InputMethod.GamePad:
-                        GamePadInput.rotation_m = 15f;
-                        if (GamePadInput.enabled) {
-                            rigidbody.constraints = RigidbodyConstraints.None;
-                        }
-                        break;
-                    case InputMethod.HandStickThrottle:
-                        HandThrottle.rotation_m = 15f;
-                        if (HandThrottle.enabled) {
-                            rigidbody.constraints = RigidbodyConstraints.None;
-                        }
-                        break;
-                    case InputMethod.HandStickGesture:
-                        HandGesture.rotation_m = 0.01f;
-                        if (HandGesture.enabled) {
-                            rigidbody.constraints = RigidbodyConstraints.None;
-                        }
-                        break;
-                }
-                break;
-        }
+        //배 뒤집어지는 것 방지용
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180) { rotation.x -= 360; }
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
         if (rotation.z > 180) { rotation.z -= 360; }
         rotation.z = Mathf.Clamp(rotation.z, -40f, 40f);
         transform.eulerAngles = rotation;
+
+
         if (underwater.underwater) {
             waterincline = false;
             waterfall = 0;
         }
 
-        //최고속도 조절
-        if (rigidbody.velocity.magnitude > 15.0f) {
-            rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
-        }
-        if (rigidbody.angularVelocity.magnitude > 1.0f) {
-            rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
+        if(left_boat.on_land || right_boat.on_land) { //배가 어딘가 바닥에 부딪힘.
+            collide = 2;
+            if(!right_boat) {
+                water_status = 1;
+            }
+            else if (!left_boat) {
+                water_status = 2;
+            }
+            else { water_status = 1.5f; }
+
         }
 
         switch (inputMethod) {

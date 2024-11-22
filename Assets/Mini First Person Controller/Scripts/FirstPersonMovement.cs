@@ -563,26 +563,65 @@ public class FirstPersonMovement : MonoBehaviour {
             case InputMethod.HandStickThrottle:
                 float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
-                int intense = Mathf.CeilToInt(3 * moving);
+                int intense = Mathf.CeilToInt(4 * moving);
                 if (water == 1) {
-                    
-                    for(int i = 0; i<108; i++) {
-                        larray[i] = (byte)(intense * 7);
-                        rarray[i] = (byte)0;
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)(intense * 7);
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
                     }
                 }
-                else if(water == 1.5f) {
-                    for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)(intense * 7);
-                        rarray[i] = (byte)(intense * 7);
+                else if (water == 1.5f) {
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)(intense * 7);
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                rarray[y * 6 + x] = (byte)(intense * 7);
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
                     }
                 }
-                else if(water == 2f) {
-                    for (int i = 0; i < 108; i++) {
-                        larray[i] = (byte)0;
-                        rarray[i] = (byte)(intense * 7);
+                else if (water == 2f) {
+                    for (int y = 0; y < 18; y++) {
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)(intense * 7);
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
                     }
-                }
+                    }
                 else if(water == 3f) {
                     int boat_pos = 0;
                     if (triggered != null) {
@@ -725,6 +764,18 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         if (rigidbody.angularVelocity.magnitude > 1.0f) {
             rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
+        }
+
+        if (left_boat.on_land || right_boat.on_land) { //배가 어딘가 바닥에 부딪힘.
+            collide = 2;
+            if (!right_boat) {
+                water_status = 1;
+            }
+            else if (!left_boat) {
+                water_status = 2;
+            }
+            else { water_status = 1.5f; }
+
         }
 
         switch (inputMethod) {
