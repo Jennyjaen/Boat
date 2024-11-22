@@ -99,8 +99,10 @@ public class TestMovement : MonoBehaviour
         GamePadInput = GetComponent<GamePadInput>();
         HandThrottle = GetComponent<HandThrottle>();
         HandGesture = GetComponent<HandGesture>();
+
         left_boat = GameObject.Find("LeftVertical").transform.GetComponent<VerticalCheck>();
         right_boat = GameObject.Find("RightVertical").transform.GetComponent<VerticalCheck>();
+
         grassboat = false;
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
@@ -110,6 +112,7 @@ public class TestMovement : MonoBehaviour
         InitArray();
         MarkArray(left_grass, GeneratePoints());
         MarkArray(right_grass, GeneratePoints());
+
         switch (inputMethod) {
             case InputMethod.GamePad:
                 foreach(Transform child in transform) {
@@ -541,7 +544,13 @@ public class TestMovement : MonoBehaviour
                 else if (water == 3f) {
                     int boat_pos = 0;
                     if(triggered!= null) {
-                        boat_pos = Mathf.FloorToInt((transform.position.z - triggered.position.z + 2.43f) * 2);
+                        if (grass_front) {
+                            boat_pos = Mathf.FloorToInt((transform.position.z - triggered.position.z + 2.43f) * 2);
+                        }
+                        else {
+                            boat_pos = Mathf.FloorToInt((-transform.position.z + triggered.position.z + 2.43f) * 2);
+                        }
+                        
                         if(boat_pos < 0) { boat_pos = 0; }
                         if (!grass_front) {
                             boat_pos = 74 - boat_pos;
@@ -549,7 +558,7 @@ public class TestMovement : MonoBehaviour
                     }
                     //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
                     //Debug.Log(transform.position.z - triggered.position.z);
-                    //Debug.Log(boat_pos);
+                    Debug.Log(boat_pos);
                     int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
                     larray = int2byteArray(left_slice, true);
@@ -642,6 +651,7 @@ public class TestMovement : MonoBehaviour
     }
 
     void Update() {
+        Debug.Log(GamePadInput.enabled);
         switch (situation.env) {
             case UserTest.Environment.Water:
             case UserTest.Environment.Land:

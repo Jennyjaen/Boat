@@ -169,9 +169,6 @@ public class GamePadInput : MonoBehaviour
                 xrRig.localRotation = Quaternion.Euler(0f, rotationY, 0f);
             }*/
         }
-        else {
-            Debug.Log("GamePad disconnected.");
-        }
 
         prevState = state;
     }
