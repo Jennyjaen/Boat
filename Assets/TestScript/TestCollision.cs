@@ -21,9 +21,12 @@ public class TestCollision : MonoBehaviour {
 
     private float lastCollision;
     private float cooldown = 1f;
-
+    public float col_angle = 0f;
     private void Start() {
         // Rigidbody 컴포넌트 가져오기
+    }
+
+    void OnEnable() {
         rb = GetComponent<Rigidbody>();
 
         if (rb == null) {
@@ -43,8 +46,38 @@ public class TestCollision : MonoBehaviour {
         testPoint = testEnvironment.transform.Find("Collision/TestPoint");
         colliding = false;
         lastCollision = 0f;
-    }
 
+        if (explainImage != null) {
+            explainImage.gameObject.SetActive(true);
+        }
+
+        //ArrangeChildObjectsInCircle();
+        if (testPoint != null) {
+            transform.position = testPoint.position;
+            transform.rotation = Quaternion.Euler(0, 90, 0);
+
+            if (rb != null) {
+                rb.constraints = RigidbodyConstraints.FreezeRotation;
+            }
+
+        }
+
+        Debug.Log(person == null);
+        switch (person.inputMethod) {
+            case TestMovement.InputMethod.GamePad:
+                GamePadInput.enabled = false;
+                break;
+            case TestMovement.InputMethod.HandStickThrottle:
+                Debug.Log("disable");
+                HandThrottle.enabled = false;
+                break;
+            case TestMovement.InputMethod.HandStickGesture:
+                HandGesture.enabled = false;
+                break;
+        }
+
+        insitu = true;
+    }
 
     float CalculateAngle(float x, float y) {
         float angle = Mathf.Atan2(y, x) * Mathf.Rad2Deg;
@@ -52,7 +85,10 @@ public class TestCollision : MonoBehaviour {
         if (angle < 0) {
             angle += 360f;
         }
-
+        col_angle = angle;
+        if(col_angle < 0) {
+            col_angle = 360;
+        }
         return angle;
     }
 
@@ -70,6 +106,7 @@ public class TestCollision : MonoBehaviour {
         Vector3 direction = (transform.position - testPoint.position).normalized;
         if (rb != null) {
             rb.velocity = direction * throwSpeed * relative;
+            //Debug.Log(rb.velocity);
         }
     }
 
@@ -107,12 +144,21 @@ public class TestCollision : MonoBehaviour {
     public void EndScenario() {
         insitu = false;
         rb.constraints = RigidbodyConstraints.None;
-        Vector3 newPosition = transform.position;
+        Vector3 newPosition = testPoint.position;
         newPosition.z += 25f;
         transform.position = newPosition;
+
         explainImage.gameObject.SetActive(false);
         person.testcol = false;
-        GamePadInput.enabled = true;
+        switch (person.inputMethod) {
+            case TestMovement.InputMethod.GamePad:
+                GamePadInput.enabled = true;
+                break;
+            case TestMovement.InputMethod.HandStickThrottle:
+                HandThrottle.enabled = true;
+                break;
+        }
+        this.enabled = false;
     }
 
     private void Update() {
@@ -126,8 +172,10 @@ public class TestCollision : MonoBehaviour {
                     float rx = state.ThumbSticks.Right.X;
                     float ry = state.ThumbSticks.Right.Y;
 
+                    //Debug.Log($"lx: {lx} rx: {rx}");
                     if(lx == -1 && rx == 1) {
                         EndScenario();
+                        break;
                     }
                     float angle = CalculateAngle(lx + rx, ly -ry);
 
@@ -145,31 +193,36 @@ public class TestCollision : MonoBehaviour {
                     break;
                 case TestMovement.InputMethod.HandStickThrottle:
                     int accum_x = input_d.accum_lx;
-                    lx = accum_x / 800f;
+                    lx = accum_x / 400f;
                     int accum_y = input_d.accum_ly;
-                    ly = accum_y / 800f;
+                    ly = accum_y / 400f;
                     lx = Mathf.Abs(lx) < 0.15f ? 0 : Mathf.Clamp(lx, -1f, 1f);
                     ly = Mathf.Abs(ly) < 0.15f ? 0 : Mathf.Clamp(ly, -1f, 1f);
-                    rx = input_d.accum_rx / 800f;
-                    ry = input_d.accum_ry / 800f;
+                    rx = input_d.accum_rx / 400f;
+                    ry = input_d.accum_ry / 400f;
                     rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
                     ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
-                    if (lx == -1 && rx == 1) {
+
+                    //Debug.Log($"lx: {lx}, rx: {rx}");
+                    if (lx < -0.8f && rx > 0.8f) {
+                        //Debug.Log("end?");
                         EndScenario();
+                        break;
                     }
+                    //Debug.Log($"lx: {lx} ly: {ly} rx: {rx} ry: {ry}");
                     angle = CalculateAngle(lx + rx, -ly- ry);
 
                     max_i = GetMagnitude(angle);
                     magnitude = Mathf.Sqrt((lx + rx) * (lx + rx) + (ly + ry) * (ly + ry)) / max_i;
-
+                    //Debug.Log(magnitude);
+                     
                     if (lx == 0 && ly == 0 && rx == 0 && ry == 0) {
-                        distance = spawnDistance;
+                        distance = 0;
                     }
                     else {
-                        distance -= magnitude * Time.deltaTime * 5f;
-                        distance = Mathf.Max(distance, 0.5f);
+                        distance += magnitude * Time.deltaTime * 5f;
                     }
-                    //ThrowRock(angle, magnitude);
+                    ThrowBoat(angle, magnitude);
                     break;
                 case TestMovement.InputMethod.HandStickGesture:
                     break;
@@ -198,42 +251,7 @@ public class TestCollision : MonoBehaviour {
         colliding = false;
         // canThrow = false;  
     }
-    private void OnTriggerEnter(Collider other) {
-        if (other.CompareTag("Collide")) {
-            person.testcol = true;
 
-            if (explainImage != null)
-            {
-                explainImage.gameObject.SetActive(true);
-            }
-
-            //ArrangeChildObjectsInCircle();
-            if (testPoint != null) {
-                transform.position = testPoint.position;
-                transform.rotation = Quaternion.Euler(0, 90, 0);
-
-                if (rb != null) {
-                    rb.constraints =  RigidbodyConstraints.FreezeRotation;
-                }
-                
-            }
-
-            switch (person.inputMethod) {
-                case TestMovement.InputMethod.GamePad:
-                    GamePadInput.enabled = false;
-                    break;
-                case TestMovement.InputMethod.HandStickThrottle:
-                    HandThrottle.enabled = false;
-                    break;
-                case TestMovement.InputMethod.HandStickGesture:
-                    HandGesture.enabled = false;
-                    break;
-            }
-
-            insitu = true;
-
-        }
-    }
 
     void ArrangeChildObjectsInCircle() {
         if (rock == null || testPoint == null) {

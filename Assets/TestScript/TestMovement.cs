@@ -67,7 +67,8 @@ public class TestMovement : MonoBehaviour
     public HandThrottle HandThrottle;
     [HideInInspector]
     public HandGesture HandGesture;
-
+    [HideInInspector]
+    public TestCollision testCollision;
     [HideInInspector]
     public byte[] larray = new byte[108];
     [HideInInspector]
@@ -99,7 +100,7 @@ public class TestMovement : MonoBehaviour
         GamePadInput = GetComponent<GamePadInput>();
         HandThrottle = GetComponent<HandThrottle>();
         HandGesture = GetComponent<HandGesture>();
-
+        testCollision = GetComponent<TestCollision>();
         left_boat = GameObject.Find("LeftVertical").transform.GetComponent<VerticalCheck>();
         right_boat = GameObject.Find("RightVertical").transform.GetComponent<VerticalCheck>();
 
@@ -199,6 +200,9 @@ public class TestMovement : MonoBehaviour
     }
 
     void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //충돌, 물에 빠짐, 배의 기울기
+        if (testCollision.enabled) {
+            col_ang = testCollision.col_angle;
+        }
         if (collide == 0.5f) { // collide 후 아무런 피드백 x
             for (int i = 0; i < 108; i++) {
                 larray[i] = (byte)0;
@@ -225,7 +229,7 @@ public class TestMovement : MonoBehaviour
                     if (col_ang >= 22.5 && col_ang < 67.5) {
                         //
                         //Debug.Log("ru");
-                        if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
+                        if (cent_x - cent_y >= 1 - 2 * col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
@@ -258,7 +262,7 @@ public class TestMovement : MonoBehaviour
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
                         //Debug.Log("rd");
-                        if (cent_x - cent_y >= 1 - 2 * col_s) { res = intensity; }
+                        if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
                         else { res = 0; }
                     }
                     else {
@@ -299,13 +303,13 @@ public class TestMovement : MonoBehaviour
             rarray = arr;
         }
         else if (collide == 0f) {// 기울기: 0f
+            Debug.Log(clamp_ang);
             if (clamp_ang < incline_deadzone) {
-                //Debug.Log("deadzone");
-                for (int i = 0; i < 108; i++) {
-                    larray[i] = (byte)0;
-                    rarray[i] = (byte)0;
-                    return;
+                for (int k = 0; k < 108; k++) {
+                    larray[k] = 0;
+                    rarray[k] = 0;
                 }
+                return;
             }
 
             float valid_ang = clamp_ang - incline_deadzone;
@@ -692,6 +696,7 @@ public class TestMovement : MonoBehaviour
 
     void Update() {
         //최고속도 조절
+        printArray(larray);
         if (rigidbody.velocity.magnitude > 15.0f) {
             rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
         }
@@ -773,8 +778,8 @@ public class TestMovement : MonoBehaviour
                 Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
                 float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
                 float c_ang = ang;
-                float c_speed = Mathf.Clamp(collide_speed * 5f, 0, 3);
-                c_speed /= 3f;
+                float c_speed = Mathf.Clamp(collide_speed, 0, 1);
+                //c_speed /= 3f;
                 if (direct_ang < 0) { direct_ang += 360; }
                 float bef_coll = collide;
                 if (underwater.underwater) {
@@ -1189,7 +1194,6 @@ public class TestMovement : MonoBehaviour
                 collide = 2f;
                 triggered = other.transform;
                 Vector3 planeV = other.transform.up;
-                Debug.Log("plane forward " + planeV + " transform forward: " + transform.forward + " right: " + transform.right);
                 Vector3 myF = transform.right;
                 float dot = Vector3.Dot(planeV, myF);
                 if (dot >= 0) {
@@ -1203,6 +1207,10 @@ public class TestMovement : MonoBehaviour
                 grassboat = false;
             }
             enterCount++;
+        }
+        if (other.CompareTag("Collide")) {
+            testcol = true;
+            testCollision.enabled = true;
         }
     }
 

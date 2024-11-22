@@ -44,7 +44,6 @@ public class FirstPersonMovement : MonoBehaviour {
     private int waterfall = 0;
     private GamePadState state;
 
-
     private string land_name;
     private Vector3 land_down;
 
@@ -104,7 +103,7 @@ public class FirstPersonMovement : MonoBehaviour {
         GamePadInput = GetComponent<GamePadInput>();
         HandThrottle = GetComponent<HandThrottle>();
         HandGesture = GetComponent<HandGesture>();
-
+        
         grassboat = false;
         for (int i = 0; i < 108; i++) {
             larray[i] = (byte)0;
@@ -248,7 +247,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     if (col_ang >= 22.5 && col_ang < 67.5) {
                         //
                         //Debug.Log("ru");
-                        if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
+                        if (cent_x - cent_y >= 1 - 2 * col_s) { res = intensity; }
                         else { res = 0; }
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
@@ -281,7 +280,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
                         //Debug.Log("rd");
-                        if (cent_x - cent_y >= 1 - 2 * col_s) { res = intensity; }
+                        if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
                         else { res = 0; }
                     }
                     else {
@@ -327,8 +326,8 @@ public class FirstPersonMovement : MonoBehaviour {
                 for(int i= 0; i<108; i++) {
                     larray[i] = (byte)0;
                     rarray[i] = (byte)0;
-                    return;
                 }
+                return;
             }
 
             float valid_ang = clamp_ang - incline_deadzone;
