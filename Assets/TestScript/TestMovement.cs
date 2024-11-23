@@ -580,7 +580,7 @@ public class TestMovement : MonoBehaviour
             int start_row = Mathf.CeilToInt(Mathf.Clamp((col_s - 3.13f) / 0.013f, 0, 12));
             start_row += 3; //3에서 15번째 줄
             int width = Mathf.Clamp(Mathf.CeilToInt((rotationZ + 19f) * 0.6f), 0, 15);
-            Debug.Log($"water: {start_row} ~ {width}, intensity: {intense}");
+            //Debug.Log($"water: {start_row} ~ {width}, intensity: {intense}");
             for (int y= 0; y< 18; y++) {
                 for (int x = 0; x<6; x++) {
                     if (y >= start_row) {
@@ -893,14 +893,16 @@ public class TestMovement : MonoBehaviour
                             float intensity = Mathf.Clamp(diff * 5, 0, 1);
                             GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                         }
-                        else if (waterbump.start_bump) { //처음에 물이 닿음
-                            float rotationZ = transform.rotation.eulerAngles.z;
-                            if (rotationZ > 180) {
-                                rotationZ -= 360;
+                        else if (waterbump.enabled) { //처음에 물이 닿음
+                            if (waterbump.start_bump) {
+                                float rotationZ = transform.rotation.eulerAngles.z;
+                                if (rotationZ > 180) {
+                                    rotationZ -= 360;
+                                }
+                                float intensity = (rotationZ + 19f) / 20f;
+                                intensity = Mathf.Clamp(intensity, 0, 1);
+                                GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                             }
-                            float intensity = (rotationZ + 19f) / 20f;
-                            intensity = Mathf.Clamp(intensity, 0, 1);
-                            GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                         }
                         else {
                             GamePad.SetVibration(PlayerIndex.One, 0, 0);
@@ -925,10 +927,7 @@ public class TestMovement : MonoBehaviour
                     float currentPositionY = front.position.y;
                     float diff = underwater.water_y - currentPositionY;
                     c_ang = diff;
-                }
-                else if (waterbump.start_bump) {
-                    collide = 1.8f;
-                    c_speed = waterbump.height;
+                    waterbump.enabled = false;
                 }
                 else {
                     collide = bef_coll;
@@ -936,8 +935,21 @@ public class TestMovement : MonoBehaviour
                         collide = 0f;
                     }
                 }
+
+                if (waterbump.enabled) {
+                    if (waterbump.start_bump) { 
+                            collide = 1.8f;
+                            c_speed = waterbump.height;
+                        }
+                    else {
+                        if(collide != 1.5f) {
+                            collide = 0f;
+                        }
+                        
+                    }
+                }
                 if (collide < 2f || water_status == 0) {
-                    if (waterfall > 0 && !waterbump.start_bump) {
+                    if (waterfall > 0 && !waterbump.enabled) {
                         collide = 0f;
                     }
                     switch (situation.env) {
@@ -1324,6 +1336,7 @@ public class TestMovement : MonoBehaviour
             waterincline = true;
             water_status = 0f;
             waterfall++;
+            waterbump.enabled = true;
         }
         if (other.CompareTag("WaterO")) {
             waterincline = false;
@@ -1333,6 +1346,7 @@ public class TestMovement : MonoBehaviour
                 underwater.water_y = 0f;
                 GamePad.SetVibration(PlayerIndex.One, 0, 0);
                 collide = 0f;
+                waterbump.enabled = false;
             }
         }
         if (other.CompareTag("GrassE")) {

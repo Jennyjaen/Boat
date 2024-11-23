@@ -30,6 +30,7 @@ public class WaterBump : MonoBehaviour
             if (rotationZ > 180) {
                 rotationZ -= 360;
             }
+            Debug.Log($"start_bump: {start_bump} , rotationz: {rotationZ}");
             if (rotationZ >= -19) {
                 if (!start_bump) { //°« start_bump ½ÃÀÛ
                     height = transform.position.y;
