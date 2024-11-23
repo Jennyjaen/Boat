@@ -487,7 +487,75 @@ public class FirstPersonMovement : MonoBehaviour {
             }
 
             }
+        else if (collide == 1.3f) { //Moving Object용
+            int x_1 = 0;
+            int x_2 = 0;
 
+            float intensity = 3;
+            float width = 0.2f;
+            float adj_ang = 20f;
+            for (int y = 0; y < 18; y++) {
+                for (int x = 0; x < 24; x++) {
+                    float cent_x = ((float)x + 0.5f) / 24;
+                    float cent_y = ((float)y + 0.5f) / 12;
+                    float res;
+                    //Debug.Log(col_s);
+                    //Debug.Log(collide_speed);
+                    if (col_ang >= 90 && col_ang < 270 - adj_ang) {
+                        //왼쪽
+                        //Debug.Log("Left");
+                        if (cent_x < width) {
+                            res = intensity;
+                            if (collide_speed > 13) {
+                                int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
+                                Debug.Log($"col_s = {col_s} , upper: {upper}");
+                                if (y <= upper) { res = 0; }
+                            }
+                        }
+                        else { res = 0; }
+                    }
+                    else if (col_ang >= 270 - adj_ang && col_ang < 270 + adj_ang) {
+                        //아래
+                        //Debug.Log("down");
+                        if (cent_y >= 1 - width) {
+                            res = intensity;
+                            if (collide_speed > 15.3) {
+                                int upper = Mathf.FloorToInt((collide_speed - 15.3f) / 0.05f); //24칸임
+                                if (x <= upper) { res = 0; }
+                            }
+                        }
+                        else { res = 0; }
+                    }
+                    else {
+                        //오른쪽
+                        //Debug.Log("right");
+                        if (cent_x >= 1 - width) {
+                            res = intensity;
+                            if (collide_speed > 13) {
+                                int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
+                                if (y >= 17 - upper) { res = 0; }
+                                Debug.Log($"col_s = {col_s} , upper: {upper}");
+                            }
+                        }
+                        else { res = 0; }
+                    }
+
+                    if (x % 2 == 0) { x_1 = (int)res; }
+                    else {
+                        x_2 = (int)res;
+                        if (x >= 12) {
+                            int index = y * 6 + ((x - 12) / 2);
+                            rarray[107 - index] = (byte)(x_1 + x_2 * 6); //rarray 뒤집었음.
+                        }
+                        else {
+                            int index = y * 6 + (x / 2);
+                            larray[index] = (byte)(x_1 * 6 + x_2);
+                        }
+                    }
+                }
+            }
+            //printArray(rarray);
+        }
         //Debug.Log(string.Join(",", larray));
     }
 
@@ -1020,17 +1088,8 @@ public class FirstPersonMovement : MonoBehaviour {
             }
         }
         if (c.collider.CompareTag("Moving")) {
-            collide = 1.0f;
+            collide = 1.3f;
             Vector3 colVelocity = c.relativeVelocity;
-            //collide_speed = colVelocity.magnitude;
-            switch (inputMethod) {
-                case InputMethod.HandStickThrottle:
-                    collide_speed = 0.24f;
-                    break;
-                case InputMethod.HandStickGesture:
-                    collide_speed = 2.0f;
-                    break;
-            }
             
             Vector3 colPoint = c.contacts[0].point;
             Vector3 playerPoint = transform.position;
@@ -1048,7 +1107,7 @@ public class FirstPersonMovement : MonoBehaviour {
             Vector3 my_center = GetComponent<Collider>().bounds.center;
             Vector3 dir = (my_center - col_center);
             float depth = dir.magnitude;
-            Debug.Log(depth);
+            collide_speed = depth;
             dir.Normalize();
             if (depth < 7) {
                 transform.position += dir * 1.5f * Time.deltaTime;
