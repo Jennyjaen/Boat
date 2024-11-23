@@ -901,10 +901,16 @@ public class TestMovement : MonoBehaviour
                                 }
                                 float intensity = (rotationZ + 19f) / 20f;
                                 intensity = Mathf.Clamp(intensity, 0, 1);
+                                Debug.Log(intensity);
                                 GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                            }
+                            else {
+                                Debug.Log("wy");
+                                GamePad.SetVibration(PlayerIndex.One, 0, 0);
                             }
                         }
                         else {
+                            Debug.Log("?");
                             GamePad.SetVibration(PlayerIndex.One, 0, 0);
                         }
                         break;
