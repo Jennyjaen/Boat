@@ -864,7 +864,9 @@ public class FirstPersonMovement : MonoBehaviour {
                     GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                 }
                 else {
-                    GamePad.SetVibration(PlayerIndex.One, 0, 0);
+                    if (waterbump.enabled) {
+                        GamePad.SetVibration(PlayerIndex.One, 0, 0);
+                    }
                 }
                 break;
             case InputMethod.HandStickThrottle: //장치에 햅틱 피드백을 주는 경우
@@ -1178,6 +1180,7 @@ public class FirstPersonMovement : MonoBehaviour {
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("WaterE")){
             waterincline = true;
+            waterbump.enabled = true;
             water_status = 0f;
             waterfall++;
         }
@@ -1189,6 +1192,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 underwater.water_y = 0f;
                 GamePad.SetVibration(PlayerIndex.One, 0, 0);
                 collide = 0f;
+                waterbump.enabled = false;
             }
         }
         if (other.CompareTag("GrassE")) {
