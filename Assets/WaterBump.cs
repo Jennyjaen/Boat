@@ -25,7 +25,6 @@ public class WaterBump : MonoBehaviour
     }
 
     private void Update() {
-        //Debug.Log(height);
         if (shouldLogRotation ) {
             float rotationZ = transform.rotation.eulerAngles.z;
             if (rotationZ > 180) {

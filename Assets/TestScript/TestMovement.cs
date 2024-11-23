@@ -499,7 +499,7 @@ public class TestMovement : MonoBehaviour
             }
 
         }
-        else if(collide == 1.3f) { //Moving Object용
+        else if (collide == 1.3f) { //Moving Object용
             int x_1 = 0;
             int x_2 = 0;
 
@@ -521,7 +521,7 @@ public class TestMovement : MonoBehaviour
                             if (collide_speed > 13) {
                                 int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
                                 Debug.Log($"col_s = {col_s} , upper: {upper}");
-                                if(y <= upper) { res = 0; }
+                                if (y <= upper) { res = 0; }
                             }
                         }
                         else { res = 0; }
@@ -529,9 +529,9 @@ public class TestMovement : MonoBehaviour
                     else if (col_ang >= 270 - adj_ang && col_ang < 270 + adj_ang) {
                         //아래
                         //Debug.Log("down");
-                        if (cent_y >= 1 - width) { 
-                            res = intensity; 
-                            if(collide_speed > 15.3) {
+                        if (cent_y >= 1 - width) {
+                            res = intensity;
+                            if (collide_speed > 15.3) {
                                 int upper = Mathf.FloorToInt((collide_speed - 15.3f) / 0.05f); //24칸임
                                 if (x <= upper) { res = 0; }
                             }
@@ -541,11 +541,11 @@ public class TestMovement : MonoBehaviour
                     else {
                         //오른쪽
                         //Debug.Log("right");
-                        if (cent_x >= 1 - width) { 
+                        if (cent_x >= 1 - width) {
                             res = intensity;
                             if (collide_speed > 13) {
                                 int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
-                                if (y >= 17 -upper) { res = 0; }
+                                if (y >= 17 - upper) { res = 0; }
                                 Debug.Log($"col_s = {col_s} , upper: {upper}");
                             }
                         }
@@ -567,6 +567,37 @@ public class TestMovement : MonoBehaviour
                 }
             }
             //printArray(rarray);
+        }
+        else if (collide == 1.8f) { //물에 덜컹이면서 들어갈 때
+            float rotationZ = transform.rotation.eulerAngles.z;
+            if (rotationZ > 180) {
+                rotationZ -= 360;
+            }
+            float intensity = (rotationZ + 19f) / 20f;
+            intensity = Mathf.Clamp(intensity, 0, 1);
+            intensity *= 5;
+            int intense = Mathf.CeilToInt(intensity);
+            int start_row = Mathf.CeilToInt(Mathf.Clamp((col_s - 3.13f) / 0.013f, 0, 12));
+            start_row += 3; //3에서 15번째 줄
+            int width = Mathf.Clamp(Mathf.CeilToInt((rotationZ + 19f) * 0.6f), 0, 15);
+            Debug.Log($"water: {start_row} ~ {width}, intensity: {intense}");
+            for (int y= 0; y< 18; y++) {
+                for (int x = 0; x<6; x++) {
+                    if (y >= start_row) {
+                        larray[y * 6 + x] = 0;
+                        rarray[(17 - y) * 6 + x] = 0;
+                    }
+                    else if (y < start_row - width) {
+                        larray[y * 6 + x] = 0;
+                        rarray[(17 - y) * 6 + x] = 0;
+                    }
+                    else {
+                        larray[y * 6 + x] = (byte) (intense * 7);
+                        rarray[(17 - y) * 6 + x] = (byte)(intense * 7);
+                    }
+                }
+            }
+            printArray(larray);
         }
         //Debug.Log(string.Join(",", larray));
     }
@@ -895,15 +926,18 @@ public class TestMovement : MonoBehaviour
                     float diff = underwater.water_y - currentPositionY;
                     c_ang = diff;
                 }
+                else if (waterbump.start_bump) {
+                    collide = 1.8f;
+                    c_speed = waterbump.height;
+                }
                 else {
                     collide = bef_coll;
                     if (bef_coll == 1.5f) {
                         collide = 0f;
                     }
                 }
-
                 if (collide < 2f || water_status == 0) {
-                    if (waterfall > 0) {
+                    if (waterfall > 0 && !waterbump.start_bump) {
                         collide = 0f;
                     }
                     switch (situation.env) {
@@ -913,7 +947,7 @@ public class TestMovement : MonoBehaviour
                             }
                             break;
                         case UserTest.Environment.Waterfall:
-                            if(collide == 1.5f) {
+                            if(collide == 1.5f || collide == 1.8f) {
                                 updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
                             }
                             else {
