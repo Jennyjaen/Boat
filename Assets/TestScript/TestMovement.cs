@@ -80,6 +80,7 @@ public class TestMovement : MonoBehaviour
     private float lastCollision = 0f;
     private float cooldown = 1f;
 
+    private WaterBump waterbump;
     public bool bouncy_col; // 교수님께서 말씀하셨던 spatio temporal한 충돌을 적용할지 여부에 따라 달라질 변수
     void Start()
     {
@@ -97,6 +98,7 @@ public class TestMovement : MonoBehaviour
         land_name = "";
         land_down = new Vector3(0, 0, 0);
         underwater = transform.Find("Front").GetComponent<Underwater>();
+        waterbump = GetComponent<WaterBump>();
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
         grass = new int[6];
 
@@ -860,6 +862,18 @@ public class TestMovement : MonoBehaviour
                             float intensity = Mathf.Clamp(diff * 5, 0, 1);
                             GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                         }
+                        else if (waterbump.start_bump) { //처음에 물이 닿음
+                            float rotationZ = transform.rotation.eulerAngles.z;
+                            if (rotationZ > 180) {
+                                rotationZ -= 360;
+                            }
+                            float intensity = (rotationZ + 19f) / 20f;
+                            intensity = Mathf.Clamp(intensity, 0, 1);
+                            GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                        }
+                        else {
+                            GamePad.SetVibration(PlayerIndex.One, 0, 0);
+                        }
                         break;
                 }
                 break;
@@ -1229,7 +1243,11 @@ public class TestMovement : MonoBehaviour
                 case InputMethod.GamePad:
                     switch (situation.env) {
                         case UserTest.Environment.Moving:
-                            float c_speed = Mathf.Clamp(collide_speed * 8f, 0, 1);
+                            float s = 1f;
+                            if(depth > 14) {
+                                s = Mathf.Abs((depth - 16.5f)) / 3f;
+                            }
+                            float c_speed = Mathf.Clamp(s, 0, 1);
                             GamePad.SetVibration(PlayerIndex.One, c_speed, c_speed);
                             break;
                     }
@@ -1309,7 +1327,7 @@ public class TestMovement : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit(Collider other) {
+    void OnTriggerExit(Collider other) {
         if (other.CompareTag("GrassE")) {
             if (water_status == 3f && enterCount == 4 && !grassin) {
                 grassboat = true;
@@ -1352,8 +1370,10 @@ public class TestMovement : MonoBehaviour
         collide = 0.0f;
     }
     IEnumerator ShortVibration(float intensity) {
-        if(testcol && (Time.time - lastCollision > cooldown)) { lastCollision = Time.time; }
-        else { yield break; }
+        if (testCollision.enabled) {
+            if (testcol && (Time.time - lastCollision > cooldown)) { lastCollision = Time.time; }
+            else { yield break; }
+        }
         GamePad.SetVibration(PlayerIndex.One, intensity, intensity);
         yield return new WaitForSeconds(0.1f);
         GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);

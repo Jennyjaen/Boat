@@ -55,7 +55,7 @@ public class Underwater : MonoBehaviour
             //Debug.Log("Water in");
             underwater = true;
             water_y = transform.position.y;
-            Debug.Log(water_y);
+            //Debug.Log(water_y);
         }
         /*
         else {

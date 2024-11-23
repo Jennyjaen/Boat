@@ -49,6 +49,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
     private VerticalCheck left_boat;
     private VerticalCheck right_boat;
+    private WaterBump waterbump;
     //Input 방법을 여러개로 바꾸기
     public enum InputMethod {
         GamePad,
@@ -114,7 +115,7 @@ public class FirstPersonMovement : MonoBehaviour {
         MarkArray(left_grass, GeneratePoints());
         MarkArray(right_grass, GeneratePoints());
         triggered = null;
-
+        waterbump = GetComponent<WaterBump>();
         left_boat = GameObject.Find("LeftVertical").transform.GetComponent<VerticalCheck>();
         right_boat = GameObject.Find("RightVertical").transform.GetComponent<VerticalCheck>();
 
@@ -853,6 +854,18 @@ public class FirstPersonMovement : MonoBehaviour {
                     float intensity = Mathf.Clamp(diff * 5, 0, 1);
                     GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                 }
+                else if (waterbump.start_bump) { //처음에 물이 닿음
+                    float rotationZ = transform.rotation.eulerAngles.z;
+                    if (rotationZ > 180) {
+                        rotationZ -= 360;
+                    }
+                    float intensity = (rotationZ + 19f) / 20f;
+                    intensity = Mathf.Clamp(intensity, 0, 1);
+                    GamePad.SetVibration(PlayerIndex.One, 0, intensity);
+                }
+                else {
+                    GamePad.SetVibration(PlayerIndex.One, 0, 0);
+                }
                 break;
             case InputMethod.HandStickThrottle: //장치에 햅틱 피드백을 주는 경우
                 Vector3 up_vector = transform.up;
@@ -1120,7 +1133,11 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             switch (inputMethod) {
                 case InputMethod.GamePad:
-                    float c_speed = Mathf.Clamp(collide_speed * 8f, 0, 1);
+                    float s = 1f;
+                    if (depth > 14) {
+                        s = Mathf.Abs((depth - 16.5f)) / 3f;
+                    }
+                    float c_speed = Mathf.Clamp(s, 0, 1);
                     GamePad.SetVibration(PlayerIndex.One, c_speed, c_speed);
                     break;
             }

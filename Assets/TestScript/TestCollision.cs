@@ -62,7 +62,6 @@ public class TestCollision : MonoBehaviour {
 
         }
 
-        Debug.Log(person == null);
         switch (person.inputMethod) {
             case TestMovement.InputMethod.GamePad:
                 GamePadInput.enabled = false;
