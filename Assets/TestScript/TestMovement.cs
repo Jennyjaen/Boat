@@ -577,7 +577,7 @@ public class TestMovement : MonoBehaviour
             intensity = Mathf.Clamp(intensity, 0, 1);
             intensity *= 5;
             int intense = Mathf.CeilToInt(intensity);
-            int start_row = Mathf.CeilToInt(Mathf.Clamp((col_s - 3.13f) / 0.04f, 0, 12));
+            int start_row = Mathf.CeilToInt(Mathf.Clamp((col_s - 2.9f) / 0.04f, 0, 12));
             start_row += 3; //3
             int width = Mathf.Clamp(Mathf.CeilToInt((rotationZ + 19f) * 0.6f), 0, 15);
             //Debug.Log($"water: {start_row} ~ {width}, intensity: {intense}");

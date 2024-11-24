@@ -28,6 +28,9 @@ public class InclineBuo2 : MonoBehaviour
     }
 
     void FixedUpdate() {
+        Vector3 rotation = transform.eulerAngles;
+        if (rotation.x > 180) { rotation.x -= 360; }
+        rotation.x = Mathf.Clamp(rotation.x, -20f, 20f);
         // 부모의 waterIncline이 true일 때만 부력 적용
         if (rb != null && parentScript != null && parentScript.waterincline) {
             // 가까운 plane을 선택하고, 해당 plane의 파도 높이 계산

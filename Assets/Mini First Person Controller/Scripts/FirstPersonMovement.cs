@@ -50,6 +50,8 @@ public class FirstPersonMovement : MonoBehaviour {
     private VerticalCheck left_boat;
     private VerticalCheck right_boat;
     private WaterBump waterbump;
+
+    private bool cancollide = true;
     //Input 방법을 여러개로 바꾸기
     public enum InputMethod {
         GamePad,
@@ -241,8 +243,8 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             //Debug.Log($"collide speed: {col_s}, so intensity: {intensity}");
             for (int y = 0; y < 18; y++) {
-                for (int x = 0; x < 24; x++){
-                    float cent_x = ((float)x +0.5f) / 24;
+                for (int x = 0; x < 24; x++) {
+                    float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 12;
                     float res;
                     if (col_ang >= 22.5 && col_ang < 67.5) {
@@ -296,7 +298,7 @@ public class FirstPersonMovement : MonoBehaviour {
                         x_2 = (int)res;
                         if (x >= 12) {
                             int index = y * 6 + ((x - 12) / 2);
-                            rarray[107- index] = (byte)(x_1 + x_2* 6); //rarray 뒤집었음.
+                            rarray[107 - index] = (byte)(x_1 + x_2 * 6); //rarray 뒤집었음.
                         }
                         else {
                             int index = y * 6 + (x / 2);
@@ -306,12 +308,12 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
         }
-        else if(collide == 1.5f) { // 물에 빠졌을 때
+        else if (collide == 1.5f) { // 물에 빠졌을 때
             byte[] arr = new byte[108];
-            int sero = (int) (clamp_ang / 0.03f);
+            int sero = (int)(clamp_ang / 0.03f);
             for (int y = 0; y < 18; y++) {
                 for (int n = 0; n < 6; n++) {
-                    if (y >= 0 && y <= sero ) {
+                    if (y >= 0 && y <= sero) {
                         arr[y * 6 + n] = (byte)(5 * 6 + 5);
                     }
                     else { arr[y * 6 + n] = (byte)0; }
@@ -321,10 +323,10 @@ public class FirstPersonMovement : MonoBehaviour {
             System.Array.Reverse(arr); //오른쪽 뒤집었음.
             rarray = arr;
         }
-        else if(collide == 0f){// 기울기: 0f
-            if(clamp_ang < incline_deadzone) {
+        else if (collide == 0f) {// 기울기: 0f
+            if (clamp_ang < incline_deadzone) {
                 //Debug.Log("deadzone");
-                for(int i= 0; i<108; i++) {
+                for (int i = 0; i < 108; i++) {
                     larray[i] = (byte)0;
                     rarray[i] = (byte)0;
                 }
@@ -332,29 +334,29 @@ public class FirstPersonMovement : MonoBehaviour {
             }
 
             float valid_ang = clamp_ang - incline_deadzone;
-            if(waterfall > 0 && waterincline) {
+            if (waterfall > 0 && waterincline) {
                 valid_ang = clamp_ang - 16;
             }
             int vib_level;
-                int vib_width;
+            int vib_width;
             Vector3 localvel = transform.InverseTransformDirection(rigidbody.velocity);
             float velo = Mathf.Sqrt(localvel.y * localvel.y + localvel.z * localvel.z);
-            if(velo > 0.1) {
+            if (velo > 0.1) {
                 vib_level = Mathf.FloorToInt(valid_ang / 1.8f) + 2;
-                if(vib_level > max_v) { vib_level = max_v; }
+                if (vib_level > max_v) { vib_level = max_v; }
             }
             else { //속도 느릴때: 이때 max magnitude를 3으로 한정하는 것이 나을 것 같음.
-                        
-                if(valid_ang< 0) { vib_level = 0; }
+
+                if (valid_ang < 0) { vib_level = 0; }
                 else {
                     vib_level = Mathf.FloorToInt(valid_ang) + 1;
-                    if(vib_level > 3) { vib_level = 3; }
+                    if (vib_level > 3) { vib_level = 3; }
                 }
             }
             float height = transform.position.y;
             if (height < 0) { height = 0; }
             vib_width = Mathf.FloorToInt(30f * height) + min_width;
-            if(vib_width > max_width) { vib_width = max_width; }
+            if (vib_width > max_width) { vib_width = max_width; }
 
             if (waterfall > 0) {
                 vib_width = 6;
@@ -487,7 +489,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
 
-            }
+        }
         else if (collide == 1.3f) { //Moving Object용
             int x_1 = 0;
             int x_2 = 0;
@@ -500,8 +502,6 @@ public class FirstPersonMovement : MonoBehaviour {
                     float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 12;
                     float res;
-                    //Debug.Log(col_s);
-                    //Debug.Log(collide_speed);
                     if (col_ang >= 90 && col_ang < 270 - adj_ang) {
                         //왼쪽
                         //Debug.Log("Left");
@@ -509,7 +509,7 @@ public class FirstPersonMovement : MonoBehaviour {
                             res = intensity;
                             if (collide_speed > 13) {
                                 int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
-                                Debug.Log($"col_s = {col_s} , upper: {upper}");
+                                //Debug.Log($"col_s = {col_s} , upper: {upper}");
                                 if (y <= upper) { res = 0; }
                             }
                         }
@@ -556,6 +556,36 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
             }
             //printArray(rarray);
+        }
+        else if (collide == 1.8f) {
+            float rotationZ = transform.rotation.eulerAngles.z;
+            if (rotationZ > 180) {
+                rotationZ -= 360;
+            }
+            float intensity = (rotationZ + 19f) / 20f;
+            intensity = Mathf.Clamp(intensity, 0, 1);
+            intensity *= 5;
+            int intense = Mathf.CeilToInt(intensity);
+            int start_row = Mathf.CeilToInt(Mathf.Clamp((col_s - 2.9f) / 0.04f, 0, 12));
+            start_row += 3; //3
+            int width = Mathf.Clamp(Mathf.CeilToInt((rotationZ + 19f) * 0.6f), 0, 15);
+            //Debug.Log($"water: {start_row} ~ {width}, intensity: {intense}");
+            for (int y = 0; y < 18; y++) {
+                for (int x = 0; x < 6; x++) {
+                    if (y >= start_row) {
+                        larray[y * 6 + x] = 0;
+                        rarray[(17 - y) * 6 + x] = 0;
+                    }
+                    else if (y < start_row - width) {
+                        larray[y * 6 + x] = 0;
+                        rarray[(17 - y) * 6 + x] = 0;
+                    }
+                    else {
+                        larray[y * 6 + x] = (byte)(intense * 7);
+                        rarray[(17 - y) * 6 + x] = (byte)(intense * 7);
+                    }
+                }
+            }
         }
         //Debug.Log(string.Join(",", larray));
     }
@@ -796,7 +826,6 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void Update() {
-        
         switch (inputMethod) {
             case InputMethod.GamePad:
                 GamePadInput.enabled = true;
@@ -886,17 +915,32 @@ public class FirstPersonMovement : MonoBehaviour {
                     float currentPositionY = front.position.y;
                     float diff = underwater.water_y - currentPositionY;
                     c_ang = diff;
+                    waterbump.enabled = false;
                 }
                 else {
                     collide = bef_coll;
                     if (bef_coll == 1.5f) {
                         collide = 0f;
-                        }
                     }
+                }
 
-                if(collide <2f || water_status ==0) {
+                if (waterbump.enabled) {
+                    if (waterbump.start_bump) {
+                        collide = 1.8f;
+                        c_speed = waterbump.height;
+                    }
+                    else {
+                        if (collide != 1.5f) {
+                            collide = 0f;
+                        }
+
+                    }
+                }
+                if (collide <2f || water_status ==0) {
                     if(waterfall > 0) {
-                        collide = 0f;
+                        if (!waterbump.start_bump) {
+                            collide = 0f;
+                        }
                     }
                     //Debug.Log($"{collide}, {water_status}, {underwater.underwater}, {waterincline}");
                     switch (track) {
@@ -994,7 +1038,9 @@ public class FirstPersonMovement : MonoBehaviour {
     
     void OnCollisionEnter(Collision c) {
         Vector3 colVelocity = c.relativeVelocity;
-        collide_speed = colVelocity.magnitude;
+        if(collide != 1.0f && collide != 0.5f) { //충돌 도중 속도 바뀌지 않도록.
+            collide_speed = colVelocity.magnitude;
+        }
         switch (inputMethod) {
             case InputMethod.GamePad:
                 if (!c.collider.CompareTag("Water")) {
@@ -1003,6 +1049,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                     else {
                         float c_speed = Mathf.Clamp(collide_speed, 0, 1);
+                        //Debug.Log($"start coroutine: {colVelocity.magnitude}");
                         StartCoroutine(ShortVibration(c_speed));
                     }
                 }
@@ -1012,7 +1059,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
-                        if(collide != 1.0f && collide!= 0.5f) {
+                        if(collide != 1.0f && collide!= 0.5f&& cancollide) {
                             StartCoroutine(CollisionControl());
                             water_status = 0f;
                         }
@@ -1201,7 +1248,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 collide = 2f;
                 triggered = other.transform;
                 Vector3 planeV = other.transform.up;
-                Debug.Log("plane forward "+ planeV + " transform forward: " + transform.forward + " right: " + transform.right);
+                //Debug.Log("plane forward "+ planeV + " transform forward: " + transform.forward + " right: " + transform.right);
                 Vector3 myF = transform.right;
                 float dot = Vector3.Dot(planeV, myF);
                 if (dot >= 0) {
@@ -1241,23 +1288,33 @@ public class FirstPersonMovement : MonoBehaviour {
         }
     }
     private IEnumerator CollisionControl() {
-        if(collide == 1.0f || collide == 0.5f) {
+        if(collide == 1.0f || collide == 0.5f || !cancollide) {
             yield break; //이미 충돌 신호가 1 이상 들어와 있으면 중복해서 다시 시작하는 것 금지.
         }
+        cancollide = false;
+        if(collide != 2) {
+            transform.position += transform.right * 0.1f;
+            //rigidbody.constraints = RigidbodyConstraints.FreezePosition;
+        }
+        //transform.position += transform.right;
         collide = 1.0f;
-        yield return new WaitForSeconds(2.0f);
+        yield return new WaitForSeconds(0.6f);
 
         switch (inputMethod) {
             case InputMethod.HandStickGesture:
                 if(water_status >= 1 && water_status <=2 && collide == 2) {
+                    //rigidbody.constraints = RigidbodyConstraints.None;
                     yield break;
                 }
                 break;
         }
         collide = 0.5f;
-        yield return new WaitForSeconds(1.0f);
-
+        //rigidbody.constraints = RigidbodyConstraints.None;
+        yield return new WaitForSeconds(0.1f);
         collide = 0.0f;
+
+        yield return new WaitForSeconds(1f);
+        cancollide = true;
     }
     IEnumerator ShortVibration(float intensity) {
         GamePad.SetVibration(PlayerIndex.One, intensity, intensity);

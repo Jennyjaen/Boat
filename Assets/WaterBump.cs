@@ -38,7 +38,6 @@ public class WaterBump : MonoBehaviour
             if (rotationZ >= -19.5) {
                 if (!start_bump) { //°« start_bump ½ÃÀÛ
                     height = transform.position.y;
-                    Debug.Log(rb.velocity.y);
                 }
                 start_bump = true;
                 if (before_ang > rotationZ + 0.01f) {
