@@ -577,8 +577,8 @@ public class TestMovement : MonoBehaviour
             intensity = Mathf.Clamp(intensity, 0, 1);
             intensity *= 5;
             int intense = Mathf.CeilToInt(intensity);
-            int start_row = Mathf.CeilToInt(Mathf.Clamp((col_s - 3.13f) / 0.013f, 0, 12));
-            start_row += 3; //3에서 15번째 줄
+            int start_row = Mathf.CeilToInt(Mathf.Clamp((col_s - 3.13f) / 0.04f, 0, 12));
+            start_row += 3; //3
             int width = Mathf.Clamp(Mathf.CeilToInt((rotationZ + 19f) * 0.6f), 0, 15);
             //Debug.Log($"water: {start_row} ~ {width}, intensity: {intense}");
             for (int y= 0; y< 18; y++) {
@@ -597,7 +597,7 @@ public class TestMovement : MonoBehaviour
                     }
                 }
             }
-            printArray(larray);
+            //printArray(larray);
         }
         //Debug.Log(string.Join(",", larray));
     }
@@ -905,12 +905,10 @@ public class TestMovement : MonoBehaviour
                                 GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                             }
                             else {
-                                Debug.Log("wy");
                                 GamePad.SetVibration(PlayerIndex.One, 0, 0);
                             }
                         }
                         else {
-                            Debug.Log("?");
                             GamePad.SetVibration(PlayerIndex.One, 0, 0);
                         }
                         break;

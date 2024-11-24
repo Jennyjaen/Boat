@@ -17,7 +17,7 @@ public class ControlBuoyancy : MonoBehaviour
     void Update()
     {
         //Debug.Log(player.transform.position.z);
-        if(player.transform.position.z <3.5f) {
+        if(player.transform.position.z <0f) {
             for (int i = 0; i < scripts.Length; i++) {
                 if (i == 0)
                     scripts[i].enabled = true; 
@@ -25,7 +25,7 @@ public class ControlBuoyancy : MonoBehaviour
                     scripts[i].enabled = false;
             }
         }
-        else if(player.transform.position.z < 42) {
+        else if(player.transform.position.z < 38) {
             for (int i = 0; i < scripts.Length; i++) {
                 if (i == 1)
                     scripts[i].enabled = true;
