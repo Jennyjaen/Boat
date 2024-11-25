@@ -236,9 +236,10 @@ public class TestCollision : MonoBehaviour {
         
     }
     private IEnumerator HandleCollision() {
+        //rb.constraints = RigidbodyConstraints.FreezePosition;
         if(Time.time - lastCollision > cooldown) { lastCollision = Time.time; }
         else { yield break; }
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(1f);
 
         // Rock이 Boat와 충돌한 경우 distance 초기화
         distance = 0;
@@ -247,6 +248,7 @@ public class TestCollision : MonoBehaviour {
         rb.velocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
         colliding = false;
+        //rb.constraints = RigidbodyConstraints.None;
         // canThrow = false;  
     }
 
