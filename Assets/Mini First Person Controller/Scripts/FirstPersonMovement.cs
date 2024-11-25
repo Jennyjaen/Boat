@@ -245,7 +245,7 @@ public class FirstPersonMovement : MonoBehaviour {
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
                     float cent_x = ((float)x + 0.5f) / 24;
-                    float cent_y = ((float)y + 0.5f) / 12;
+                    float cent_y = ((float)y + 0.5f) / 18;
                     float res;
                     if (col_ang >= 22.5 && col_ang < 67.5) {
                         //

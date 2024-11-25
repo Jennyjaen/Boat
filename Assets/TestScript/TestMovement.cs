@@ -280,7 +280,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * 0.7) {
+                                        if (cent_x - cent_y >= 1 - 2 * col_s * 0.8f) {
                                             if(bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -288,7 +288,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * 0.3) {
+                                        if (cent_x - cent_y >= 1 - 2 * col_s * 0.4f) {
                                             res = 0;
                                         }
                                         else {
@@ -326,7 +326,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (cent_y < (col_s * 0.7f)) {
+                                        if (cent_y < (col_s * 0.8f)) {
                                             if (bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -334,7 +334,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (cent_y < (col_s * 0.3f)) {
+                                        if (cent_y < (col_s * 0.4f)) {
                                             res = 0;
                                         }
                                         else {
@@ -370,7 +370,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (cent_x + cent_y <= 1.4f * col_s) {
+                                        if (cent_x + cent_y <= 1.2f * col_s) {
                                             if (bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -378,7 +378,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (cent_x + cent_y <= 0.6f * col_s) {
+                                        if (cent_x + cent_y <= 0.8f * col_s) {
                                             res = 0;
                                         }
                                         else {
@@ -415,7 +415,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (cent_x < (col_s * 0.7f)) {
+                                        if (cent_x < (col_s * 0.8f)) {
                                             if (bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -423,7 +423,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (cent_x < (col_s * 0.3f)) {
+                                        if (cent_x < (col_s * 0.4f)) {
                                             res = 0;
                                         }
                                         else {
@@ -460,7 +460,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (-cent_x + cent_y >= 1 - 1.4 * col_s) {
+                                        if (-cent_x + cent_y >= 1 - 1.2f * col_s) {
                                             if (bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -468,7 +468,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (-cent_x + cent_y >= 1 - 0.6 * col_s) {
+                                        if (-cent_x + cent_y >= 1 - 0.8f * col_s) {
                                             res = 0;
                                         }
                                         else {
@@ -507,7 +507,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (cent_y >= 1 - col_s * 0.7f) {
+                                        if (cent_y >= 1 - col_s * 0.8f) {
                                             if (bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -515,7 +515,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (cent_y >= 1 - col_s * 0.3f) {
+                                        if (cent_y >= 1 - col_s * 0.4f) {
                                             res = 0;
                                         }
                                         else {
@@ -551,7 +551,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (cent_x + cent_y >= (2 - col_s * 1.4)) {
+                                        if (cent_x + cent_y >= (2 - col_s * 1.2f)) {
                                             if (bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -559,7 +559,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (cent_x + cent_y >= (2 - col_s * 0.6)) {
+                                        if (cent_x + cent_y >= (2 - col_s * 0.8f)) {
                                             res = 0;
                                         }
                                         else {
@@ -602,7 +602,7 @@ public class TestMovement : MonoBehaviour
                             switch (coll_m) {
                                 case Coll_M.Bouncy:
                                     if (bouncy_num % 2 == 0) {
-                                        if (cent_x >= 1 - col_s * 0.7f) {
+                                        if (cent_x >= 1 - col_s * 0.8f) {
                                             if (bouncy_num > 2) {
                                                 res = Mathf.Round(intensity / 2f);
                                             }
@@ -610,7 +610,7 @@ public class TestMovement : MonoBehaviour
                                         else { res = 0; }
                                     }
                                     else {
-                                        if (cent_x >= 1 - col_s* 0.3f) {
+                                        if (cent_x >= 1 - col_s* 0.4f) {
                                             res = 0;
                                         }
                                         else {
@@ -654,7 +654,7 @@ public class TestMovement : MonoBehaviour
                     }
                 }
             }
-            printArray(rarray);
+            //printArray(rarray);
         }
         else if (collide == 1.5f) { // 물에 빠졌을 때
             byte[] arr = new byte[108];
