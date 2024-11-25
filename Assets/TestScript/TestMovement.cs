@@ -81,10 +81,25 @@ public class TestMovement : MonoBehaviour
     private float cooldown = 1f;
 
     private WaterBump waterbump;
+
+
     public bool bouncy_col; // 교수님께서 말씀하셨던 spatio temporal한 충돌을 적용할지 여부에 따라 달라질 변수
+    private int bouncy_num;
+    private float bouncy_time;
+    public enum Coll_M {
+        Static,
+        Bouncy,
+        Blank
+    }
+
+    public Coll_M coll_m;
+
     void Start()
     {
         testcol = false;
+        bouncy_num = 0;
+        bouncy_time = 0;
+
         situation = transform.GetComponent<UserTest>();
         rigidbody = GetComponent<Rigidbody>();
         front = transform.Find("Front");
@@ -251,55 +266,189 @@ public class TestMovement : MonoBehaviour
             if (intensity == 6) {
                 intensity = 5;
             }
-            //Debug.Log($"collide speed: {col_s}, so intensity: {intensity}");
+            switch (coll_m) {
+                case Coll_M.Blank:
+                    if(bouncy_num %2 == 0) {
+                        intensity = 0;
+                    }
+                    break;
+            }
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
                     float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 12;
                     float res;
                     if (col_ang >= 22.5 && col_ang < 67.5) {
-                        //
                         //Debug.Log("ru");
-                        if (cent_x - cent_y >= 1 - 2 * col_s) { res = intensity; }
+                        if (cent_x - cent_y >= 1 - 2 * col_s) { 
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if(cent_x - cent_y >= 1 - col_s) {
+                                        if(bouncy_num %2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         else { res = 0; }
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
                         //위
                         //Debug.Log("up");
-                        if (cent_y < col_s) { res = intensity; }
+                        if (cent_y < col_s) { 
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if (cent_y < (col_s /2)) {
+                                        if (bouncy_num % 2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         else { res = 0; }
                     }
                     else if (col_ang >= 112.5 && col_ang < 157.5) {
                         //Debug.Log("lu");
-                        if (cent_x + cent_y <= 2 * col_s) { res = intensity; }
+                        if (cent_x + cent_y <= 2 * col_s) { 
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if (cent_x + cent_y <=  col_s) {
+                                        if (bouncy_num % 2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         else { res = 0; }
                     }
                     else if (col_ang >= 157.5 && col_ang < 202.5) {
                         //왼쪽
                         //Debug.Log("Left");
-                        if (cent_x < col_s) { res = intensity; }
+                        if (cent_x < col_s) { 
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if (cent_x < (col_s / 2)) {
+                                        if (bouncy_num % 2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+
+                        }
                         else { res = 0; }
                     }
                     else if (col_ang >= 202.5 && col_ang < 247.5) {
                         //Debug.Log("ld");
-                        if (-cent_x + cent_y >= 1 - 2 * col_s) { res = intensity; }
+                        if (-cent_x + cent_y >= 1 - 2 * col_s) {
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if (-cent_x + cent_y >= 1 - col_s) {
+                                        if (bouncy_num % 2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         else { res = 0; }
                     }
                     else if (col_ang >= 247.5 && col_ang < 292.5) {
                         //아래
                         //Debug.Log("down");
-                        if (cent_y >= 1 - col_s) { res = intensity; }
+                        if (cent_y >= 1 - col_s) { 
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if (cent_y >= 1 - (col_s/2)) {
+                                        if (bouncy_num % 2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         else { res = 0; }
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
                         //Debug.Log("rd");
-                        if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
+                        if (cent_x + cent_y >= (2 - col_s * 2)) { 
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if (cent_x + cent_y >= (2 - col_s)) {
+                                        if (bouncy_num % 2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         else { res = 0; }
                     }
                     else {
                         //오른쪽?
                         //Debug.Log("right");
-                        if (cent_x >= 1 - col_s) { res = intensity; }
+                        if (cent_x >= 1 - col_s) { 
+                            res = intensity;
+                            switch (coll_m) {
+                                case Coll_M.Bouncy:
+                                    if (cent_x >= 1 - (col_s/2)) {
+                                        if (bouncy_num % 2 == 0 && bouncy_num > 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    else {
+                                        if (bouncy_num % 2 != 0) {
+                                            res = 0;
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
                         else { res = 0; }
                     }
 
@@ -822,6 +971,7 @@ public class TestMovement : MonoBehaviour
     }
 
     void Update() {
+        //Debug.Log(collide);
         //최고속도 조절
         if (rigidbody.velocity.magnitude > 15.0f) {
             rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
@@ -939,7 +1089,6 @@ public class TestMovement : MonoBehaviour
                         collide = 0f;
                     }
                 }
-
                 if (waterbump.enabled) {
                     if (waterbump.start_bump) { 
                             collide = 1.8f;
@@ -972,6 +1121,7 @@ public class TestMovement : MonoBehaviour
                             break;
                         case UserTest.Environment.Collision:
                             if (collide == 1.0f) {
+                                Debug.Log(c_speed);
                                 updateArray(collide, direct_ang, c_ang, collide_ang, c_speed);
                             }
                             else {
@@ -1169,6 +1319,7 @@ public class TestMovement : MonoBehaviour
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
+                        Debug.Log("here");
                         if (collide != 1.0f && collide != 0.5f) {
                             StartCoroutine(CollisionControl());
                             water_status = 0f;
@@ -1403,11 +1554,39 @@ public class TestMovement : MonoBehaviour
         }
     }
     private IEnumerator CollisionControl() {
+        Debug.Log("in collision");
         if (collide == 1.0f || collide == 0.5f) {
             yield break; //이미 충돌 신호가 1 이상 들어와 있으면 중복해서 다시 시작하는 것 금지.
         }
         collide = 1.0f;
-        yield return new WaitForSeconds(0.8f);
+        water_status = 0;
+        bouncy_time = Time.time;
+
+        switch (coll_m) {
+            case Coll_M.Static:
+                yield return new WaitForSeconds(0.5f);
+                break;
+            case Coll_M.Bouncy:
+                for (int i = 0; i < 10; i++) {
+                    bouncy_num += 1;
+                    yield return new WaitForSeconds(0.05f);
+                }
+                break;
+            case Coll_M.Blank:
+                for(int i=0; i<10; i++) {
+                    bouncy_num += 1;
+                    if(bouncy_num %2 == 0) {
+                        yield return new WaitForSeconds(0.07f);
+                    }
+                    else {
+                        yield return new WaitForSeconds(0.03f);
+                    }
+                }
+                break;
+
+        }
+        
+        //yield return new WaitForSeconds(0.6f);
 
         //switch (inputMethod) {
 
@@ -1418,8 +1597,10 @@ public class TestMovement : MonoBehaviour
         //break;
         //}
         collide = 0.5f;
-        yield return new WaitForSeconds(0.2f);
+        bouncy_num = 0;
+        yield return new WaitForSeconds(0.1f);
         collide = 0.0f;
+
     }
     IEnumerator ShortVibration(float intensity) {
         if (testCollision.enabled) {

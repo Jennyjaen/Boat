@@ -67,7 +67,6 @@ public class TestCollision : MonoBehaviour {
                 GamePadInput.enabled = false;
                 break;
             case TestMovement.InputMethod.HandStickThrottle:
-                Debug.Log("disable");
                 HandThrottle.enabled = false;
                 break;
             case TestMovement.InputMethod.HandStickGesture:
