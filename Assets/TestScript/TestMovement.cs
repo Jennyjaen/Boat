@@ -31,7 +31,7 @@ public class TestMovement : MonoBehaviour
     private float collide_speed;
 
     private float incline_deadzone = 1.8f;
-    private int max_v = 5;
+    private int max_v = 3;
     private int min_v = 1;
     private int max_width = 9;
     private int min_width = 3;
@@ -267,40 +267,33 @@ public class TestMovement : MonoBehaviour
             if (intensity == 6) {
                 intensity = 5;
             }
-            
+            int width = Mathf.FloorToInt(col_s * 5) + 3;
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
                     float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 18;
-                    float res;
+                    float res = 0;
+
+                    
                     if (col_ang >= 22.5 && col_ang < 67.5) {
                         //Debug.Log("ru");
-                        if (cent_x - cent_y >= 1 - 2 * col_s) { 
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * 0.8f) {
-                                            if(bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * 0.4f) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y - x >=-24 + col_pos && y - x < -24 +col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (cent_x - cent_y >= 1 - 2 * col_s) { 
+                                    res = intensity;
 
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
                                         if (cent_x - cent_y >= 1 - 2 * col_s * ((0.4f - t) / 0.4f)) { }
@@ -312,85 +305,66 @@ public class TestMovement : MonoBehaviour
                                         if (cent_x - cent_y >= 1 - 2 * col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
-                                    break;
+                                    
                             }
-                        }
-                        else { res = 0; }
+                            else { res = 0; }
+                            break;
+                        } 
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
                         //위
                         //Debug.Log("up");
-                        float width = col_s;
-                        if (cent_y < col_s) { 
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (cent_y < (col_s * 0.8f)) {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (cent_y < (col_s * 0.4f)) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
-
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.033f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y >= col_pos && y < col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (cent_y < col_s) {
+                                    res = (int)intensity;
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
-                                        if(cent_y < (col_s * ((0.4f - t)/ 0.4f))) { }
+                                        if (cent_y < (col_s * ((0.4f - t) / 0.4f))) { }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_y < (col_s * ((t - 0.4f) / 0.2f))) { res= Mathf.Round(intensity / 2f); }
+                                        if (cent_y < (col_s * ((t - 0.4f) / 0.2f))) { res = Mathf.RoundToInt(intensity / 2f); }
                                         else { res = 0; }
                                     }
-                                    break;
-                            }
+   
+                                    }
+                                else { res = 0; }
+                                break;
                         }
-                        else { res = 0; }
+                       
                     }
                     else if (col_ang >= 112.5 && col_ang < 157.5) {
                         //Debug.Log("lu");
-                        if (cent_x + cent_y <= 2 * col_s) { 
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (cent_x + cent_y <= 1.2f * col_s) {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (cent_x + cent_y <= 0.8f * col_s) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
 
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y + x >= col_pos && y + x < col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (cent_x + cent_y <= 2 * col_s) {
+                                    res = (int)intensity;
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
                                         if (cent_x + cent_y <= 2 * col_s * ((0.4f - t) / 0.4f)) { }
@@ -399,43 +373,33 @@ public class TestMovement : MonoBehaviour
                                         }
                                     }
                                     else {
-                                        if (cent_x + cent_y <= 2 * col_s * ((t - 0.4f) / 0.2f)) { res =Mathf.Round(intensity / 2f); }
+                                        if (cent_x + cent_y <= 2 * col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
-                                    break;
-                            }
+                                }
+                                else { res = 0; }
+                                break;
                         }
-                        else { res = 0; }
+
                     }
                     else if (col_ang >= 157.5 && col_ang < 202.5) {
                         //왼쪽
                         //Debug.Log("Left");
-                        if (cent_x < col_s) { 
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (cent_x < (col_s * 0.8f)) {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (cent_x < (col_s * 0.4f)) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
-
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.025f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (x >= col_pos && x < col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (cent_x < col_s) {
+                                    res = (int)intensity;
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
                                         if (cent_x < (col_s * ((0.4f - t) / 0.4f))) { }
@@ -445,89 +409,68 @@ public class TestMovement : MonoBehaviour
                                     }
                                     else {
                                         if (cent_x < (col_s * ((t - 0.4f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
-                                        else { res = 0; }
                                     }
-                                    break;
-                            }
-
+                                }
+                                else { res = 0; }
+                                break;
                         }
-                        else { res = 0; }
+
+
                     }
                     else if (col_ang >= 202.5 && col_ang < 247.5) {
                         //Debug.Log("ld");
-                        if (-cent_x + cent_y >= 1 - 2 * col_s) {
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (-cent_x + cent_y >= 1 - 1.2f * col_s) {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (-cent_x + cent_y >= 1 - 0.8f * col_s) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
-
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y - x < 18 - col_pos && y - x >= 18 - (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (-cent_x + cent_y >= 1 - 2 * col_s) {
+                                    res = (int)intensity;
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
                                         if (-cent_x + cent_y >= 1 - 2 * col_s * ((0.4f - t) / 0.4f)) {
-                                        
+
                                         }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((t - 0.4f) / 0.2f)) {res = Mathf.Round(intensity / 2f); }
+                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
-                                    break;
-                            }
+
+                                }
+                                else { res = 0; }
+                                break;
                         }
-                        else { res = 0; }
                     }
                     else if (col_ang >= 247.5 && col_ang < 292.5) {
                         //아래
                         //Debug.Log("down");
-                        if (cent_y >= 1 - col_s) { 
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (cent_y >= 1 - col_s * 0.8f) {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (cent_y >= 1 - col_s * 0.4f) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
-
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.033f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y < 18 - col_pos && y >= 18 - (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (cent_y >= 1 - col_s) {
+                                    res = (int)intensity;
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
                                         if (cent_y >= 1 - col_s * ((0.4f - t) / 0.4f)) { }
@@ -536,50 +479,40 @@ public class TestMovement : MonoBehaviour
                                         }
                                     }
                                     else {
-                                        if (cent_y >= 1 - col_s * ((t - 0.4f) / 0.2f)) {res = Mathf.Round(intensity / 2f); }
+                                        if (cent_y >= 1 - col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
-                                    break;
-                            }
+                                }
+                                else { res = 0; }
+                                break;
                         }
-                        else { res = 0; }
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
                         //Debug.Log("rd");
-                        if (cent_x + cent_y >= (2 - col_s * 2)) { 
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (cent_x + cent_y >= (2 - col_s * 1.2f)) {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (cent_x + cent_y >= (2 - col_s * 0.8f)) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
 
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (x + y < 42 - col_pos && x + y >= 42 - (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (cent_x + cent_y >= (2 - col_s * 2)) {
+                                    res = (int)intensity;
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
                                         if (cent_x + cent_y >= (2 - col_s * (0.4f - t) / 0.4f)) {
                                             //Debug.Log((2 - col_s * (0.4f - t) / 0.4f));
-                                            if((2 - col_s * (0.4f - t) / 0.4f) > 1.9f) {
+                                            if ((2 - col_s * (0.4f - t) / 0.4f) > 1.9f) {
                                                 //Debug.Log($"survived: {x}, {y} : {cent_x}, {cent_y}, {(2 - col_s * (0.4f - t) / 0.4f)}");
                                             }
-                                            
+
                                         }
                                         else {
                                             res = 0;
@@ -589,40 +522,30 @@ public class TestMovement : MonoBehaviour
                                         if (cent_x + cent_y >= (2 - col_s * ((t - 0.4f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
-                                    break;
-                            }
+                                }
+                                else { res = 0; }
+                                break;
                         }
-                        else { res = 0; }
+
                     }
                     else {
                         //오른쪽?
                         //Debug.Log("right");
-                        if (cent_x >= 1 - col_s) { 
-                            res = intensity;
-                            switch (coll_m) {
-                                case Coll_M.Bouncy:
-                                    if (bouncy_num % 2 == 0) {
-                                        if (cent_x >= 1 - col_s * 0.8f) {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                        else { res = 0; }
-                                    }
-                                    else {
-                                        if (cent_x >= 1 - col_s* 0.4f) {
-                                            res = 0;
-                                        }
-                                        else {
-                                            if (bouncy_num > 2) {
-                                                res = Mathf.Round(intensity / 2f);
-                                            }
-                                        }
-                                    }
-
-                                    break;
-                                case Coll_M.Blank_1:
-                                case Coll_M.Blank_2:
+                        switch (coll_m) {
+                            case Coll_M.Bouncy:
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.025f);
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (x < 24 - col_pos && x >= 24- (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case Coll_M.Blank_1:
+                            case Coll_M.Blank_2:
+                                if (cent_x >= 1 - col_s) {
+                                    res = (int)intensity;
                                     float t = Time.time - bouncy_time;
                                     if (t <= 0.4f) {
                                         if (cent_x >= 1 - col_s * ((0.4f - t) / 0.4f)) { }
@@ -634,10 +557,11 @@ public class TestMovement : MonoBehaviour
                                         if (cent_x >= 1 - col_s * ((t - 0.4f) / 0.2f)) { Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
-                                    break;
-                            }
+                                }
+                                else { res = 0; }
+                                break;
                         }
-                        else { res = 0; }
+
                     }
 
                     if (x % 2 == 0) { x_1 = (int)res; }
@@ -652,9 +576,10 @@ public class TestMovement : MonoBehaviour
                             larray[index] = (byte)(x_1 * 6 + x_2);
                         }
                     }
+
                 }
             }
-            //printArray(rarray);
+            printArray(rarray);
         }
         else if (collide == 1.5f) { // 물에 빠졌을 때
             byte[] arr = new byte[108];
@@ -686,10 +611,10 @@ public class TestMovement : MonoBehaviour
             }
             int vib_level;
             int vib_width;
-            Vector3 localvel = transform.InverseTransformDirection(rigidbody.velocity);
+            Vector3 localvel = transform.InverseTransformDirection(rigidbody.velocity); // 속도가 빠를 때 배가 통통 튐 -> 다른 기준 적용
             float velo = Mathf.Sqrt(localvel.y * localvel.y + localvel.z * localvel.z);
             if (velo > 0.1) {
-                vib_level = Mathf.FloorToInt(valid_ang / 1.8f) + 2;
+                vib_level = Mathf.FloorToInt(valid_ang / 2f);
                 if (vib_level > max_v) { vib_level = max_v; }
             }
             else { //속도 느릴때: 이때 max magnitude를 3으로 한정하는 것이 나을 것 같음.
@@ -1751,13 +1676,7 @@ public class TestMovement : MonoBehaviour
 
         switch (coll_m) {
             case Coll_M.Bouncy:
-                for(int i= 0; i<4; i++) {
-                    bouncy_num += 1;
-                    if (i < 2) {
-                        yield return new WaitForSeconds(0.2f);
-                    }
-                    else { yield return new WaitForSeconds(0.1f); }
-                }
+                yield return new WaitForSeconds(0.6f);
                 break;
             case Coll_M.Static:
                 yield return new WaitForSeconds(0.3f);
