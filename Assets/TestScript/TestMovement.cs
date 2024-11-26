@@ -95,6 +95,10 @@ public class TestMovement : MonoBehaviour
 
     public Coll_M coll_m;
 
+    private List<Vector2> bumpy_left = new List<Vector2>();
+    private List<Vector2> bumpy_right = new List<Vector2>();
+    private Vector3 bump_point =new Vector3(-1000, -1000, -1000);
+
     void Start()
     {
         testcol = false;
@@ -164,6 +168,73 @@ public class TestMovement : MonoBehaviour
         }
     }
 
+    /*For Bumpy Land*/
+    void GenerateBump(List<Vector2> bump, int m) { //특정 줄에 bumpy한 point 3개 만들기
+        Debug.Log("generate: " + m);
+        List<int> randomValues = new List<int>();
+
+        while (randomValues.Count < 3) {
+            int randomValue = Random.Range(0, 12);
+            bool isValid = true;
+
+            foreach (var value in randomValues) {
+                if (Mathf.Abs(value - randomValue) < 3) {
+                    isValid = false;
+                    break;
+                }
+            }
+            if (isValid) {
+                randomValues.Add(randomValue);
+                bump.Add(new Vector2(randomValue, m));
+            }
+        }
+    }
+
+    void UpdateBump(List<Vector2> bump, HashSet<int> coll, int m) {//보트의 이동에 따라 point update 해주기
+        //1. y값을 업데이트 해주되, 물에 있거나, 범위 밖으로 나간 것을 제거
+        Debug.Log($"Before update: bump: {string.Join(",", bump)}, hash: {string.Join(",", coll)})");
+        for (int i=bump.Count -1; i>=0; i--) {
+            Vector2 current = bump[i];
+            current.y += m;
+            if(current.y >= 18 || current.y < 0|| !coll.Contains((int)current.y +1)) { //범위 밖으로 나갔거나, 물위면 bumpy한 거 없애줌. // +1한 이유: coll은 1번째부터 18번째 자식으로 값을 받음.
+                bump.RemoveAt(i);
+                Debug.Log("remove?");
+            }
+            else {
+                bump[i] = current;
+            }
+        }
+        //새로 충돌을 시작한 위치들이 있다면 그 위치에 새로운 bump들을 만들어줌.
+        HashSet<int> bumpYValues = new HashSet<int>();
+        foreach (var point in bump) {
+            bumpYValues.Add((int)point.y);
+        }
+        foreach (int value in coll) {
+            if (!bumpYValues.Contains(value -1)) { //-1 해준 이유: 마찬가지로 coll은 1번째부터 18번째 자식으로 값을 받음.
+                GenerateBump(bump, value-1);
+            }
+        }
+        Debug.Log($"Compare things: bump: {string.Join(",", bump)}, hash: {string.Join(",",coll)})");
+
+    }
+
+    int PointsinBump(List<Vector2> bump, float x, float y, int intense, bool isLeft) {
+        int result = intense ;
+        Vector2 point1 = new Vector2(2 * x, y);
+        Vector2 point2 = new Vector2(2 * x + 1, y);
+
+        if (bump.Contains(point1)) {
+            if (isLeft) {result += 12; }
+            else { result += 2; }
+             }
+        if (bump.Contains(point2)) {
+            if (isLeft) { result += 2; }
+            else { result += 12; }
+        }
+
+        return result;
+    }
+
     void InitArray() {
         for (int i = 0; i < left_grass.GetLength(0); i++) {
             for (int j = 0; j < right_grass.GetLength(1); j++) {
@@ -220,32 +291,6 @@ public class TestMovement : MonoBehaviour
         //Print12Array(targetArray);
     }
 
-    bool Diagonal(float col_ang) {
-        if (col_ang >= 22.5 && col_ang < 67.5) {
-            return true;
-        }
-        else if (col_ang >= 67.5 && col_ang < 112.5) {
-            return false;
-        }
-        else if (col_ang >= 112.5 && col_ang < 157.5) {
-            return true;
-        }
-        else if (col_ang >= 157.5 && col_ang < 202.5) {
-            return false;
-        }
-        else if (col_ang >= 202.5 && col_ang < 247.5) {
-            return true;
-        }
-        else if (col_ang >= 247.5 && col_ang < 292.5) {
-            return false;
-        }
-        else if (col_ang >= 292.5 && col_ang < 337.5) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
     void updateArray(float collide, float angle, float clamp_ang, float col_ang, float col_s) { //충돌, 물에 빠짐, 배의 기울기
         if (testCollision.enabled) {
             col_ang = testCollision.col_angle;
@@ -279,7 +324,7 @@ public class TestMovement : MonoBehaviour
                         //Debug.Log("ru");
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (y - x >=-24 + col_pos && y - x < -24 +col_pos + width) {
                                     res = (int)intensity;
@@ -295,14 +340,14 @@ public class TestMovement : MonoBehaviour
                                     res = intensity;
 
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * ((0.4f - t) / 0.4f)) { }
+                                    if (t <= 0.3f) {
+                                        if (cent_x - cent_y >= 1 - 2 * col_s * ((0.3f - t) / 0.3f)) { }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
+                                        if (cent_x - cent_y >= 1 - 2 * col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
                                     
@@ -316,7 +361,7 @@ public class TestMovement : MonoBehaviour
                         //Debug.Log("up");
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.033f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.016f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (y >= col_pos && y < col_pos + width) {
                                     res = (int)intensity;
@@ -330,14 +375,14 @@ public class TestMovement : MonoBehaviour
                                 if (cent_y < col_s) {
                                     res = (int)intensity;
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (cent_y < (col_s * ((0.4f - t) / 0.4f))) { }
+                                    if (t <= 0.3f) {
+                                        if (cent_y < (col_s * ((0.3f - t) / 0.3f))) { }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_y < (col_s * ((t - 0.4f) / 0.2f))) { res = Mathf.RoundToInt(intensity / 2f); }
+                                        if (cent_y < (col_s * ((t - 0.3f) / 0.2f))) { res = Mathf.RoundToInt(intensity / 2f); }
                                         else { res = 0; }
                                     }
    
@@ -352,7 +397,7 @@ public class TestMovement : MonoBehaviour
 
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (y + x >= col_pos && y + x < col_pos + width) {
                                     res = (int)intensity;
@@ -366,14 +411,14 @@ public class TestMovement : MonoBehaviour
                                 if (cent_x + cent_y <= 2 * col_s) {
                                     res = (int)intensity;
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (cent_x + cent_y <= 2 * col_s * ((0.4f - t) / 0.4f)) { }
+                                    if (t <= 0.3f) {
+                                        if (cent_x + cent_y <= 2 * col_s * ((0.3f - t) / 0.3f)) { }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_x + cent_y <= 2 * col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
+                                        if (cent_x + cent_y <= 2 * col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
                                 }
@@ -387,7 +432,7 @@ public class TestMovement : MonoBehaviour
                         //Debug.Log("Left");
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.025f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.0125f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (x >= col_pos && x < col_pos + width) {
                                     res = (int)intensity;
@@ -401,14 +446,14 @@ public class TestMovement : MonoBehaviour
                                 if (cent_x < col_s) {
                                     res = (int)intensity;
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (cent_x < (col_s * ((0.4f - t) / 0.4f))) { }
+                                    if (t <= 0.3f) {
+                                        if (cent_x < (col_s * ((0.3f - t) / 0.3f))) { }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_x < (col_s * ((t - 0.4f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
+                                        if (cent_x < (col_s * ((t - 0.3f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
                                     }
                                 }
                                 else { res = 0; }
@@ -421,7 +466,7 @@ public class TestMovement : MonoBehaviour
                         //Debug.Log("ld");
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (y - x < 18 - col_pos && y - x >= 18 - (col_pos + width)) {
                                     res = (int)intensity;
@@ -435,8 +480,8 @@ public class TestMovement : MonoBehaviour
                                 if (-cent_x + cent_y >= 1 - 2 * col_s) {
                                     res = (int)intensity;
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((0.4f - t) / 0.4f)) {
+                                    if (t <= 0.3f) {
+                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((0.3f - t) / 0.3f)) {
 
                                         }
                                         else {
@@ -444,7 +489,7 @@ public class TestMovement : MonoBehaviour
                                         }
                                     }
                                     else {
-                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
+                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
 
@@ -458,7 +503,7 @@ public class TestMovement : MonoBehaviour
                         //Debug.Log("down");
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.033f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.016f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (y < 18 - col_pos && y >= 18 - (col_pos + width)) {
                                     res = (int)intensity;
@@ -472,14 +517,14 @@ public class TestMovement : MonoBehaviour
                                 if (cent_y >= 1 - col_s) {
                                     res = (int)intensity;
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (cent_y >= 1 - col_s * ((0.4f - t) / 0.4f)) { }
+                                    if (t <= 0.3f) {
+                                        if (cent_y >= 1 - col_s * ((0.3f - t) / 0.3f)) { }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_y >= 1 - col_s * ((t - 0.4f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
+                                        if (cent_y >= 1 - col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
                                 }
@@ -492,7 +537,7 @@ public class TestMovement : MonoBehaviour
 
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.014f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (x + y < 42 - col_pos && x + y >= 42 - (col_pos + width)) {
                                     res = (int)intensity;
@@ -506,20 +551,14 @@ public class TestMovement : MonoBehaviour
                                 if (cent_x + cent_y >= (2 - col_s * 2)) {
                                     res = (int)intensity;
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (cent_x + cent_y >= (2 - col_s * (0.4f - t) / 0.4f)) {
-                                            //Debug.Log((2 - col_s * (0.4f - t) / 0.4f));
-                                            if ((2 - col_s * (0.4f - t) / 0.4f) > 1.9f) {
-                                                //Debug.Log($"survived: {x}, {y} : {cent_x}, {cent_y}, {(2 - col_s * (0.4f - t) / 0.4f)}");
-                                            }
-
-                                        }
+                                    if (t <= 0.3f) {
+                                        if (cent_x + cent_y >= (2 - col_s * (0.3f - t) / 0.3f)) {    }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_x + cent_y >= (2 - col_s * ((t - 0.4f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
+                                        if (cent_x + cent_y >= (2 - col_s * ((t - 0.3f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
                                 }
@@ -533,7 +572,7 @@ public class TestMovement : MonoBehaviour
                         //Debug.Log("right");
                         switch (coll_m) {
                             case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.025f);
+                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.0125f);
                                 //Debug.Log(col_pos + " , "+ width);
                                 if (x < 24 - col_pos && x >= 24- (col_pos + width)) {
                                     res = (int)intensity;
@@ -547,14 +586,14 @@ public class TestMovement : MonoBehaviour
                                 if (cent_x >= 1 - col_s) {
                                     res = (int)intensity;
                                     float t = Time.time - bouncy_time;
-                                    if (t <= 0.4f) {
-                                        if (cent_x >= 1 - col_s * ((0.4f - t) / 0.4f)) { }
+                                    if (t <= 0.3f) {
+                                        if (cent_x >= 1 - col_s * ((0.3f - t) / 0.3f)) { }
                                         else {
                                             res = 0;
                                         }
                                     }
                                     else {
-                                        if (cent_x >= 1 - col_s * ((t - 0.4f) / 0.2f)) { Mathf.Round(intensity / 2f); }
+                                        if (cent_x >= 1 - col_s * ((t - 0.3f) / 0.2f)) { Mathf.Round(intensity / 2f); }
                                         else { res = 0; }
                                     }
                                 }
@@ -916,13 +955,13 @@ public class TestMovement : MonoBehaviour
             case InputMethod.HandStickThrottle:
                 float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
-                int intense = Mathf.CeilToInt(4 * moving);
+                int intense = Mathf.CeilToInt(3 * moving);
                 //Debug.Log($"moving: {moving} intense: {intense}");
                 if (water == 1) {
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                larray[y * 6 + x] = (byte)(intense * 7);
+                                larray[y * 6 + x] = (byte)PointsinBump(bumpy_left, x, y, intense * 7, true);
                                 rarray[y * 6 + x] = (byte)0;
                             }
                         }
@@ -939,7 +978,7 @@ public class TestMovement : MonoBehaviour
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                larray[y * 6 + x] = (byte)(intense * 7);
+                                larray[y * 6 + x] = (byte)PointsinBump(bumpy_left, x, y, intense * 7, true);
                             }
                         }
                         else {
@@ -949,7 +988,7 @@ public class TestMovement : MonoBehaviour
                         }
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
-                                rarray[y * 6 + x] = (byte)(intense * 7);
+                                rarray[y * 6 + x] = (byte)PointsinBump(bumpy_right, x, 17-y, intense * 7, false);
                             }
                         }
                         else {
@@ -965,7 +1004,7 @@ public class TestMovement : MonoBehaviour
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
                                 larray[y * 6 + x] = (byte)0;
-                                rarray[y * 6 + x] = (byte)(intense * 7);
+                                rarray[y * 6 + x] = rarray[y * 6 + x] = (byte)PointsinBump(bumpy_right, x, 17 - y, intense * 7, false);
                             }
                         }
                         else {
@@ -999,6 +1038,7 @@ public class TestMovement : MonoBehaviour
                     rarray = int2byteArray(right_slice, false);
 
                 }
+                printArray(larray);
                 break;
             case InputMethod.HandStickGesture: // 노젓기
                 int max_vib = 0;
@@ -1136,14 +1176,42 @@ public class TestMovement : MonoBehaviour
 
         if(left_boat.on_land || right_boat.on_land) { //배가 어딘가 바닥에 부딪힘.
             collide = 2;
-            if(!right_boat) {
+            if(!right_boat.on_land) {
                 water_status = 1;
             }
-            else if (!left_boat) {
+            else if (!left_boat.on_land) {
                 water_status = 2;
             }
             else { water_status = 1.5f; }
 
+            if (bump_point == new Vector3(-1000, -1000, -1000)) { //처음 충돌 시작했을 때.
+                bump_point = transform.position;
+            }
+            else {
+                Vector3 directionToPoint = bump_point- transform.position;
+                //Debug.Log("move distance: " + directionToPoint.magnitude);
+                if (directionToPoint.magnitude > 0.2) {
+                    bump_point = transform.position;
+                    directionToPoint.Normalize();
+                    float dotProduct = Vector3.Dot(directionToPoint, transform.right);
+                    if (dotProduct >= 0) { //앞으로 나가는 중
+                        if (left_boat.on_land) { UpdateBump(bumpy_left, left_boat.collidingChildIndices, 1); }
+                        if (right_boat.on_land) { UpdateBump(bumpy_right, right_boat.collidingChildIndices, 1); }
+                    }
+                    else if (dotProduct < 0) { //뒤로 가는 중
+                        if (left_boat.on_land) { UpdateBump(bumpy_left, left_boat.collidingChildIndices, -1); }
+                        if (right_boat.on_land) { UpdateBump(bumpy_right, right_boat.collidingChildIndices, -1); }
+                    }
+
+
+                }
+
+            }
+        }
+        else {//아무데도 안부딪힘 bump_left, bump_right 초기화
+            bumpy_left = new List<Vector2>();
+            bumpy_right = new List<Vector2>();
+            bump_point = new Vector3(-1000, -1000, -1000);
         }
 
         switch (inputMethod) {
@@ -1674,20 +1742,7 @@ public class TestMovement : MonoBehaviour
         water_status = 0;
         bouncy_time = Time.time;
 
-        switch (coll_m) {
-            case Coll_M.Bouncy:
-                yield return new WaitForSeconds(0.6f);
-                break;
-            case Coll_M.Static:
-                yield return new WaitForSeconds(0.3f);
-                break;
-            case Coll_M.Blank_1:
-                yield return new WaitForSeconds(0.6f);
-                break;
-            case Coll_M.Blank_2:
-                yield return new WaitForSeconds(0.4f);
-                break;
-        }
+        yield return new WaitForSeconds(0.3f);
 
         if (water_status >= 1 && water_status <= 2 && collide == 2) {
             yield break;
