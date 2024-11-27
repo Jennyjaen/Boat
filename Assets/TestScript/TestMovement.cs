@@ -161,7 +161,7 @@ public class TestMovement : MonoBehaviour
 
     /*For Bumpy Land*/
     void GenerateBump(List<Vector2> bump, int m) { //특정 줄에 bumpy한 point 3개 만들기
-        Debug.Log("generate: " + m);
+        //Debug.Log("generate: " + m);
         List<int> randomValues = new List<int>();
 
         while (randomValues.Count < 3) {
@@ -183,13 +183,12 @@ public class TestMovement : MonoBehaviour
 
     void UpdateBump(List<Vector2> bump, HashSet<int> coll, int m) {//보트의 이동에 따라 point update 해주기
         //1. y값을 업데이트 해주되, 물에 있거나, 범위 밖으로 나간 것을 제거
-        Debug.Log($"Before update: bump: {string.Join(",", bump)}, hash: {string.Join(",", coll)})");
+        //Debug.Log($"Before update: bump: {string.Join(",", bump)}, hash: {string.Join(",", coll)})");
         for (int i=bump.Count -1; i>=0; i--) {
             Vector2 current = bump[i];
             current.y += m;
             if(current.y >= 18 || current.y < 0|| !coll.Contains((int)current.y +1)) { //범위 밖으로 나갔거나, 물위면 bumpy한 거 없애줌. // +1한 이유: coll은 1번째부터 18번째 자식으로 값을 받음.
                 bump.RemoveAt(i);
-                Debug.Log("remove?");
             }
             else {
                 bump[i] = current;
@@ -205,7 +204,7 @@ public class TestMovement : MonoBehaviour
                 GenerateBump(bump, value-1);
             }
         }
-        Debug.Log($"Compare things: bump: {string.Join(",", bump)}, hash: {string.Join(",",coll)})");
+        //Debug.Log($"Compare things: bump: {string.Join(",", bump)}, hash: {string.Join(",",coll)})");
 
     }
 
@@ -302,7 +301,7 @@ public class TestMovement : MonoBehaviour
            
             //Debug.Log($"col_s: {col_s}, real speed: {collide_speed}, intensity: {intensity}");
 
-            int width = Mathf.FloorToInt(col_s * 3) + 3;
+            int width = Mathf.FloorToInt(col_s * 6) + 3;
             float time_consume = Time.time - bouncy_time;
 
             if (time_consume <= 0.1f) {
@@ -884,15 +883,15 @@ public class TestMovement : MonoBehaviour
         return result;
     }
 
-    byte[] int2byteArray(int[,] array, bool reverse) {
+    byte[] int2byteArray(int[,] array, float speed, bool reverse) {
         byte[] result = new byte[108];
         for (int y = 0; y < 18; y++) {
             for (int x = 0; x < 6; x++) {
                 if (reverse) {
-                    result[107 - (y * 6 + x)] = (byte)(array[x * 2, y] + array[x * 2 + 1, y] * 6);
+                    result[107 - (y * 6 + x)] = (byte)(Mathf.CeilToInt(array[x * 2, y] * speed) + Mathf.CeilToInt(array[x * 2 + 1, y] * speed )* 6);
                 }
                 else {
-                    result[y * 6 + x] = (byte)(array[x * 2, y] * 6 + array[x * 2 + 1, y]);
+                    result[y * 6 + x] = (byte)(Mathf.CeilToInt(array[x * 2, y] * speed) * 6 + Mathf.CeilToInt(array[x * 2 + 1, y] * speed));
                 }
 
             }
@@ -910,12 +909,19 @@ public class TestMovement : MonoBehaviour
                 float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
                 int intense = Mathf.CeilToInt(3 * moving);
+                float t = Time.time;
                 //Debug.Log($"moving: {moving} intense: {intense}");
                 if (water == 1) {
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                larray[y * 6 + x] = (byte)PointsinBump(bumpy_left, x, y, intense * 7, true);
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                                 rarray[y * 6 + x] = (byte)0;
                             }
                         }
@@ -932,7 +938,15 @@ public class TestMovement : MonoBehaviour
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                larray[y * 6 + x] = (byte)PointsinBump(bumpy_left, x, y, intense * 7, true);
+                                //larray[y * 6 + x] = (byte)PointsinBump(bumpy_left, x, y, intense * 7, true);
+                                //int randomNumber = Random.Range(4, 10);
+                                if (t *100 - Mathf.Floor(t* 100) >  0.5f ) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if(Random.Range(0, 5) > 1) {larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                             }
                         }
                         else {
@@ -942,7 +956,14 @@ public class TestMovement : MonoBehaviour
                         }
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
-                                rarray[y * 6 + x] = (byte)PointsinBump(bumpy_right, x, 17-y, intense * 7, false);
+                                //rarray[y * 6 + x] = (byte)PointsinBump(bumpy_right, x, 17-y, intense * 7, false);
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                             }
                         }
                         else {
@@ -958,7 +979,13 @@ public class TestMovement : MonoBehaviour
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
                                 larray[y * 6 + x] = (byte)0;
-                                rarray[y * 6 + x] = rarray[y * 6 + x] = (byte)PointsinBump(bumpy_right, x, 17 - y, intense * 7, false);
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                             }
                         }
                         else {
@@ -988,11 +1015,11 @@ public class TestMovement : MonoBehaviour
 
                     int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
-                    larray = int2byteArray(left_slice, true);
-                    rarray = int2byteArray(right_slice, false);
+                    larray = int2byteArray(left_slice, moving, true);
+                    rarray = int2byteArray(right_slice, moving,  false);
 
                 }
-                printArray(larray);
+                //printArray(larray);
                 break;
             case InputMethod.HandStickGesture: // 노젓기
                 int max_vib = 0;
