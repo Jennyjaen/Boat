@@ -49,8 +49,7 @@ public class TestMovement : MonoBehaviour
     private Transform triggered;
     private VerticalCheck left_boat;
     private VerticalCheck right_boat;
-    private string land_name;
-    private Vector3 land_down;
+    
 
     public enum InputMethod {
         GamePad,
@@ -81,10 +80,13 @@ public class TestMovement : MonoBehaviour
 
     private WaterBump waterbump;
 
-
+    [HideInInspector]
     public bool col_avail;
     private bool from_zero;
     private float bouncy_time;
+
+    private bool moving_coll;
+    private float moving_time;
 
     private List<Vector2> bumpy_left = new List<Vector2>();
     private List<Vector2> bumpy_right = new List<Vector2>();
@@ -92,6 +94,8 @@ public class TestMovement : MonoBehaviour
 
     void Start()
     {
+        moving_coll = false;
+        moving_time = 0f;
         testcol = false;
         from_zero = false;
         bouncy_time = 0;
@@ -106,8 +110,6 @@ public class TestMovement : MonoBehaviour
         water_status = 0;
         collide_land = false;
 
-        land_name = "";
-        land_down = new Vector3(0, 0, 0);
         underwater = transform.Find("Front").GetComponent<Underwater>();
         waterbump = GetComponent<WaterBump>();
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
@@ -301,19 +303,20 @@ public class TestMovement : MonoBehaviour
            
             //Debug.Log($"col_s: {col_s}, real speed: {collide_speed}, intensity: {intensity}");
 
-            int width = Mathf.FloorToInt(col_s * 6) + 3;
+            int width = Mathf.FloorToInt(col_s * 5) + 4;
             float time_consume = Time.time - bouncy_time;
 
-            if (time_consume <= 0.1f) {
+            if (time_consume <= 0.1f && time_consume >0.05f) {
                 //intensity += 1;
+                intensity -= 1;
             }
             else if(time_consume <= 0.2f) {
                 //width -= 2;
-                intensity -= 1;
+                intensity -= 2;
             }
             else {
                 //width -= 3;
-                intensity -= 2;
+                intensity -= 3;
             }
 
 
@@ -438,8 +441,11 @@ public class TestMovement : MonoBehaviour
                             from_zero = true;
                         }
                         //Debug.Log(col_pos + " , "+ width);
+                        //if(x == 0) { Debug.Log($"Before: {x}, {y}, width: {width}"); }
                         if (x >= col_pos && x < col_pos + width) {
                             res = (int)intensity;
+                            //if (x == 0) { Debug.Log($"After: {x}, {y}"); }
+                            //Debug.Log(intensity);
                         }
                         else {
                             res = 0;
@@ -560,17 +566,18 @@ public class TestMovement : MonoBehaviour
                     else {
                         x_2 = (int)res;
                         if (x >= 12) {
-                            int index = y * 6 + ((x - 12) / 2);
+                            int index = y * 6 + Mathf.FloorToInt((x - 12) / 2);
                             rarray[107 - index] = (byte)(x_1 + x_2 * 6); //rarray 뒤집었음.
                         }
                         else {
-                            int index = y * 6 + (x / 2);
+                            int index = y * 6 + Mathf.FloorToInt(x / 2);
                             larray[index] = (byte)(x_1 * 6 + x_2);
                         }
                     }
 
                 }
             }
+            //printArray(larray);
             //printArray(rarray);
         }
         else if (collide == 1.5f) { // 물에 빠졌을 때
@@ -759,12 +766,15 @@ public class TestMovement : MonoBehaviour
             int x_2 = 0;
 
             float intensity = 3;
+            if(Time.time - moving_time < 0.3f) {
+                intensity = 5;
+            }
             float width = 0.2f;
             float adj_ang = 20f;
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
                     float cent_x = ((float)x + 0.5f) / 24;
-                    float cent_y = ((float)y + 0.5f) / 12;
+                    float cent_y = ((float)y + 0.5f) / 18;
                     float res;
                     //Debug.Log(col_s);
                     //Debug.Log(collide_speed);
@@ -775,7 +785,6 @@ public class TestMovement : MonoBehaviour
                             res = intensity;
                             if (collide_speed > 13) {
                                 int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
-                                Debug.Log($"col_s = {col_s} , upper: {upper}");
                                 if (y <= upper) { res = 0; }
                             }
                         }
@@ -801,7 +810,7 @@ public class TestMovement : MonoBehaviour
                             if (collide_speed > 13) {
                                 int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
                                 if (y >= 17 - upper) { res = 0; }
-                                Debug.Log($"col_s = {col_s} , upper: {upper}");
+                                //Debug.Log($"col_s = {col_s} , upper: {upper}");
                             }
                         }
                         else { res = 0; }
@@ -1569,6 +1578,9 @@ public class TestMovement : MonoBehaviour
             }
         }
         if (c.collider.CompareTag("Moving")) {
+            if (collide != 1.3f) {
+                moving_time = Time.time;
+            }
             collide = 1.3f;
             Vector3 colVelocity = c.relativeVelocity;
             //collide_speed = colVelocity.magnitude;
@@ -1592,10 +1604,10 @@ public class TestMovement : MonoBehaviour
             collide_speed = depth;
             dir.Normalize();
             if(depth < 7) {
-                transform.position += dir * 1.5f * Time.deltaTime;
+                transform.position += dir * 2.0f * Time.deltaTime;
             }
             else if(depth < 10) {
-                transform.position += dir * 1.0f * Time.deltaTime;
+                transform.position += dir * 1.5f * Time.deltaTime;
             }
             else {
                 transform.position += dir * 0.5f * Time.deltaTime;
