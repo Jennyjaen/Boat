@@ -243,8 +243,9 @@ public class FirstPersonMovement : MonoBehaviour {
             int x_2 = 0;
 
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
-            float intensity = col_s * 6;
+            float intensity = col_s * 18;
             intensity = Mathf.Round(intensity);
+            intensity = Mathf.Clamp(intensity, 3, 5);
             int width = Mathf.FloorToInt(col_s * 5) + 4;
             float time_consume = Time.time - bouncy_time;
 
@@ -287,7 +288,6 @@ public class FirstPersonMovement : MonoBehaviour {
                             col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
                         }
 
-                        Debug.Log(col_pos + " , " + width);
                         if (col_pos == 0) {
                             from_zero = true;
                         }
@@ -555,7 +555,7 @@ public class FirstPersonMovement : MonoBehaviour {
             float velo = Mathf.Sqrt(localvel.y * localvel.y + localvel.z * localvel.z);
             if (velo > 0.1) {
                 vib_level = Mathf.FloorToInt(valid_ang / 1.8f) +1;
-                if (vib_level > 4) { vib_level =4; }
+                if (vib_level >3) { vib_level =3; }
             }
             else { //속도 느릴때: 이때 max magnitude를 3으로 한정하는 것이 나을 것 같음.
 
@@ -1116,6 +1116,11 @@ public class FirstPersonMovement : MonoBehaviour {
             else { water_status = 1.5f; }
 
         }
+        else {
+            if(collide ==2 && water_status >=1 && water_status <= 2) {
+                collide = 0;
+            }
+        }
 
         switch (inputMethod) {
             case InputMethod.GamePad: //게임 패드에 햅틱 피드백을 주는 경우
@@ -1518,7 +1523,10 @@ public class FirstPersonMovement : MonoBehaviour {
             yield break; //이미 충돌 신호가 1 이상 들어와 있으면 중복해서 다시 시작하는 것 금지.
         }
         cancollide = false;
-        if(collide != 2) {
+        collide = 0.5f;
+        yield return new WaitForSeconds(0.1f);
+
+        if (collide != 2) {
             transform.position += transform.right * 0.1f;
             //rigidbody.constraints = RigidbodyConstraints.FreezePosition;
         }
@@ -1528,6 +1536,8 @@ public class FirstPersonMovement : MonoBehaviour {
         bouncy_time = Time.time;
         yield return new WaitForSeconds(0.3f);
 
+        collide = 0.5f;
+        yield return new WaitForSeconds(0.1f);
         /*
         switch (inputMethod) {
             case InputMethod.HandStickGesture:
@@ -1540,7 +1550,6 @@ public class FirstPersonMovement : MonoBehaviour {
 
         collide = 0.0f;
         from_zero = false;
-
         yield return new WaitForSeconds(0.5f);
         cancollide = true;
     }

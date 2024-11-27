@@ -611,8 +611,8 @@ public class TestMovement : MonoBehaviour
             Vector3 localvel = transform.InverseTransformDirection(rigidbody.velocity); // 속도가 빠를 때 배가 통통 튐 -> 다른 기준 적용
             float velo = Mathf.Sqrt(localvel.y * localvel.y + localvel.z * localvel.z);
             if (velo > 0.1) {
-                vib_level = Mathf.FloorToInt(valid_ang / 2f);
-                if (vib_level > max_v) { vib_level = max_v; }
+                vib_level = Mathf.FloorToInt(valid_ang / 1.8f) + 1;
+                if (vib_level > 3) { vib_level = 3; }
             }
             else { //속도 느릴때: 이때 max magnitude를 3으로 한정하는 것이 나을 것 같음.
 
