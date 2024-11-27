@@ -51,6 +51,7 @@ public class FirstPersonMovement : MonoBehaviour {
     private VerticalCheck right_boat;
     private WaterBump waterbump;
 
+    private float moving_time; //처음 부딪혔을 때 세게 부딪히는 것 확인.
     private bool cancollide = true;
     //Input 방법을 여러개로 바꾸기
     public enum InputMethod {
@@ -83,6 +84,9 @@ public class FirstPersonMovement : MonoBehaviour {
     public byte[] rarray = new byte[108];
 
     private Transform triggered;
+
+    private float bouncy_time;
+    private bool from_zero; //update 주기로 인해 충돌할때 시작점이 0이 아닐때가 있음.
     void Awake() {
         // Get the rigidbody on this.
         rigidbody = GetComponent<Rigidbody>();
@@ -90,6 +94,8 @@ public class FirstPersonMovement : MonoBehaviour {
     }
 
     void Start() {
+        from_zero = false;
+        moving_time = 0;
         land_name = "";
         land_down = new Vector3(0, 0, 0);
         max_incline = 0f;
@@ -98,6 +104,7 @@ public class FirstPersonMovement : MonoBehaviour {
         collide_speed = 0f;
         water_status = 0;
         collide_land = false;
+        bouncy_time = 0;
 
         underwater = transform.Find("Front").GetComponent<Underwater>();
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
@@ -231,80 +238,285 @@ public class FirstPersonMovement : MonoBehaviour {
             }
         }
         else if (collide == 1f) {// collide
+
             int x_1 = 0;
             int x_2 = 0;
 
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
             float intensity = col_s * 6;
             intensity = Mathf.Round(intensity);
-            //Debug.Log($"col_s: {col_s}, intensity: {intensity}");
-            if (intensity == 6) {
+            int width = Mathf.FloorToInt(col_s * 5) + 4;
+            float time_consume = Time.time - bouncy_time;
+
+            if (time_consume <= 0.1f && time_consume > 0.05f) {
+                //intensity += 1;
+                intensity -= 1;
+            }
+            else if (time_consume <= 0.2f) {
+                //width -= 2;
+                intensity -= 2;
+            }
+            else {
+                //width -= 3;
+                intensity -= 3;
+            }
+
+
+            if (intensity > 5) {
                 intensity = 5;
             }
-            //Debug.Log($"collide speed: {col_s}, so intensity: {intensity}");
+            if (intensity < 1) {
+                intensity = 1;
+            }
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
                     float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 18;
-                    float res;
+                    float res = 0;
+
                     if (col_ang >= 22.5 && col_ang < 67.5) {
-                        //
                         //Debug.Log("ru");
-                        if (cent_x - cent_y >= 1 - 2 * col_s) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                        }
+
+                        Debug.Log(col_pos + " , " + width);
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        if (y - x >= -24 + col_pos && y - x < -24 + col_pos + width) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
                         //위
                         //Debug.Log("up");
-                        if (cent_y < col_s) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.011f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
+                        }
+
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+
+                        if (y >= col_pos && y < col_pos + width) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
+
                     }
                     else if (col_ang >= 112.5 && col_ang < 157.5) {
                         //Debug.Log("lu");
-                        if (cent_x + cent_y <= 2 * col_s) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                        }
+
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (y + x >= col_pos && y + x < col_pos + width) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else if (col_ang >= 157.5 && col_ang < 202.5) {
                         //왼쪽
                         //Debug.Log("Left");
-                        if (cent_x < col_s) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
+                        }
+
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        //if(x == 0) { Debug.Log($"Before: {x}, {y}, width: {width}"); }
+                        if (x >= col_pos && x < col_pos + width) {
+                            res = (int)intensity;
+                            //if (x == 0) { Debug.Log($"After: {x}, {y}"); }
+                            //Debug.Log(intensity);
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else if (col_ang >= 202.5 && col_ang < 247.5) {
                         //Debug.Log("ld");
-                        if (-cent_x + cent_y >= 1 - 2 * col_s) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (y - x < 18 - col_pos && y - x >= 18 - (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else if (col_ang >= 247.5 && col_ang < 292.5) {
                         //아래
                         //Debug.Log("down");
-                        if (cent_y >= 1 - col_s) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.011f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (y < 18 - col_pos && y >= 18 - (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
                         //Debug.Log("rd");
-                        if (cent_x + cent_y >= (2 - col_s * 2)) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (x + y < 42 - col_pos && x + y >= 42 - (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else {
                         //오른쪽?
                         //Debug.Log("right");
-                        if (cent_x >= 1 - col_s) { res = intensity; }
-                        else { res = 0; }
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (x < 24 - col_pos && x >= 24 - (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
 
                     if (x % 2 == 0) { x_1 = (int)res; }
                     else {
                         x_2 = (int)res;
                         if (x >= 12) {
-                            int index = y * 6 + ((x - 12) / 2);
+                            int index = y * 6 + Mathf.FloorToInt((x - 12) / 2);
                             rarray[107 - index] = (byte)(x_1 + x_2 * 6); //rarray 뒤집었음.
                         }
                         else {
-                            int index = y * 6 + (x / 2);
+                            int index = y * 6 + Mathf.FloorToInt(x / 2);
                             larray[index] = (byte)(x_1 * 6 + x_2);
                         }
                     }
+
                 }
             }
         }
@@ -343,7 +555,7 @@ public class FirstPersonMovement : MonoBehaviour {
             float velo = Mathf.Sqrt(localvel.y * localvel.y + localvel.z * localvel.z);
             if (velo > 0.1) {
                 vib_level = Mathf.FloorToInt(valid_ang / 1.8f) +1;
-                if (vib_level > 3) { vib_level =3; }
+                if (vib_level > 4) { vib_level =4; }
             }
             else { //속도 느릴때: 이때 max magnitude를 3으로 한정하는 것이 나을 것 같음.
 
@@ -495,6 +707,9 @@ public class FirstPersonMovement : MonoBehaviour {
             int x_2 = 0;
 
             float intensity = 3;
+            if (Time.time - moving_time < 0.3f) {
+                intensity = 5;
+            }
             float width = 0.2f;
             float adj_ang = 20f;
             for (int y = 0; y < 18; y++) {
@@ -616,17 +831,17 @@ public class FirstPersonMovement : MonoBehaviour {
         return result;
     }
 
-    byte[] int2byteArray(int[, ] array, bool reverse) {
+    byte[] int2byteArray(int[,] array, float speed, bool reverse) {
         byte[] result = new byte[108];
-        for(int y=0; y<18; y++) {
-            for(int x= 0; x<6; x++) {
+        for (int y = 0; y < 18; y++) {
+            for (int x = 0; x < 6; x++) {
                 if (reverse) {
-                    result[107 - (y * 6 + x)] = (byte)(array[x * 2, y] + array[x * 2 + 1, y]* 6);
+                    result[107 - (y * 6 + x)] = (byte)(Mathf.CeilToInt(array[x * 2, y] * speed) + Mathf.CeilToInt(array[x * 2 + 1, y] * speed) * 6);
                 }
                 else {
-                    result[y * 6 + x] = (byte)(array[x * 2, y]* 6 + array[x * 2 + 1, y]);
+                    result[y * 6 + x] = (byte)(Mathf.CeilToInt(array[x * 2, y] * speed) * 6 + Mathf.CeilToInt(array[x * 2 + 1, y] * speed));
                 }
-                
+
             }
         }
 
@@ -661,12 +876,19 @@ public class FirstPersonMovement : MonoBehaviour {
             case InputMethod.HandStickThrottle:
                 float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
-                int intense = Mathf.CeilToInt(4 * moving);
+                int intense = Mathf.CeilToInt(3 * moving);
+                float t = Time.time;
                 if (water == 1) {
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                larray[y * 6 + x] = (byte)(intense * 7);
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                                 rarray[y * 6 + x] = (byte)0;
                             }
                         }
@@ -683,7 +905,13 @@ public class FirstPersonMovement : MonoBehaviour {
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                larray[y * 6 + x] = (byte)(intense * 7);
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                             }
                         }
                         else {
@@ -693,7 +921,13 @@ public class FirstPersonMovement : MonoBehaviour {
                         }
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
-                                rarray[y * 6 + x] = (byte)(intense * 7);
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                             }
                         }
                         else {
@@ -709,7 +943,13 @@ public class FirstPersonMovement : MonoBehaviour {
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
                                 larray[y * 6 + x] = (byte)0;
-                                rarray[y * 6 + x] = (byte)(intense * 7);
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
                             }
                         }
                         else {
@@ -736,8 +976,8 @@ public class FirstPersonMovement : MonoBehaviour {
 
                     int[,] left_slice = SliceArray(left_grass,0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass,0, boat_pos,12, 18);
-                    larray = int2byteArray(left_slice, true);
-                    rarray = int2byteArray(right_slice, false);
+                    larray = int2byteArray(left_slice, moving, true);
+                    rarray = int2byteArray(right_slice, moving, false);
                     
                 }
                 break;
@@ -844,6 +1084,14 @@ public class FirstPersonMovement : MonoBehaviour {
                 break;
         }
 
+        //최고속도 조절
+        if (rigidbody.velocity.magnitude > 15.0f) {
+            rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
+        }
+        if (rigidbody.angularVelocity.magnitude > 1.0f) {
+            rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
+        }
+
         Vector3 rotation = transform.eulerAngles;
         if (rotation.x > 180){rotation.x -= 360;}
         rotation.x = Mathf.Clamp(rotation.x, -40f, 40f);
@@ -855,13 +1103,7 @@ public class FirstPersonMovement : MonoBehaviour {
             waterfall = 0;
         }
 
-        //최고속도 조절
-        if (rigidbody.velocity.magnitude > 15.0f) {
-            rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
-        }
-        if (rigidbody.angularVelocity.magnitude > 1.0f) {
-            rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
-        }
+        
 
         if (left_boat.on_land || right_boat.on_land) { //배가 어딘가 바닥에 부딪힘.
             collide = 2;
@@ -906,8 +1148,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
                 float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
                 float c_ang = ang;
-                float c_speed = Mathf.Clamp(collide_speed * 5f, 0, 3);
-                c_speed /= 3f;
+                float c_speed = Mathf.Clamp(collide_speed, 0, 1);
                 if (direct_ang < 0) { direct_ang += 360; }
                 float bef_coll = collide;
                 if (underwater.underwater) {
@@ -1038,7 +1279,7 @@ public class FirstPersonMovement : MonoBehaviour {
     
     void OnCollisionEnter(Collision c) {
         Vector3 colVelocity = c.relativeVelocity;
-        if(collide != 1.0f && collide != 0.5f) { //충돌 도중 속도 바뀌지 않도록.
+        if(collide != 1.0f) { //충돌 도중 속도 바뀌지 않도록.
             collide_speed = colVelocity.magnitude;
         }
         switch (inputMethod) {
@@ -1056,29 +1297,18 @@ public class FirstPersonMovement : MonoBehaviour {
                 break;
             case InputMethod.HandStickThrottle:
             case InputMethod.HandStickGesture:
-                if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
+                if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass") && !c.collider.CompareTag("Moving")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
-                        if(collide != 1.0f && collide!= 0.5f&& cancollide) {
+                        if(cancollide) {
                             StartCoroutine(CollisionControl());
                             water_status = 0f;
-                        }
-                        
+                        } 
                     }
-            
                 }
                 else {
                     if (!c.collider.CompareTag("Water")) {
                         collide = 2.0f;
-                    }
-                    
-                    if (c.collider.CompareTag("Land")) {
-                        collide_land = true;
-                        float col = AverageZ(c.contacts);
-                        if(col >= 0) { water_status = 2.0f; }
-                        else if(col < 0){ water_status = 1.0f; }
-                        else {
-                            water_status = 0f; }
                     }
                     if (c.collider.CompareTag("Grass")) {
                         //water_status = 3.0f;
@@ -1113,18 +1343,18 @@ public class FirstPersonMovement : MonoBehaviour {
                 case InputMethod.GamePad:
                    state = GamePad.GetState(PlayerIndex.One);
                     if (state.IsConnected) {
-                        float LX = state.ThumbSticks.Left.X;
+                        float RY = state.ThumbSticks.Right.Y;
                         float LY = state.ThumbSticks.Left.Y;
 
-                        if (LX > 0 || LY > 0) {
-                            float magnitude = Mathf.Sqrt(LX * LX + LY * LY); // 벡터의 크기 계산
+                        if (RY > 0 || LY > 0) {
+                            float magnitude = Mathf.Sqrt(RY * RY + LY * LY); // 벡터의 크기 계산
                             float normalizedIntensity = Mathf.Clamp01(magnitude);
                             float intensity = 0.3f * normalizedIntensity;
                             GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                         }
                         else {
                             GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
-                            if(rigidbody.velocity.y > 0) {
+                            if(rigidbody.velocity.y > 0 && RY ==0 && LY ==0) { //배가 산타는거 방지
                                 rigidbody.velocity = new Vector3(rigidbody.velocity.x, 0, rigidbody.velocity.z);
                             }
                         }
@@ -1136,20 +1366,16 @@ public class FirstPersonMovement : MonoBehaviour {
                 case InputMethod.HandStickThrottle:
                 case InputMethod.HandStickGesture:
                     collide = 2f;
-                    int[] count = CountZ(c.contacts);
-                    if (count[0] >= 1 && count[1] >= 1) {
-                        water_status = 1.5f;
-                    }
-                    else if (count[0] == 0 && count[1] > 0) {
-                        water_status = 2f;
-                    }
-                    else if (count[1] == 0 && count[0] > 0) {
-                        water_status = 1f;
+                    if (rigidbody.velocity.y > 0 && HandThrottle.ry == 0 && HandThrottle.ly == 0) { //배가 산타는거 방지
+                        rigidbody.velocity = new Vector3(rigidbody.velocity.x, 0, rigidbody.velocity.z);
                     }
                     break;
             }
         }
         if (c.collider.CompareTag("Moving")) {
+            if(collide != 1.3f) {
+                moving_time = Time.time;
+            }
             collide = 1.3f;
             Vector3 colVelocity = c.relativeVelocity;
             
@@ -1172,10 +1398,10 @@ public class FirstPersonMovement : MonoBehaviour {
             collide_speed = depth;
             dir.Normalize();
             if (depth < 7) {
-                transform.position += dir * 1.5f * Time.deltaTime;
+                transform.position += dir * 2.0f * Time.deltaTime;
             }
             else if (depth < 10) {
-                transform.position += dir * 1.0f * Time.deltaTime;
+                transform.position += dir * 1.5f * Time.deltaTime;
             }
             else {
                 transform.position += dir * 0.5f * Time.deltaTime;
@@ -1208,7 +1434,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
                     break;
             }
-            if (rigidbody.velocity.y > 0) {
+            if (rigidbody.velocity.y > 0 && transform.position.y > 2f) { // 배 산타기 방지
                 rigidbody.velocity = new Vector3(0, 0, 0);
             }
             collide_land = false;
@@ -1298,8 +1524,11 @@ public class FirstPersonMovement : MonoBehaviour {
         }
         //transform.position += transform.right;
         collide = 1.0f;
-        yield return new WaitForSeconds(0.6f);
+        water_status = 0;
+        bouncy_time = Time.time;
+        yield return new WaitForSeconds(0.3f);
 
+        /*
         switch (inputMethod) {
             case InputMethod.HandStickGesture:
                 if(water_status >= 1 && water_status <=2 && collide == 2) {
@@ -1307,11 +1536,10 @@ public class FirstPersonMovement : MonoBehaviour {
                     yield break;
                 }
                 break;
-        }
-        collide = 0.5f;
-        //rigidbody.constraints = RigidbodyConstraints.None;
-        yield return new WaitForSeconds(0.1f);
+        }*/
+
         collide = 0.0f;
+        from_zero = false;
 
         yield return new WaitForSeconds(0.5f);
         cancollide = true;

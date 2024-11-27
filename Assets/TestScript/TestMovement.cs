@@ -33,7 +33,7 @@ public class TestMovement : MonoBehaviour
     private float incline_deadzone = 1.8f;
     private int max_v = 3;
     private int max_width = 9;
-    private int min_width = 3;
+    private int min_width = 4;
 
     private bool grassboat;
     private int enterCount = 0;
@@ -85,7 +85,6 @@ public class TestMovement : MonoBehaviour
     private bool from_zero;
     private float bouncy_time;
 
-    private bool moving_coll;
     private float moving_time;
 
     private List<Vector2> bumpy_left = new List<Vector2>();
@@ -94,7 +93,6 @@ public class TestMovement : MonoBehaviour
 
     void Start()
     {
-        moving_coll = false;
         moving_time = 0f;
         testcol = false;
         from_zero = false;
@@ -621,7 +619,7 @@ public class TestMovement : MonoBehaviour
                 if (valid_ang < 0) { vib_level = 0; }
                 else {
                     vib_level = Mathf.FloorToInt(valid_ang) + 1;
-                    if (vib_level > 3) { vib_level = 3; }
+                    if (vib_level > 4) { vib_level = 4; }
                 }
             }
             float height = transform.position.y;
@@ -947,8 +945,6 @@ public class TestMovement : MonoBehaviour
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                //larray[y * 6 + x] = (byte)PointsinBump(bumpy_left, x, y, intense * 7, true);
-                                //int randomNumber = Random.Range(4, 10);
                                 if (t *100 - Mathf.Floor(t* 100) >  0.5f ) {
                                     larray[y * 6 + x] = (byte)(intense * 7);
                                 }
@@ -1158,7 +1154,6 @@ public class TestMovement : MonoBehaviour
         rotation.z = Mathf.Clamp(rotation.z, -40f, 40f);
         transform.eulerAngles = rotation;
 
-
         if (underwater.underwater) {
             waterincline = false;
             waterfall = 0;
@@ -1174,34 +1169,6 @@ public class TestMovement : MonoBehaviour
             }
             else { water_status = 1.5f; }
 
-            if (bump_point == new Vector3(-1000, -1000, -1000)) { //처음 충돌 시작했을 때.
-                bump_point = transform.position;
-            }
-            else {
-                Vector3 directionToPoint = bump_point- transform.position;
-                //Debug.Log("move distance: " + directionToPoint.magnitude);
-                if (directionToPoint.magnitude > 0.2) {
-                    bump_point = transform.position;
-                    directionToPoint.Normalize();
-                    float dotProduct = Vector3.Dot(directionToPoint, transform.right);
-                    if (dotProduct >= 0) { //앞으로 나가는 중
-                        if (left_boat.on_land) { UpdateBump(bumpy_left, left_boat.collidingChildIndices, 1); }
-                        if (right_boat.on_land) { UpdateBump(bumpy_right, right_boat.collidingChildIndices, 1); }
-                    }
-                    else if (dotProduct < 0) { //뒤로 가는 중
-                        if (left_boat.on_land) { UpdateBump(bumpy_left, left_boat.collidingChildIndices, -1); }
-                        if (right_boat.on_land) { UpdateBump(bumpy_right, right_boat.collidingChildIndices, -1); }
-                    }
-
-
-                }
-
-            }
-        }
-        else {//아무데도 안부딪힘 bump_left, bump_right 초기화
-            bumpy_left = new List<Vector2>();
-            bumpy_right = new List<Vector2>();
-            bump_point = new Vector3(-1000, -1000, -1000);
         }
 
         switch (inputMethod) {
@@ -1222,7 +1189,7 @@ public class TestMovement : MonoBehaviour
                                 }
                                 float intensity = (rotationZ + 19f) / 20f;
                                 intensity = Mathf.Clamp(intensity, 0, 1);
-                                Debug.Log(intensity);
+                                //Debug.Log(intensity);
                                 GamePad.SetVibration(PlayerIndex.One, 0, intensity);
                             }
                             else {
@@ -1466,6 +1433,9 @@ public class TestMovement : MonoBehaviour
     void OnCollisionEnter(Collision c) {
         Vector3 colVelocity = c.relativeVelocity;
         collide_speed = colVelocity.magnitude;
+        if (collide != 1.0f) { //충돌 도중 속도 바뀌지 않도록.
+            collide_speed = colVelocity.magnitude;
+        }
         switch (inputMethod) {
             case InputMethod.GamePad:
                 if (!c.collider.CompareTag("Water")) {
@@ -1502,15 +1472,6 @@ public class TestMovement : MonoBehaviour
                     if (!c.collider.CompareTag("Water")) {
                         collide = 2.0f;
                     }
-                    if (c.collider.CompareTag("Land")) {
-                        collide_land = true;
-                        float col = AverageZ(c.contacts);
-                        if (col >= 0) { water_status = 2.0f; }
-                        else if (col < 0) { water_status = 1.0f; }
-                        else {
-                            water_status = 0f;
-                        }
-                    }
                     if (c.collider.CompareTag("Grass")) {
                         //water_status = 3.0f;
                         GrassEffect();
@@ -1541,11 +1502,11 @@ public class TestMovement : MonoBehaviour
                         case UserTest.Environment.Land:
                             state = GamePad.GetState(PlayerIndex.One);
                             if (state.IsConnected) {
-                                float LX = state.ThumbSticks.Left.X;
+                                float RY = state.ThumbSticks.Right.Y;
                                 float LY = state.ThumbSticks.Left.Y;
 
-                                if (LX > 0 || LY > 0) {
-                                    float magnitude = Mathf.Sqrt(LX * LX + LY * LY); // 벡터의 크기 계산
+                                if (RY > 0 || LY > 0) {
+                                    float magnitude = Mathf.Sqrt(RY * RY + LY * LY); // 벡터의 크기 계산
                                     float normalizedIntensity = Mathf.Clamp01(magnitude);
                                     float intensity = 0.3f * normalizedIntensity;
                                     GamePad.SetVibration(PlayerIndex.One, 0, intensity);
@@ -1564,16 +1525,6 @@ public class TestMovement : MonoBehaviour
                 case InputMethod.HandStickThrottle:
                 case InputMethod.HandStickGesture:
                     collide = 2f;
-                    int[] count = CountZ(c.contacts);
-                    if (count[0] >= 1 && count[1] >= 1) {
-                        water_status = 1.5f;
-                    }
-                    else if (count[0] == 0 && count[1] > 0) {
-                        water_status = 2f;
-                    }
-                    else if (count[1] == 0 && count[0] > 0) {
-                        water_status = 1f;
-                    }
                     break;
             }
         }
@@ -1742,10 +1693,9 @@ public class TestMovement : MonoBehaviour
         }
         //break;
         //}
-        collide = 0.5f;
         from_zero = false;
         collide = 0.0f;
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(1.0f);
         col_avail = true;
 
     }
