@@ -103,7 +103,7 @@ public class TestCollision : MonoBehaviour {
 
         Vector3 direction = (transform.position - testPoint.position).normalized;
         if (rb != null) {
-            rb.velocity = direction * throwSpeed * relative;
+            rb.velocity = direction * relative;
             //Debug.Log(rb.velocity);
         }
     }
@@ -201,7 +201,6 @@ public class TestCollision : MonoBehaviour {
                     rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
                     ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
 
-                    //Debug.Log($"lx: {lx}, rx: {rx}");
                     if (lx < -0.8f && rx > 0.8f) {
                         //Debug.Log("end?");
                         EndScenario();

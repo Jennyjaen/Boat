@@ -32,7 +32,6 @@ public class TestMovement : MonoBehaviour
 
     private float incline_deadzone = 1.8f;
     private int max_v = 3;
-    private int min_v = 1;
     private int max_width = 9;
     private int min_width = 3;
 
@@ -84,16 +83,8 @@ public class TestMovement : MonoBehaviour
 
 
     public bool col_avail;
-    private int bouncy_num;
+    private bool from_zero;
     private float bouncy_time;
-    public enum Coll_M {
-        Static,
-        Bouncy,
-        Blank_1,
-        Blank_2
-    }
-
-    public Coll_M coll_m;
 
     private List<Vector2> bumpy_left = new List<Vector2>();
     private List<Vector2> bumpy_right = new List<Vector2>();
@@ -102,7 +93,7 @@ public class TestMovement : MonoBehaviour
     void Start()
     {
         testcol = false;
-        bouncy_num = 0;
+        from_zero = false;
         bouncy_time = 0;
         col_avail = true;
         situation = transform.GetComponent<UserTest>();
@@ -308,299 +299,262 @@ public class TestMovement : MonoBehaviour
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
             float intensity = col_s * 6;
             intensity = Mathf.Round(intensity);
+           
             //Debug.Log($"col_s: {col_s}, real speed: {collide_speed}, intensity: {intensity}");
-            if (intensity == 6) {
+
+            int width = Mathf.FloorToInt(col_s * 3) + 3;
+            float time_consume = Time.time - bouncy_time;
+
+            if (time_consume <= 0.1f) {
+                //intensity += 1;
+            }
+            else if(time_consume <= 0.2f) {
+                //width -= 2;
+                intensity -= 1;
+            }
+            else {
+                //width -= 3;
+                intensity -= 2;
+            }
+
+
+            if (intensity > 5) {
                 intensity = 5;
             }
-            int width = Mathf.FloorToInt(col_s * 5) + 3;
+            if(intensity < 1) {
+                intensity = 1;
+            }
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
                     float cent_x = ((float)x + 0.5f) / 24;
                     float cent_y = ((float)y + 0.5f) / 18;
                     float res = 0;
 
-                    
                     if (col_ang >= 22.5 && col_ang < 67.5) {
                         //Debug.Log("ru");
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (y - x >=-24 + col_pos && y - x < -24 +col_pos + width) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (cent_x - cent_y >= 1 - 2 * col_s) { 
-                                    res = intensity;
-
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * ((0.3f - t) / 0.3f)) { }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (cent_x - cent_y >= 1 - 2 * col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
-                                        else { res = 0; }
-                                    }
-                                    
-                            }
-                            else { res = 0; }
-                            break;
-                        } 
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        }
+                        else if(time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                        }
+                        
+                        Debug.Log(col_pos + " , "+ width);
+                        if(col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        if (y - x >=-24 + col_pos && y - x < -24 +col_pos + width) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }                        
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
                         //위
                         //Debug.Log("up");
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.016f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (y >= col_pos && y < col_pos + width) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (cent_y < col_s) {
-                                    res = (int)intensity;
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (cent_y < (col_s * ((0.3f - t) / 0.3f))) { }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (cent_y < (col_s * ((t - 0.3f) / 0.2f))) { res = Mathf.RoundToInt(intensity / 2f); }
-                                        else { res = 0; }
-                                    }
-   
-                                    }
-                                else { res = 0; }
-                                break;
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.011f);
                         }
-                       
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
+                        }
+
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+
+                        if (y >= col_pos && y < col_pos + width) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
+
                     }
                     else if (col_ang >= 112.5 && col_ang < 157.5) {
                         //Debug.Log("lu");
-
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (y + x >= col_pos && y + x < col_pos + width) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (cent_x + cent_y <= 2 * col_s) {
-                                    res = (int)intensity;
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (cent_x + cent_y <= 2 * col_s * ((0.3f - t) / 0.3f)) { }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (cent_x + cent_y <= 2 * col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
-                                        else { res = 0; }
-                                    }
-                                }
-                                else { res = 0; }
-                                break;
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
                         }
 
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (y + x >= col_pos && y + x < col_pos + width) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else if (col_ang >= 157.5 && col_ang < 202.5) {
                         //왼쪽
                         //Debug.Log("Left");
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.0125f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (x >= col_pos && x < col_pos + width) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (cent_x < col_s) {
-                                    res = (int)intensity;
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (cent_x < (col_s * ((0.3f - t) / 0.3f))) { }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (cent_x < (col_s * ((t - 0.3f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
-                                    }
-                                }
-                                else { res = 0; }
-                                break;
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
                         }
 
-
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (x >= col_pos && x < col_pos + width) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else if (col_ang >= 202.5 && col_ang < 247.5) {
                         //Debug.Log("ld");
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (y - x < 18 - col_pos && y - x >= 18 - (col_pos + width)) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (-cent_x + cent_y >= 1 - 2 * col_s) {
-                                    res = (int)intensity;
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((0.3f - t) / 0.3f)) {
-
-                                        }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (-cent_x + cent_y >= 1 - 2 * col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
-                                        else { res = 0; }
-                                    }
-
-                                }
-                                else { res = 0; }
-                                break;
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (y - x < 18 - col_pos && y - x >= 18 - (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
                         }
                     }
                     else if (col_ang >= 247.5 && col_ang < 292.5) {
                         //아래
                         //Debug.Log("down");
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.016f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (y < 18 - col_pos && y >= 18 - (col_pos + width)) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (cent_y >= 1 - col_s) {
-                                    res = (int)intensity;
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (cent_y >= 1 - col_s * ((0.3f - t) / 0.3f)) { }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (cent_y >= 1 - col_s * ((t - 0.3f) / 0.2f)) { res = Mathf.Round(intensity / 2f); }
-                                        else { res = 0; }
-                                    }
-                                }
-                                else { res = 0; }
-                                break;
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.011f);
+                        }
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (y < 18 - col_pos && y >= 18 - (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
                         }
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
                         //Debug.Log("rd");
-
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.007f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (x + y < 42 - col_pos && x + y >= 42 - (col_pos + width)) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (cent_x + cent_y >= (2 - col_s * 2)) {
-                                    res = (int)intensity;
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (cent_x + cent_y >= (2 - col_s * (0.3f - t) / 0.3f)) {    }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (cent_x + cent_y >= (2 - col_s * ((t - 0.3f) / 0.2f))) { res = Mathf.Round(intensity / 2f); }
-                                        else { res = 0; }
-                                    }
-                                }
-                                else { res = 0; }
-                                break;
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
                         }
-
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (x + y < 42 - col_pos && x + y >= 42 - (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
                     else {
                         //오른쪽?
                         //Debug.Log("right");
-                        switch (coll_m) {
-                            case Coll_M.Bouncy:
-                                int col_pos = Mathf.FloorToInt((Time.time - bouncy_time) / 0.0125f);
-                                //Debug.Log(col_pos + " , "+ width);
-                                if (x < 24 - col_pos && x >= 24- (col_pos + width)) {
-                                    res = (int)intensity;
-                                }
-                                else {
-                                    res = 0;
-                                }
-                                break;
-                            case Coll_M.Blank_1:
-                            case Coll_M.Blank_2:
-                                if (cent_x >= 1 - col_s) {
-                                    res = (int)intensity;
-                                    float t = Time.time - bouncy_time;
-                                    if (t <= 0.3f) {
-                                        if (cent_x >= 1 - col_s * ((0.3f - t) / 0.3f)) { }
-                                        else {
-                                            res = 0;
-                                        }
-                                    }
-                                    else {
-                                        if (cent_x >= 1 - col_s * ((t - 0.3f) / 0.2f)) { Mathf.Round(intensity / 2f); }
-                                        else { res = 0; }
-                                    }
-                                }
-                                else { res = 0; }
-                                break;
+                        int col_pos;
+                        if (time_consume <= 0.1f) {
+                            col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
                         }
-
+                        else if (time_consume <= 0.2f) {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
+                        }
+                        else {
+                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
+                        }
+                        if (col_pos == 0) {
+                            from_zero = true;
+                        }
+                        if (!from_zero) {
+                            col_pos = 0;
+                            from_zero = true;
+                        }
+                        //Debug.Log(col_pos + " , "+ width);
+                        if (x < 24 - col_pos && x >= 24- (col_pos + width)) {
+                            res = (int)intensity;
+                        }
+                        else {
+                            res = 0;
+                        }
                     }
 
                     if (x % 2 == 0) { x_1 = (int)res; }
@@ -618,7 +572,7 @@ public class TestMovement : MonoBehaviour
 
                 }
             }
-            printArray(rarray);
+            //printArray(rarray);
         }
         else if (collide == 1.5f) { // 물에 빠졌을 때
             byte[] arr = new byte[108];
@@ -1750,8 +1704,7 @@ public class TestMovement : MonoBehaviour
         //break;
         //}
         collide = 0.5f;
-        bouncy_num = 0;
-        yield return new WaitForSeconds(0.1f);
+        from_zero = false;
         collide = 0.0f;
         yield return new WaitForSeconds(0.5f);
         col_avail = true;
