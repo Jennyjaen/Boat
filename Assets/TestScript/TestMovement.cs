@@ -297,6 +297,9 @@ public class TestMovement : MonoBehaviour
 
             //float intensity = Mathf.Ceil(col_s * 5) / 5;
             float intensity = col_s * 6;
+            if (!testCollision.enabled) {
+                intensity *= 4;
+            }
             intensity = Mathf.Round(intensity);
            
             //Debug.Log($"col_s: {col_s}, real speed: {collide_speed}, intensity: {intensity}");
@@ -343,7 +346,6 @@ public class TestMovement : MonoBehaviour
                             col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
                         }
                         
-                        Debug.Log(col_pos + " , "+ width);
                         if(col_pos == 0) {
                             from_zero = true;
                         }
@@ -351,7 +353,7 @@ public class TestMovement : MonoBehaviour
                             col_pos = 0;
                             from_zero = true;
                         }
-                        if (y - x >=-24 + col_pos && y - x < -24 +col_pos + width) {
+                        if (y - x >= -24 + col_pos && y - x < -24 +col_pos + width) {
                             res = (int)intensity;
                         }
                         else {
