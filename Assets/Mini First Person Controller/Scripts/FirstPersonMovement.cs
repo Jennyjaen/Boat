@@ -1106,6 +1106,10 @@ public class FirstPersonMovement : MonoBehaviour {
         
 
         if (left_boat.on_land || right_boat.on_land) { //배가 어딘가 바닥에 부딪힘.
+            HandThrottle.front_m = 1.5f;
+            HandThrottle.rotation_m = 9f;
+            GamePadInput.front_m = 1.5f;
+            HandThrottle.rotation_m = 9f;
             collide = 2;
             if (!right_boat) {
                 water_status = 1;
@@ -1119,6 +1123,19 @@ public class FirstPersonMovement : MonoBehaviour {
         else {
             if(collide ==2 && water_status >=1 && water_status <= 2) {
                 collide = 0;
+                water_status = 0;
+                HandThrottle.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
+                GamePadInput.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
+            }
+            else {
+                if (water_status != 3 && collide ==2) {
+                    HandThrottle.front_m = 2.5f;
+                    HandThrottle.rotation_m = 15f;
+                    GamePadInput.front_m = 2.5f;
+                    HandThrottle.rotation_m = 15f;
+                }
             }
         }
 
@@ -1444,6 +1461,11 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             collide_land = false;
             collide = 0f;
+            water_status = 0f;
+            HandThrottle.front_m = 2.5f;
+            HandThrottle.rotation_m = 15f;
+            GamePadInput.front_m = 2.5f;
+            HandThrottle.rotation_m = 15f;
         }
         if (c.collider.CompareTag("Moving")) {
             collide = 0f;
@@ -1488,6 +1510,10 @@ public class FirstPersonMovement : MonoBehaviour {
                 else if (dot < 0) {
                     grass_front = false;
                 }
+                HandThrottle.front_m = 2.0f;
+                HandThrottle.rotation_m = 10f;
+                GamePadInput.front_m = 2.0f;
+                HandThrottle.rotation_m = 10f;
 
             }
             if (grassboat && enterCount ==0) {
@@ -1508,6 +1534,10 @@ public class FirstPersonMovement : MonoBehaviour {
                 collide = 0f;
                 grassin = false;
                 triggered = null;
+                HandThrottle.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
+                GamePadInput.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
                 if (left_grass != null && right_grass != null) {
                     InitArray();
 

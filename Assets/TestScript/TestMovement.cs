@@ -621,7 +621,7 @@ public class TestMovement : MonoBehaviour
                 if (valid_ang < 0) { vib_level = 0; }
                 else {
                     vib_level = Mathf.FloorToInt(valid_ang) + 1;
-                    if (vib_level > 4) { vib_level = 4; }
+                    if (vib_level > 3) { vib_level = 3; }
                 }
             }
             float height = transform.position.y;
@@ -1161,16 +1161,38 @@ public class TestMovement : MonoBehaviour
             waterfall = 0;
         }
 
-        if(left_boat.on_land || right_boat.on_land) { //¹è°¡ ¾îµò°¡ ¹Ù´Ú¿¡ ºÎµúÈû.
+        if (left_boat.on_land || right_boat.on_land) { //¹è°¡ ¾îµò°¡ ¹Ù´Ú¿¡ ºÎµúÈû.
+            HandThrottle.front_m = 1.5f;
+            HandThrottle.rotation_m = 9f;
+            GamePadInput.front_m = 1.5f;
+            HandThrottle.rotation_m = 9f;
             collide = 2;
-            if(!right_boat.on_land) {
+            if (!right_boat) {
                 water_status = 1;
             }
-            else if (!left_boat.on_land) {
+            else if (!left_boat) {
                 water_status = 2;
             }
             else { water_status = 1.5f; }
 
+        }
+        else {
+            if (collide == 2 && water_status >= 1 && water_status <= 2) {
+                collide = 0;
+                water_status = 0;
+                HandThrottle.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
+                GamePadInput.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
+            }
+            else {
+                if (water_status != 3 && collide == 2) {
+                    HandThrottle.front_m = 2.5f;
+                    HandThrottle.rotation_m = 15f;
+                    GamePadInput.front_m = 2.5f;
+                    HandThrottle.rotation_m = 15f;
+                }
+            }
         }
 
         switch (inputMethod) {
@@ -1601,6 +1623,10 @@ public class TestMovement : MonoBehaviour
             }
             collide_land = false;
             collide = 0f;
+            HandThrottle.front_m = 2.5f;
+            HandThrottle.rotation_m = 15f;
+            GamePadInput.front_m = 2.5f;
+            HandThrottle.rotation_m = 15f;
         }
         if (c.collider.CompareTag("Moving")) {
             collide = 0f;
@@ -1634,6 +1660,10 @@ public class TestMovement : MonoBehaviour
             if (water_status != 3f && enterCount == 0) {
                 water_status = 3f;
                 collide = 2f;
+                HandThrottle.front_m = 2.0f;
+                HandThrottle.rotation_m = 10f;
+                GamePadInput.front_m = 2.0f;
+                HandThrottle.rotation_m = 10f;
                 triggered = other.transform;
                 Vector3 planeV = other.transform.up;
                 Vector3 myF = transform.right;
@@ -1667,8 +1697,11 @@ public class TestMovement : MonoBehaviour
                 collide = 0f;
                 grassin = false;
                 triggered = null;
-
-                if(left_grass != null && right_grass != null) {
+                HandThrottle.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
+                GamePadInput.front_m = 2.5f;
+                HandThrottle.rotation_m = 15f;
+                if (left_grass != null && right_grass != null) {
                     InitArray();
                     
                     MarkArray(left_grass, GeneratePoints());

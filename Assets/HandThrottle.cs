@@ -20,6 +20,8 @@ public class HandThrottle : MonoBehaviour
     private bool colliding = false;
 
     [HideInInspector]
+    public float front_m = 2.5f;
+    [HideInInspector]
     public float rotation_m = 15f;
     private GameObject lPaddle;
     private GameObject rPaddle;
@@ -74,7 +76,7 @@ public class HandThrottle : MonoBehaviour
 
 
         if(ly != 0) {
-            Vector3 forwardMovement = transform.right * ly * 2.5f * Time.deltaTime;
+            Vector3 forwardMovement = transform.right * ly * front_m * Time.deltaTime;
             float turnAmount = -ly * rotation_m * Time.deltaTime;
             Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
             Vector3 targetPosition = rb.position + forwardMovement;
@@ -123,7 +125,7 @@ public class HandThrottle : MonoBehaviour
             }
         }*/
         if (ry != 0) {
-            Vector3 forwardMovement = transform.right * ry * 2.5f * Time.deltaTime;
+            Vector3 forwardMovement = transform.right * ry * front_m * Time.deltaTime;
             float turnAmount = ry * rotation_m * Time.deltaTime;
             Quaternion rotation = Quaternion.Euler(0, turnAmount, 0);
             Vector3 targetPosition = rb.position + forwardMovement;
