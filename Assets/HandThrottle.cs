@@ -173,7 +173,10 @@ public class HandThrottle : MonoBehaviour
     private void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.tag != "Land" &&
         collision.gameObject.tag != "Grass" &&
-        collision.gameObject.tag != "Water") {
+        collision.gameObject.tag != "Water"&&
+        collision.gameObject.tag !="Moving"
+        )
+       {
             colliding = true;
         }
     }

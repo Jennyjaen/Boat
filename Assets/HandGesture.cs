@@ -27,12 +27,12 @@ public class HandGesture : MonoBehaviour
     [HideInInspector]
     public float rotation_m = 0.01f; 
     private GameObject boat;
-    
+    private bool colliding;
     // Start is called before the first frame update
     void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
-
+        colliding = false;
         lPaddle = GameObject.Find("LPaddle");
         rPaddle = GameObject.Find("RPaddle");
         input_d = transform.Find("Input").GetComponent<Input_Delim>();
@@ -54,13 +54,25 @@ public class HandGesture : MonoBehaviour
         //아두이노로 보트 조작
         if (input_d.left_y != 0) {
             if (input_d.left_y > 0 && !input_d.l_reverse) {
+                Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.left_y);
                 rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
-                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
+                Quaternion rotation = Quaternion.Euler(0, rotation_m * input_d.left_y, 0);
+                transform.rotation *= rotation;
+                /*
+                if (!colliding) {
+                    //rigidbody.MovePosition(targetPos);
+                }*/
                 //rigidbody.AddTorque(0.005f * input_d.left_y, 0, 0);
             }
             else if (input_d.left_y < 0 && input_d.l_reverse) {
                 rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
-                rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
+                //rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
+                Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.left_y);
+                Quaternion rotation = Quaternion.Euler(0, rotation_m * input_d.left_y, 0);
+                transform.rotation *= rotation;
+                //if (!colliding) {
+                    //rigidbody.MovePosition(targetPos);
+                //}
             }
             lPaddle.transform.RotateAround(lPaddle.transform.GetChild(0).position, rigidbody.transform.forward, (input_d.left_y /30));
             sum_left += (input_d.left_y / 30);
@@ -80,13 +92,24 @@ public class HandGesture : MonoBehaviour
         if (input_d.right_y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
             if (input_d.right_y > 0 && !input_d.r_reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.05f * input_d.right_y);
-                rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
-                //rigidbody.AddTorque(-0.005f * input_d.right_y, 0, 0);
+                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
+                //rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
+                Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.right_y);
+                Quaternion rotation = Quaternion.Euler(0, -rotation_m * input_d.right_y, 0);
+                transform.rotation *= rotation;
+                //if (!colliding) {
+                    //rigidbody.MovePosition(targetPos);
+                //}
             }
             else if (input_d.right_y < 0 && input_d.r_reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.05f * input_d.right_y);
-                rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
+                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
+                //rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
+                Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.right_y);
+                Quaternion rotation = Quaternion.Euler(0, -rotation_m * input_d.right_y, 0);
+                transform.rotation *= rotation;
+                //if (!colliding) {
+                    //rigidbody.MovePosition(targetPos);
+                //}
             }
             //노 회전 애니메이션
             rPaddle.transform.RotateAround(rPaddle.transform.GetChild(0).position, rigidbody.transform.forward, (input_d.right_y / 30));
@@ -134,5 +157,18 @@ public class HandGesture : MonoBehaviour
             //lPaddle.transform.localPosition = leftPos;
             //lPaddle.transform.localRotation = leftRot;
         }
+    }
+
+    private void OnCollisionEnter(Collision collision) {
+        if (collision.gameObject.tag != "Land" &&
+        collision.gameObject.tag != "Grass" &&
+        collision.gameObject.tag != "Water" &&
+        collision.gameObject.tag != "Moving"
+        ) {
+            colliding = true;
+        }
+    }
+    private void OnCollisionExit(Collision collision) {
+        colliding = false;
     }
 }
