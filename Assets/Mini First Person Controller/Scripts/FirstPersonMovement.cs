@@ -719,16 +719,33 @@ public class FirstPersonMovement : MonoBehaviour {
                     float res;
                     if (col_ang >= 90 && col_ang < 270 - adj_ang) {
                         //왼쪽
-                        //Debug.Log("Left");
                         if (cent_x < width) {
                             res = intensity;
-                            if (collide_speed > 13) {
+                            if (collide_speed > 13) { //collide speed가 중앙으로부터 거리로 매핑됨
                                 int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
-                                //Debug.Log($"col_s = {col_s} , upper: {upper}");
                                 if (y <= upper) { res = 0; }
                             }
                         }
                         else { res = 0; }
+                        switch (inputMethod) {
+                            case InputMethod.HandStickGesture:
+                                //우측 손이 움직일 때 움직이는 피드백 필요
+                                int sero = Mathf.CeilToInt(input_d.sum_r / 80);
+                                if (x > 11) { //오른 손
+                                    if (input_d.r_reverse) { //뒤로 저을 때, 우상에서 좌하로 가야함
+                                        if((23 - x)+ y > sero && (23 - x + y) <= sero + 4) {
+                                            res = 4;
+                                        }
+                                    }
+                                    else { //앞으로 갈 때
+                                        if ((23 - x) + (17-y) > sero && (23 - x + 17- y) <= sero + 4) {
+                                            res = 4;
+                                        }
+                                    }
+                                }
+
+                                break;
+                        }
                     }
                     else if (col_ang >= 270 - adj_ang && col_ang < 270 + adj_ang) {
                         //아래
@@ -741,6 +758,33 @@ public class FirstPersonMovement : MonoBehaviour {
                             }
                         }
                         else { res = 0; }
+
+                        switch (inputMethod) {
+                            case InputMethod.HandStickGesture:
+                                int sero = Mathf.CeilToInt(input_d.sum_l / 80);
+                                if (input_d.l_reverse) { //뒤로 저을 때, 우상에서 좌하로 가야함
+                                    if (y > sero &&  y <= sero + 4) {
+                                        res = 4;
+                                    }
+                                }
+                                else { //앞으로 갈 때
+                                    if ((17 - y) > sero && (17 - y) <= sero + 4) {
+                                        res = 4;
+                                    }
+                                }
+                                sero = Mathf.CeilToInt(input_d.sum_r / 80);
+                                if (input_d.r_reverse) { //뒤로 저을 때, 우상에서 좌하로 가야함
+                                    if (y > sero && y <= sero + 4) {
+                                        res = 4;
+                                    }
+                                }
+                                else { //앞으로 갈 때
+                                    if ((17 - y) > sero && (17 - y) <= sero + 4) {
+                                        res = 4;
+                                    }
+                                }
+                                break;
+                        }
                     }
                     else {
                         //오른쪽
@@ -750,10 +794,28 @@ public class FirstPersonMovement : MonoBehaviour {
                             if (collide_speed > 13) {
                                 int upper = Mathf.FloorToInt((collide_speed - 13) / 0.2f);
                                 if (y >= 17 - upper) { res = 0; }
-                                Debug.Log($"col_s = {col_s} , upper: {upper}");
                             }
                         }
                         else { res = 0; }
+                        switch (inputMethod) {
+                            case InputMethod.HandStickGesture:
+                                //우측 손이 움직일 때 움직이는 피드백 필요
+                                int sero = Mathf.CeilToInt(input_d.sum_l / 80);
+                                if (x <= 11) { //왼손
+                                    if (input_d.l_reverse) { //뒤로 저을 때, 우상에서 좌하로 가야함
+                                        if (x + y > sero && (x + y) <= sero + 4) {
+                                            res = 4;
+                                        }
+                                    }
+                                    else { //앞으로 갈 때
+                                        if ( x+ (17 - y) > sero && ( x + 17 - y) <= sero + 4) {
+                                            res = 4;
+                                        }
+                                    }
+                                }
+
+                                break;
+                        }
                     }
 
                     if (x % 2 == 0) { x_1 = (int)res; }
@@ -984,40 +1046,77 @@ public class FirstPersonMovement : MonoBehaviour {
             case InputMethod.HandStickGesture: // 노젓기
                 int max_vib = 0;
                 int width = 4;
+                int sero = Mathf.Abs(sum) / 120;
 
-                if(Mathf.Abs(sum )> 10) {
-                    if (isLeft && water == 1) { width = 8; max_vib = 5; }
-                    else if (!isLeft && water == 2) { width = 8; max_vib = 5; }
-                    else if (water == 1.5f) { width = 8; max_vib = 5; }
+                if (Mathf.Abs(sum )> 10) {
+                    if (isLeft && water == 1) {
+                        width = 8;
+                        sero = Mathf.Abs(sum) / 200;
+                        if(left_boat.collidingChildIndices.Contains(sero + 1)) {
+                            max_vib = 5;
+                        }
+                        else {
+                            max_vib = 3;
+                        }
+                     }
+                    else if (!isLeft && water == 2) {
+                        width = 8;
+                        sero = Mathf.Abs(sum) / 200;
+                        if (right_boat.collidingChildIndices.Contains(sero + 1)) {
+                            max_vib = 5;
+                        }
+                        else {
+                            max_vib = 3;
+                        }
+                    }
+                    else if (water == 1.5f) {
+                        width = 8;
+                        sero = Mathf.Abs(sum) / 200;
+                        if (isLeft) {
+                            if (left_boat.collidingChildIndices.Contains(sero + 1)) {
+                                max_vib = 5;
+                            }
+                            else {
+                                 max_vib = 3;
+                            }
+                        }
+                        else {
+                            if (right_boat.collidingChildIndices.Contains(sero + 1)) {
+                                max_vib = 5;
+                            }
+                            else {
+                                max_vib = 3;
+                            }
+                        }
+                    }
                     else { 
-                        if (vel <= 3) { max_vib = 5;}
-                        else if(vel <= 5) { max_vib = 4;}
-                        else if(vel <= 7) { max_vib = 3; }
-                        else if(vel <= 9) { max_vib = 2; }
+                        if (vel <= 5) { max_vib = 3;}
+                        else if(vel <=9) { max_vib = 2;}
                         else { max_vib = 1; }    
-                    }  
+                    }
+
+                    if (waterincline) {
+
+                        float zRot = transform.rotation.eulerAngles.z;
+                        if (zRot > 180) { zRot -= 360; }
+                        if (zRot > 15) {
+                            sero = Mathf.Abs(sum) / 100;
+                            max_vib = 2;
+                            width = 2;
+                        }
+                        else if (zRot < -15) {
+                            sero = Mathf.Abs(sum) / 200;
+                            max_vib = 4;
+                            width = 6;
+                        }
+
+                    }
                 }
 
                 if (reverse && sum > 0) { max_vib = 0; }
                 if(!reverse && sum < 0) { max_vib = 0; }
-                int sero = Mathf.Abs(sum) / 120;
-                if (waterincline) {
-                    //zRot = parent.eulerAngles.z;
-                    //if (zRot > 180) { zRot -= 360; }
-                    //if (zRot > 15) { down = true; }
-                    float zRot = transform.rotation.eulerAngles.z;
-                    if (zRot > 180) { zRot -= 360; }
-                    if (zRot > 15) {
-                        sero = Mathf.Abs(sum) / 100;
-                    }
-                    else if(zRot < -15) {
-                        sero = Mathf.Abs(sum) / 210;
-                    }
 
-                }
-                if (isLeft && water == 1) { sero = Mathf.Abs(sum) / 210; }
-                if (!isLeft && water == 2) { sero = Mathf.Abs(sum) / 210; }
-                if(water == 1.5f) { sero = Mathf.Abs(sum) / 210; }
+
                 if(water == 3) {
                     sero = Mathf.Abs(sum) / 120;
                     int grass_idx = sero / 3;
@@ -1028,6 +1127,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
             
                 }
+            
                 for (int y = 0; y< 18; y++) {
                     for(int n = 0; n<6; n++) {
                         if(y >= sero && y < sero + width) {
@@ -1043,6 +1143,10 @@ public class FirstPersonMovement : MonoBehaviour {
                     rarray = (byte[])arr.Clone();
                 }
 
+                if (isLeft) {
+                    printArray(larray);
+                }
+                
                 break;
         }
         
@@ -1239,6 +1343,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 break;
 
             case InputMethod.HandStickGesture:
+                //Debug.Log("collide" + collide + " water status: " + water_status);
                 direct_ang = 0f; //기울기 표현 x이기 때문에 계산 필요 x.
                 c_ang = 0f;
                 c_speed = Mathf.Clamp(collide_speed, 0, 5);
@@ -1257,7 +1362,19 @@ public class FirstPersonMovement : MonoBehaviour {
                         collide = 2.0f;
                     }
                 }
-                if(collide == 0f) {
+                if (waterbump.enabled) {
+                    if (waterbump.start_bump) {
+                        collide = 1.8f;
+                        c_speed = waterbump.height;
+                    }
+                    else {
+                        if (collide != 1.5f) {
+                            collide = 2f;
+                        }
+
+                    }
+                }
+                if (collide == 0f) {
                     collide = 2f;
                 }
                 if(collide<2.0f) {updateArray(collide, direct_ang,  c_ang, collide_ang, c_speed); } // 그 외: 충돌, 물에 빠짐, 출렁임
@@ -1419,6 +1536,7 @@ public class FirstPersonMovement : MonoBehaviour {
             float depth = dir.magnitude;
             collide_speed = depth;
             dir.Normalize();
+            /*
             if (depth < 7) {
                 transform.position += dir * 2.0f * Time.deltaTime;
             }
@@ -1427,7 +1545,7 @@ public class FirstPersonMovement : MonoBehaviour {
             }
             else {
                 transform.position += dir * 0.5f * Time.deltaTime;
-            }
+            }*/
             switch (inputMethod) {
                 case InputMethod.GamePad:
                     float s = 1f;

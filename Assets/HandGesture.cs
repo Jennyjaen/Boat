@@ -25,7 +25,10 @@ public class HandGesture : MonoBehaviour
     private float sum_right = 0f;
 
     [HideInInspector]
-    public float rotation_m = 0.01f; 
+    public float rotation_m = 0.01f;
+    [HideInInspector]
+    public float speed_m = 0.02f;
+
     private GameObject boat;
     private bool colliding;
     // Start is called before the first frame update
@@ -55,7 +58,7 @@ public class HandGesture : MonoBehaviour
         if (input_d.left_y != 0) {
             if (input_d.left_y > 0 && !input_d.l_reverse) {
                 Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.left_y);
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
+                rigidbody.AddForce(-1 * transform.right * speed_m * input_d.left_y);
                 Quaternion rotation = Quaternion.Euler(0, rotation_m * input_d.left_y, 0);
                 transform.rotation *= rotation;
                 /*
@@ -65,7 +68,7 @@ public class HandGesture : MonoBehaviour
                 //rigidbody.AddTorque(0.005f * input_d.left_y, 0, 0);
             }
             else if (input_d.left_y < 0 && input_d.l_reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.left_y);
+                rigidbody.AddForce(-1 * transform.right * speed_m * input_d.left_y);
                 //rigidbody.AddTorque(0, 0.01f * input_d.left_y, 0);
                 Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.left_y);
                 Quaternion rotation = Quaternion.Euler(0, rotation_m * input_d.left_y, 0);
@@ -92,7 +95,7 @@ public class HandGesture : MonoBehaviour
         if (input_d.right_y != 0) {
             //Debug.Log("Right " + rserial.x + ", " + input_d.right_y);
             if (input_d.right_y > 0 && !input_d.r_reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
+                rigidbody.AddForce(-1 * transform.right * speed_m * input_d.right_y);
                 //rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
                 Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.right_y);
                 Quaternion rotation = Quaternion.Euler(0, -rotation_m * input_d.right_y, 0);
@@ -102,7 +105,7 @@ public class HandGesture : MonoBehaviour
                 //}
             }
             else if (input_d.right_y < 0 && input_d.r_reverse) {
-                rigidbody.AddForce(-1 * transform.right * 0.06f * input_d.right_y);
+                rigidbody.AddForce(-1 * transform.right * speed_m * input_d.right_y);
                 //rigidbody.AddTorque(0, -rotation_m * input_d.right_y, 0);
                 Vector3 targetPos = rigidbody.position + (-1 * transform.right * 0.002f * input_d.right_y);
                 Quaternion rotation = Quaternion.Euler(0, -rotation_m * input_d.right_y, 0);
@@ -158,7 +161,7 @@ public class HandGesture : MonoBehaviour
             //lPaddle.transform.localRotation = leftRot;
         }
     }
-
+    /*
     private void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.tag != "Land" &&
         collision.gameObject.tag != "Grass" &&
@@ -170,5 +173,5 @@ public class HandGesture : MonoBehaviour
     }
     private void OnCollisionExit(Collision collision) {
         colliding = false;
-    }
+    }*/
 }
