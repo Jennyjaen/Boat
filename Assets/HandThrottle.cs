@@ -64,13 +64,13 @@ public class HandThrottle : MonoBehaviour
     void Update()
     {
         int accum_x = input_d.accum_lx;
-        lx =accum_x / 400f;
+        lx =accum_x / 440f;
         int accum_y = input_d.accum_ly;
-        ly = accum_y / 400f;
+        ly = accum_y / 300f;
         lx = Mathf.Abs(lx) < 0.15f ? 0 : Mathf.Clamp(lx, -1f, 1f);
         ly = Mathf.Abs(ly) < 0.15f ? 0 : Mathf.Clamp(ly, -1f, 1f);
-        rx = input_d.accum_rx / 400f;
-        ry = input_d.accum_ry / 400f;
+        rx = input_d.accum_rx / 440f;
+        ry = input_d.accum_ry / 300f;
         rx = Mathf.Abs(rx) < 0.15f ? 0 : Mathf.Clamp(rx, -1f, 1f);
         ry = Mathf.Abs(ry) < 0.15f ? 0 : Mathf.Clamp(ry, -1f, 1f);
 

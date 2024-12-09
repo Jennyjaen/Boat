@@ -813,7 +813,15 @@ public class FirstPersonMovement : MonoBehaviour {
                 if (valid_ang < 0) { vib_level = 0; }
                 else {
                     vib_level = Mathf.FloorToInt(valid_ang) + 1;
-                    if (vib_level > 3) { vib_level = 3; }
+                    switch (inputMethod) {
+                        case InputMethod.GamePad:
+                            if (vib_level > 2) { vib_level =2; }
+                            break;
+                        default:
+                            if (vib_level > 3) { vib_level = 3; }
+                            break;
+                    }
+                    
                 }
             }
             float height = transform.position.y;
@@ -1919,18 +1927,18 @@ public class FirstPersonMovement : MonoBehaviour {
             float depth = dir.magnitude;
             collide_speed = depth;
             dir.Normalize();
-            /*
-            if (depth < 7) {
-                transform.position += dir * 2.0f * Time.deltaTime;
-            }
-            else if (depth < 10) {
-                transform.position += dir * 1.5f * Time.deltaTime;
-            }
-            else {
-                transform.position += dir * 0.5f * Time.deltaTime;
-            }*/
+
             switch (inputMethod) {
                 case InputMethod.GamePad:
+                    if (depth < 7) {
+                        transform.position += dir * 2.0f * Time.deltaTime;
+                    }
+                    else if (depth < 10) {
+                        transform.position += dir * 1.5f * Time.deltaTime;
+                    }
+                    else {
+                        transform.position += dir * 0.5f * Time.deltaTime;
+                    }
                     float s = 1f;
                     if (depth > 14) {
                         s = Mathf.Abs((depth - 16.5f)) / 3f;
@@ -1938,7 +1946,19 @@ public class FirstPersonMovement : MonoBehaviour {
                     float c_speed = Mathf.Clamp(s, 0, 1);
                     GamePad.SetVibration(PlayerIndex.One, c_speed, c_speed);
                     break;
+                case InputMethod.HandStickThrottle:
+                    if (depth < 7) {
+                        transform.position += dir * 2.0f * Time.deltaTime;
+                    }
+                    else if (depth < 10) {
+                        transform.position += dir * 1.5f * Time.deltaTime;
+                    }
+                    else {
+                        transform.position += dir * 0.5f * Time.deltaTime;
+                    }
+                    break;
             }
+     
         }
     }
 

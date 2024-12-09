@@ -54,7 +54,8 @@ public class TestMovement : MonoBehaviour
     public enum InputMethod {
         GamePad,
         HandStickThrottle,
-        HandStickGesture
+        HandStickGesture,
+        GestureThrottle
     }
     public InputMethod inputMethod;
 
@@ -152,6 +153,7 @@ public class TestMovement : MonoBehaviour
                 HandGesture.enabled = false;
                 break;
             case InputMethod.HandStickGesture:
+            case InputMethod.GestureThrottle:
                 GamePadInput.enabled = false;
                 HandThrottle.enabled = false;
                 HandGesture.enabled = true;
@@ -1028,6 +1030,120 @@ public class TestMovement : MonoBehaviour
                 }
                 //printArray(larray);
                 break;
+
+            case InputMethod.GestureThrottle:
+                moving = rigidbody.velocity.magnitude / 3;
+                intense = Mathf.Clamp(Mathf.CeilToInt(moving), 0, 3);
+                if (input_d.sum_l < 10 && input_d.sum_r < 10) {
+                    moving = 0;
+                    intense = 0;
+                }
+                t = Time.time;
+                if (water == 1) {
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
+                    }
+                }
+                else if (water == 1.5f) {
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
+                    }
+                }
+                else if (water == 2f) {
+                    for (int y = 0; y < 18; y++) {
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                    }
+                }
+                else if (water == 3f) {
+                    int boat_pos = 0;
+                    if (triggered != null) {
+                        if (grass_front) {
+                            boat_pos = Mathf.FloorToInt((transform.position.z - triggered.position.z + 2.43f) * 2);
+                        }
+                        else {
+                            boat_pos = Mathf.FloorToInt((-transform.position.z + triggered.position.z + 2.43f) * 2);
+                        }
+
+                        if (boat_pos < 0) { boat_pos = 0; }
+                        if (!grass_front) {
+                            boat_pos = 74 - boat_pos;
+                        }
+                    }
+
+                    int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
+                    int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
+                    larray = int2byteArray(left_slice, moving, true);
+                    rarray = int2byteArray(right_slice, moving, false);
+
+                }
+                break;
             case InputMethod.HandStickGesture: // ³ëÁ£±â
                 int max_vib = 0;
                 int width = 4;
@@ -1133,16 +1249,10 @@ public class TestMovement : MonoBehaviour
                 break;
             case UserTest.Environment.Grass:
             case UserTest.Environment.Waterfall:
-                if (transform.position.z > 78) {
-                    Vector3 newPos = transform.position;
-                    newPos.z = -42;
-                    transform.position = newPos;
-                }
-                break;
             case UserTest.Environment.Collision:
                 if (transform.position.z > 78) {
                     Vector3 newPos = transform.position;
-                    newPos.z =9;
+                    newPos.z = -42;
                     transform.position = newPos;
                 }
                 break;
@@ -1155,6 +1265,21 @@ public class TestMovement : MonoBehaviour
         if (rotation.z > 180) { rotation.z -= 360; }
         rotation.z = Mathf.Clamp(rotation.z, -40f, 40f);
         transform.eulerAngles = rotation;
+        switch (inputMethod) {
+            case InputMethod.HandStickGesture:
+            case InputMethod.GestureThrottle:
+                float zRot = transform.rotation.eulerAngles.z;
+                if (zRot > 180) { zRot -= 360; }
+                if (zRot < -15) {
+                    HandGesture.speed_m = 0.1f;
+                }
+                else {
+                    HandGesture.speed_m = 0.08f;
+                }
+                break;
+        }
+
+
 
         if (underwater.underwater) {
             waterincline = false;
@@ -1227,6 +1352,7 @@ public class TestMovement : MonoBehaviour
                 }
                 break;
             case InputMethod.HandStickThrottle: //ÀåÄ¡¿¡ ÇÝÆ½ ÇÇµå¹éÀ» ÁÖ´Â °æ¿ì
+            case InputMethod.GestureThrottle:
                 Vector3 up_vector = transform.up;
                 Vector3 forward_vector = -transform.forward;
                 float ang = Vector3.Angle(up_vector, Vector3.up);
@@ -1481,6 +1607,7 @@ public class TestMovement : MonoBehaviour
                 break;
             case InputMethod.HandStickThrottle:
             case InputMethod.HandStickGesture:
+            case InputMethod.GestureThrottle:
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
                     else {
@@ -1547,6 +1674,7 @@ public class TestMovement : MonoBehaviour
                     
                     break;
                 case InputMethod.HandStickThrottle:
+                case InputMethod.GestureThrottle:
                 case InputMethod.HandStickGesture:
                     collide = 2f;
                     break;

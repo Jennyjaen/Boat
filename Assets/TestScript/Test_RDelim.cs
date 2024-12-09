@@ -97,7 +97,7 @@ public class Test_RDelim : MonoBehaviour, IDelimeter
             accum_x += x;
             accum_y += y;
 
-            if (person.inputMethod == TestMovement.InputMethod.HandStickGesture) {
+            if (person.inputMethod == TestMovement.InputMethod.HandStickGesture || person.inputMethod == TestMovement.InputMethod.GestureThrottle) {
                 if (x != 0 || y != 0) {
                     if (y != 0) {
                         if (sum_y * y < 0) {
