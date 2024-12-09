@@ -57,7 +57,8 @@ public class FirstPersonMovement : MonoBehaviour {
     public enum InputMethod {
         GamePad,
         HandStickThrottle,
-        HandStickGesture
+        HandStickGesture, 
+        GestureThrottle
     }
     public InputMethod inputMethod;
     [SerializeField] private bool disableWater = false;
@@ -87,6 +88,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
     private float bouncy_time;
     private bool from_zero; //update 주기로 인해 충돌할때 시작점이 0이 아닐때가 있음.
+
     void Awake() {
         // Get the rigidbody on this.
         rigidbody = GetComponent<Rigidbody>();
@@ -246,7 +248,7 @@ public class FirstPersonMovement : MonoBehaviour {
             float intensity = col_s * 18;
             intensity = Mathf.Round(intensity);
             intensity = Mathf.Clamp(intensity, 3, 5);
-            int width = Mathf.FloorToInt(col_s * 5) + 4;
+            int width = Mathf.FloorToInt(col_s * 6) + 5;
             float time_consume = Time.time - bouncy_time;
 
             if (time_consume <= 0.1f && time_consume > 0.05f) {
@@ -266,8 +268,8 @@ public class FirstPersonMovement : MonoBehaviour {
             if (intensity > 5) {
                 intensity = 5;
             }
-            if (intensity < 1) {
-                intensity = 1;
+            if (intensity < 3) {
+                intensity = 3;
             }
             for (int y = 0; y < 18; y++) {
                 for (int x = 0; x < 24; x++) {
@@ -278,230 +280,479 @@ public class FirstPersonMovement : MonoBehaviour {
                     if (col_ang >= 22.5 && col_ang < 67.5) {
                         //Debug.Log("ru");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
-                        }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
-                        }
+                        
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                                }
 
-                        if (col_pos == 0) {
-                            from_zero = true;
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+
+                                if (y - x >= -24 + col_pos && y - x < -24 + col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.007f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.01f) + 14;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.017f) + 24;
+                                }
+
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                if (y - x < -24 + col_pos +12) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
                         }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
-                        if (y - x >= -24 + col_pos && y - x < -24 + col_pos + width) {
-                            res = (int)intensity;
-                        }
-                        else {
-                            res = 0;
-                        }
+                        
                     }
                     else if (col_ang >= 67.5 && col_ang < 112.5) {
                         //위
                         //Debug.Log("up");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.011f);
-                        }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
-                        }
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.011f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
+                                }
 
-                        if (col_pos == 0) {
-                            from_zero = true;
-                        }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
 
-                        if (y >= col_pos && y < col_pos + width) {
-                            res = (int)intensity;
+                                if (y >= col_pos && y < col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.02f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.05f) + 5;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.05f) + 7;
+                                }
+
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+
+                                if (y < col_pos +9) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
                         }
-                        else {
-                            res = 0;
-                        }
+                        
 
                     }
                     else if (col_ang >= 112.5 && col_ang < 157.5) {
                         //Debug.Log("lu");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
-                        }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
-                        }
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                                }
 
-                        if (col_pos == 0) {
-                            from_zero = true;
-                        }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
 
-                        //Debug.Log(col_pos + " , "+ width);
-                        if (y + x >= col_pos && y + x < col_pos + width) {
-                            res = (int)intensity;
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y + x >= col_pos && y + x < col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.007f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.01f) + 14;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.017f) + 24;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y + x < col_pos + 12) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
                         }
-                        else {
-                            res = 0;
-                        }
+                        
+                        
                     }
                     else if (col_ang >= 157.5 && col_ang < 202.5) {
                         //왼쪽
                         //Debug.Log("Left");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
-                        }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
-                        }
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
+                                }
 
-                        if (col_pos == 0) {
-                            from_zero = true;
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                if (x >= col_pos && x < col_pos + width) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.0125f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.02f) + 8;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 13;
+                                }
+
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                if (x < col_pos + 8) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
                         }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
-                        //Debug.Log(col_pos + " , "+ width);
-                        //if(x == 0) { Debug.Log($"Before: {x}, {y}, width: {width}"); }
-                        if (x >= col_pos && x < col_pos + width) {
-                            res = (int)intensity;
-                            //if (x == 0) { Debug.Log($"After: {x}, {y}"); }
-                            //Debug.Log(intensity);
-                        }
-                        else {
-                            res = 0;
-                        }
+                        
                     }
                     else if (col_ang >= 202.5 && col_ang < 247.5) {
                         //Debug.Log("ld");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y - x < 18 - col_pos && y - x >= 18 - (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.007f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.01f) + 14;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.017f) + 24;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y - x >= 18 - (col_pos + 12)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
                         }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
-                        }
-                        if (col_pos == 0) {
-                            from_zero = true;
-                        }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
-                        //Debug.Log(col_pos + " , "+ width);
-                        if (y - x < 18 - col_pos && y - x >= 18 - (col_pos + width)) {
-                            res = (int)intensity;
-                        }
-                        else {
-                            res = 0;
-                        }
+                        
                     }
                     else if (col_ang >= 247.5 && col_ang < 292.5) {
                         //아래
                         //Debug.Log("down");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.011f);
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.011f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y < 18 - col_pos && y >= 18 - (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.02f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.05f) + 5;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.05f) + 7;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (y >= 18 - (col_pos + 9)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }      
+                                break;
                         }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.016f) + 9;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 15;
-                        }
-                        if (col_pos == 0) {
-                            from_zero = true;
-                        }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
-                        //Debug.Log(col_pos + " , "+ width);
-                        if (y < 18 - col_pos && y >= 18 - (col_pos + width)) {
-                            res = (int)intensity;
-                        }
-                        else {
-                            res = 0;
-                        }
+                        
                     }
                     else if (col_ang >= 292.5 && col_ang < 337.5) {
                         //Debug.Log("rd");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.005f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (x + y < 42 - col_pos && x + y >= 42 - (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.007f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.01f) + 14;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.017f) + 24;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if ( x + y >= 42 - (col_pos + 12)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
                         }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.007f) + 20;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.014f) + 34;
-                        }
-                        if (col_pos == 0) {
-                            from_zero = true;
-                        }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
-                        //Debug.Log(col_pos + " , "+ width);
-                        if (x + y < 42 - col_pos && x + y >= 42 - (col_pos + width)) {
-                            res = (int)intensity;
-                        }
-                        else {
-                            res = 0;
-                        }
+                        
                     }
                     else {
                         //오른쪽?
                         //Debug.Log("right");
                         int col_pos;
-                        if (time_consume <= 0.1f) {
-                            col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
+                        switch (inputMethod) {
+                            case InputMethod.HandStickThrottle:
+                            case InputMethod.GestureThrottle:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.0083f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (x < 24 - col_pos && x >= 24 - (col_pos + width)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
+                            case InputMethod.HandStickGesture:
+                                if (time_consume <= 0.1f) {
+                                    col_pos = Mathf.FloorToInt(time_consume / 0.0125f);
+                                }
+                                else if (time_consume <= 0.2f) {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.02f) + 8;
+                                }
+                                else {
+                                    col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.033f) + 13;
+                                }
+                                if (col_pos == 0) {
+                                    from_zero = true;
+                                }
+                                if (!from_zero) {
+                                    col_pos = 0;
+                                    from_zero = true;
+                                }
+                                //Debug.Log(col_pos + " , "+ width);
+                                if (x >= 24 - (col_pos + 8)) {
+                                    res = (int)intensity;
+                                }
+                                else {
+                                    res = 0;
+                                }
+                                break;
                         }
-                        else if (time_consume <= 0.2f) {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.1f) / 0.0125f) + 12;
-                        }
-                        else {
-                            col_pos = Mathf.FloorToInt((time_consume - 0.2f) / 0.025f) + 20;
-                        }
-                        if (col_pos == 0) {
-                            from_zero = true;
-                        }
-                        if (!from_zero) {
-                            col_pos = 0;
-                            from_zero = true;
-                        }
-                        //Debug.Log(col_pos + " , "+ width);
-                        if (x < 24 - col_pos && x >= 24 - (col_pos + width)) {
-                            res = (int)intensity;
-                        }
-                        else {
-                            res = 0;
-                        }
+                        
                     }
 
                     if (x % 2 == 0) { x_1 = (int)res; }
@@ -936,6 +1187,7 @@ public class FirstPersonMovement : MonoBehaviour {
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
+            case InputMethod.GestureThrottle:
                 float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
                 int intense = Mathf.CeilToInt(3 * moving);
@@ -1182,6 +1434,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 HandGesture.enabled = false;
                 break;
             case InputMethod.HandStickGesture:
+            case InputMethod.GestureThrottle:
                 GamePadInput.enabled = false;
                 HandThrottle.enabled = false;
                 HandGesture.enabled = true;
@@ -1206,7 +1459,19 @@ public class FirstPersonMovement : MonoBehaviour {
             waterincline = false;
             waterfall = 0;
         }
-
+        switch (inputMethod) {
+            case InputMethod.HandStickGesture:
+            case InputMethod.GestureThrottle:
+                float zRot = transform.rotation.eulerAngles.z;
+                if (zRot > 180) { zRot -= 360; }
+                if (zRot < -15) {
+                    HandGesture.speed_m = 0.1f;
+                }
+                else {
+                    HandGesture.speed_m = 0.08f;
+                    }
+                break;
+    }
         
 
         if (left_boat.on_land || right_boat.on_land) { //배가 어딘가 바닥에 부딪힘.
@@ -1243,6 +1508,8 @@ public class FirstPersonMovement : MonoBehaviour {
             }
         }
 
+
+
         switch (inputMethod) {
             case InputMethod.GamePad: //게임 패드에 햅틱 피드백을 주는 경우
                 if (underwater.underwater) {
@@ -1266,7 +1533,8 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                 }
                 break;
-            case InputMethod.HandStickThrottle: //장치에 햅틱 피드백을 주는 경우
+            case InputMethod.HandStickThrottle:
+            case InputMethod.GestureThrottle://장치에 햅틱 피드백을 주는 경우
                 Vector3 up_vector = transform.up;
                 Vector3 forward_vector = -transform.forward;
                 float ang = Vector3.Angle(up_vector, Vector3.up);
@@ -1274,6 +1542,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 Vector3 for_projected = new Vector3(forward_vector.x, 0, forward_vector.z);
                 float direct_ang = Vector3.SignedAngle(up_projected, for_projected, Vector3.up);
                 float c_ang = ang;
+
                 float c_speed = Mathf.Clamp(collide_speed, 0, 1);
                 if (direct_ang < 0) { direct_ang += 360; }
                 float bef_coll = collide;
@@ -1346,6 +1615,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 //Debug.Log("collide" + collide + " water status: " + water_status);
                 direct_ang = 0f; //기울기 표현 x이기 때문에 계산 필요 x.
                 c_ang = 0f;
+     
                 c_speed = Mathf.Clamp(collide_speed, 0, 5);
                 c_speed /= 5;
                 if (direct_ang < 0) { direct_ang += 360; }
@@ -1435,6 +1705,7 @@ public class FirstPersonMovement : MonoBehaviour {
                 }
                 break;
             case InputMethod.HandStickThrottle:
+            case InputMethod.GestureThrottle:
             case InputMethod.HandStickGesture:
                 if (!c.collider.CompareTag("Water") && !c.collider.CompareTag("Grass") && !c.collider.CompareTag("Moving")) {
                     if (collide_land && c.collider.CompareTag("Land")) { collide = 2.0f; }
@@ -1503,6 +1774,7 @@ public class FirstPersonMovement : MonoBehaviour {
                     }
                     break;
                 case InputMethod.HandStickThrottle:
+                case InputMethod.GestureThrottle:
                 case InputMethod.HandStickGesture:
                     collide = 2f;
                     if (rigidbody.velocity.y > 0 && HandThrottle.ry == 0 && HandThrottle.ly == 0) { //배가 산타는거 방지
@@ -1685,7 +1957,7 @@ public class FirstPersonMovement : MonoBehaviour {
         yield return new WaitForSeconds(0.3f);
 
         collide = 0.5f;
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.2f);
         /*
         switch (inputMethod) {
             case InputMethod.HandStickGesture:
