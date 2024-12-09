@@ -1187,7 +1187,6 @@ public class FirstPersonMovement : MonoBehaviour {
 
         switch (inputMethod) {
             case InputMethod.HandStickThrottle:
-            case InputMethod.GestureThrottle:
                 float moving = Mathf.Abs(HandThrottle.ly) + Mathf.Abs(HandThrottle.ry);
                 moving /= 2;
                 int intense = Mathf.CeilToInt(3 * moving);
@@ -1295,6 +1294,118 @@ public class FirstPersonMovement : MonoBehaviour {
                     
                 }
                 break;
+            case InputMethod.GestureThrottle:
+                moving = rigidbody.velocity.magnitude/3;
+                intense = Mathf.Clamp(Mathf.CeilToInt(moving), 0, 3);
+                if(input_d.sum_l < 10 && input_d.sum_r < 10) {
+                    moving = 0;
+                    intense = 0;
+                }
+                t = Time.time;
+                if (water == 1) {
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
+                    }
+                }
+                else if (water == 1.5f) {
+                    for (int y = 0; y < 18; y++) {
+                        if (left_boat.collidingChildIndices.Contains(y + 1)) {
+                            for (int x = 0; x < 6; x++) {
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+
+                    }
+                }
+                else if (water == 2f) {
+                    for (int y = 0; y < 18; y++) {
+                        if (right_boat.collidingChildIndices.Contains(18 - y)) {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                }
+                                else {
+                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                }
+                            }
+                        }
+                        else {
+                            for (int x = 0; x < 6; x++) {
+                                larray[y * 6 + x] = (byte)0;
+                                rarray[y * 6 + x] = (byte)0;
+                            }
+                        }
+                    }
+                }
+                else if (water == 3f) {
+                    int boat_pos = 0;
+                    if (triggered != null) {
+                        float boat = CalculateDistanceToPlane(triggered, transform);
+                        //Debug.Log(boat);
+                        boat_pos = Mathf.FloorToInt((-boat + 2.43f) * 2);
+                        if (boat_pos < 0) { boat_pos = 0; }
+                        //Debug.Log(boat_pos);
+                        if (!grass_front) {
+                            boat_pos = 74 - boat_pos;
+                        }
+                    }
+                    //Debug.Log($"{transform.position.z} is here so boat pos is {boat_pos}");
+
+                    int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
+                    int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
+                    larray = int2byteArray(left_slice, moving, true);
+                    rarray = int2byteArray(right_slice, moving, false);
+
+                }
+                break;
+
             case InputMethod.HandStickGesture: // 노젓기
                 int max_vib = 0;
                 int width = 4;

@@ -107,7 +107,7 @@ public class LeftDelimiter : MonoBehaviour, IDelimeter {
             x = message[1];
             accum_x += x;
             accum_y += y;
-            if(person.inputMethod == FirstPersonMovement.InputMethod.HandStickGesture) {
+            if(person.inputMethod == FirstPersonMovement.InputMethod.HandStickGesture || person.inputMethod == FirstPersonMovement.InputMethod.GestureThrottle) {
                 if (x != 0 || y!= 0) {
                     if(y!= 0) {
                         if (sum_y * y < 0) {
