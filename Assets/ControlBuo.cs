@@ -24,7 +24,7 @@ public class ControlBuo : MonoBehaviour
     {
         switch (person.track) {
             case FirstPersonMovement.Track.Track1:
-                if (transform.position.z <50) {
+                if (transform.position.x >-190) {
                     buoyancy[1].enabled = true;
                     buoyancy[0].enabled = false;
                 }
@@ -36,7 +36,7 @@ public class ControlBuo : MonoBehaviour
                 buoyancy[3].enabled = false;
                 break;
             case FirstPersonMovement.Track.Track2:
-                if (transform.position.z >71.5f) {
+                if (transform.position.z >-50f) {
                     buoyancy[3].enabled = true;
                     buoyancy[2].enabled = false;
                 }

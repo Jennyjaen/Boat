@@ -80,9 +80,7 @@ public class inclinebuoyancy : MonoBehaviour {
             Vector3 buoyancyForce = Vector3.up * displacement * buoyancyStrength;
             buoyancyForce *= (position.y * 0.4f);
             if (rb.position.y > 0.8f) {
-                if (buoyancyForce.y < 0.6f) {
-                    buoyancyForce.y = 0.6f;
-                }
+                buoyancyForce.y = 0;
             }
             else if (rb.position.y > 0.6f) {
                 if (buoyancyForce.y < 0.4f) {

@@ -1034,7 +1034,7 @@ public class TestMovement : MonoBehaviour
             case InputMethod.GestureThrottle:
                 moving = rigidbody.velocity.magnitude / 3;
                 intense = Mathf.Clamp(Mathf.CeilToInt(moving), 0, 3);
-                if (input_d.sum_l < 10 && input_d.sum_r < 10) {
+                if (Mathf.Abs(input_d.sum_l) < 10 && Mathf.Abs(input_d.sum_r) < 10) {
                     moving = 0;
                     intense = 0;
                 }
@@ -1043,12 +1043,17 @@ public class TestMovement : MonoBehaviour
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                if((reverse && input_d.sum_l <0)|| (!reverse && input_d.sum_l > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        larray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                        else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
                                 else {
-                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
-                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                    larray[y * 6 + x] = (byte)0;
                                 }
                                 rarray[y * 6 + x] = (byte)0;
                             }
@@ -1066,13 +1071,16 @@ public class TestMovement : MonoBehaviour
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                if ((reverse && input_d.sum_l < 0) || (!reverse && input_d.sum_l > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        larray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                        else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
-                                else {
-                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
-                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
-                                }
+                                else { larray[y * 6 + x] = (byte)0; }
                             }
                         }
                         else {
@@ -1082,12 +1090,17 @@ public class TestMovement : MonoBehaviour
                         }
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                if ((reverse && input_d.sum_r < 0) || (!reverse && input_d.sum_r > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        rarray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                        else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
                                 else {
-                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
-                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    rarray[y * 6 + x] = (byte)0;
                                 }
                             }
                         }
@@ -1104,12 +1117,17 @@ public class TestMovement : MonoBehaviour
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
                                 larray[y * 6 + x] = (byte)0;
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                if ((reverse && input_d.sum_r < 0) || (!reverse && input_d.sum_r > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        rarray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                        else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
                                 else {
-                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
-                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    rarray[y * 6 + x] = (byte)0;
                                 }
                             }
                         }
@@ -1139,9 +1157,18 @@ public class TestMovement : MonoBehaviour
 
                     int[,] left_slice = SliceArray(left_grass, 0, boat_pos, 12, 18);
                     int[,] right_slice = SliceArray(right_grass, 0, boat_pos, 12, 18);
-                    larray = int2byteArray(left_slice, moving, true);
-                    rarray = int2byteArray(right_slice, moving, false);
-
+                    if ((reverse && input_d.sum_l < 0) || (!reverse && input_d.sum_l > 0)) {
+                        larray = int2byteArray(left_slice, moving, true);
+                    }
+                    else {
+                        larray = int2byteArray(left_slice, 0, true);
+                    }
+                    if ((reverse && input_d.sum_r < 0) || (!reverse && input_d.sum_r > 0)) {
+                        rarray = int2byteArray(right_slice, moving, false);
+                    }
+                    else {
+                        rarray = int2byteArray(right_slice, 0, false);
+                    }
                 }
                 break;
             case InputMethod.HandStickGesture: // 노젓기
@@ -1230,8 +1257,8 @@ public class TestMovement : MonoBehaviour
 
     void Update() {
         //최고속도 조절
-        if (rigidbody.velocity.magnitude > 15.0f) {
-            rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
+        if (rigidbody.velocity.magnitude > 10.0f) {
+            rigidbody.velocity = rigidbody.velocity.normalized * 10.0f;
         }
         if (rigidbody.angularVelocity.magnitude > 1.0f) {
             rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;

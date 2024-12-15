@@ -1305,7 +1305,7 @@ public class FirstPersonMovement : MonoBehaviour {
             case InputMethod.GestureThrottle:
                 moving = rigidbody.velocity.magnitude/3;
                 intense = Mathf.Clamp(Mathf.CeilToInt(moving), 0, 3);
-                if(input_d.sum_l < 10 && input_d.sum_r < 10) {
+                if (Mathf.Abs(input_d.sum_l) < 10 && Mathf.Abs(input_d.sum_r) < 10) {
                     moving = 0;
                     intense = 0;
                 }
@@ -1314,12 +1314,17 @@ public class FirstPersonMovement : MonoBehaviour {
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                if ((reverse && input_d.sum_l < 0) || (!reverse && input_d.sum_l > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        larray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                        else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
                                 else {
-                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
-                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                    larray[y * 6 + x] = (byte)0;
                                 }
                                 rarray[y * 6 + x] = (byte)0;
                             }
@@ -1337,13 +1342,16 @@ public class FirstPersonMovement : MonoBehaviour {
                     for (int y = 0; y < 18; y++) {
                         if (left_boat.collidingChildIndices.Contains(y + 1)) {
                             for (int x = 0; x < 6; x++) {
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    larray[y * 6 + x] = (byte)(intense * 7);
+                                if ((reverse && input_d.sum_l < 0) || (!reverse && input_d.sum_l > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        larray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
+                                        else { larray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
-                                else {
-                                    if (Random.Range(0, 5) > 1) { larray[y * 6 + x] = (byte)0; }
-                                    else { larray[y * 6 + x] = (byte)(intense * 7); }
-                                }
+                                else { larray[y * 6 + x] = (byte)0; }
                             }
                         }
                         else {
@@ -1353,12 +1361,17 @@ public class FirstPersonMovement : MonoBehaviour {
                         }
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                if ((reverse && input_d.sum_r < 0) || (!reverse && input_d.sum_r > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        rarray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                        else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
                                 else {
-                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
-                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    rarray[y * 6 + x] = (byte)0;
                                 }
                             }
                         }
@@ -1375,12 +1388,17 @@ public class FirstPersonMovement : MonoBehaviour {
                         if (right_boat.collidingChildIndices.Contains(18 - y)) {
                             for (int x = 0; x < 6; x++) {
                                 larray[y * 6 + x] = (byte)0;
-                                if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
-                                    rarray[y * 6 + x] = (byte)(intense * 7);
+                                if ((reverse && input_d.sum_r < 0) || (!reverse && input_d.sum_r > 0)) {
+                                    if (t * 100 - Mathf.Floor(t * 100) > 0.5f) {
+                                        rarray[y * 6 + x] = (byte)(intense * 7);
+                                    }
+                                    else {
+                                        if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
+                                        else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    }
                                 }
                                 else {
-                                    if (Random.Range(0, 5) > 1) { rarray[y * 6 + x] = (byte)0; }
-                                    else { rarray[y * 6 + x] = (byte)(intense * 7); }
+                                    rarray[y * 6 + x] = (byte)0;
                                 }
                             }
                         }
@@ -1514,9 +1532,6 @@ public class FirstPersonMovement : MonoBehaviour {
                     rarray = (byte[])arr.Clone();
                 }
 
-                if (isLeft) {
-                    printArray(larray);
-                }
                 
                 break;
         }
@@ -1561,8 +1576,8 @@ public class FirstPersonMovement : MonoBehaviour {
         }
 
         //최고속도 조절
-        if (rigidbody.velocity.magnitude > 15.0f) {
-            rigidbody.velocity = rigidbody.velocity.normalized * 15.0f;
+        if (rigidbody.velocity.magnitude > 10.0f) {
+            rigidbody.velocity = rigidbody.velocity.normalized * 10.0f;
         }
         if (rigidbody.angularVelocity.magnitude > 1.0f) {
             rigidbody.angularVelocity = rigidbody.angularVelocity.normalized * 1.0f;
@@ -1584,10 +1599,10 @@ public class FirstPersonMovement : MonoBehaviour {
                 float zRot = transform.rotation.eulerAngles.z;
                 if (zRot > 180) { zRot -= 360; }
                 if (zRot < -15) {
-                    HandGesture.speed_m = 0.1f;
+                    HandGesture.speed_m = 0.07f;
                 }
                 else {
-                    HandGesture.speed_m = 0.08f;
+                    HandGesture.speed_m = 0.05f;
                     }
                 break;
     }

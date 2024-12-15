@@ -9,10 +9,10 @@ public class UserTest : MonoBehaviour
     public enum Environment {
         Collision,
         Grass,
-        Waterfall,
-        Water,
         Land,
+        Waterfall,
         Moving,
+        Water,
         Rowing
     }
 

@@ -24,10 +24,8 @@ public class HandGesture : MonoBehaviour
     private float sum_left = 0f;
     private float sum_right = 0f;
 
-    [HideInInspector]
-    public float rotation_m = 0.02f;
-    [HideInInspector]
-    public float speed_m = 0.08f;
+    public float rotation_m = 0.03f;
+    public float speed_m = 0.07f;
 
     private GameObject boat;
     private bool colliding;
